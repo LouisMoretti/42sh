@@ -1,4 +1,4 @@
-Projet 42SH EPITA
+# Projet 42SH EPITA
 
 Group members:
 Arnaud B,
