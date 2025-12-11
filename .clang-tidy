@@ -1,0 +1,17 @@
+---
+Checks: >
+  -*,
+  bugprone-*,
+  -bugprone-narrowing-conversions,
+  -bugprone-assignment-in-if-condition,
+  clang-diagnostic-strict-prototypes,
+  clang-analyzer-*,
+  readability-function-size
+
+WarningsAsErrors: ''
+
+CheckOptions:
+  - key: readability-function-size.StatementThreshold
+    value: '40'
+  - key: readability-function-size.ParameterThreshold
+    value: '4'
