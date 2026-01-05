@@ -1,10 +1,23 @@
+**/*.swp
+**/.*~
+
+# Autotools
+ar-lib
+aclocal.m4
+autom4te.cache
+compile
+configure
+depcomp
+install-sh
+missing
+config.log
+config.status
+**/.deps
+**/Makefile
+**/Makefile.in
 
 compile_commands.json
 42sh
-
-
-
-
 # Prerequisites
 *.d
 
@@ -60,8 +73,3 @@ dkms.conf
 
 # debug information files
 *.dwo
-
-**/*.swp
-**/.*~
-Makefile
-**/Makefile.in
