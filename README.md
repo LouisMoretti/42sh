@@ -1,7 +1,7 @@
 # Projet 42SH EPITA
 
 Group members:
-Arnaud Bellichat,
+Arnaud Bellicha,
 Clement Bisiaux,
 Louis Moretti,
 Yassine Tlich
