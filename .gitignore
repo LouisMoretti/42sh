@@ -60,3 +60,8 @@ dkms.conf
 
 # debug information files
 *.dwo
+
+**/*.swp
+**/.*~
+Makefile
+**/Makefile.in
