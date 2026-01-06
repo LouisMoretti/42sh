@@ -1,7 +1,12 @@
 #include <stdio.h>
 
-int main(void)
+#include "config/config.h"
+
+int main(int argc, char **argv)
 {
-    printf("Hello, 42sh !!\n");
+    if (set_conf(argc, argv) != 0)
+        return 2;
+    // call io_setup
+
     return 0;
 }
