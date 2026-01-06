@@ -8,4 +8,3 @@ int io_setup(void);
 void io_close(void);
 
 #endif // ! IOBACKGROUND_H
-

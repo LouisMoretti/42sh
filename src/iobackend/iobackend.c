@@ -1,6 +1,6 @@
 #define _POSIX_C_SOURCE 200809L
-#include <string.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "config/config.h"
 
@@ -40,7 +40,7 @@ int get_chr(void)
 
 static int io_setup_file(char *filepath)
 {
-    g_stream = fopen(filepath,"r");
+    g_stream = fopen(filepath, "r");
     if (!g_stream)
         return 2;
     g_stream_ownership = 1;
@@ -50,8 +50,8 @@ static int io_setup_file(char *filepath)
 static int io_setup_string(char *string)
 {
     int size = strlen(string);
-    g_stream = fmemopen(string,size,"r");
-    if(!g_stream)
+    g_stream = fmemopen(string, size, "r");
+    if (!g_stream)
         return 2;
     g_stream_ownership = 1;
     return 0;
@@ -80,7 +80,7 @@ int io_setup(void)
 
 void io_close(void)
 {
-    if(g_stream && g_stream_ownership)
+    if (g_stream && g_stream_ownership)
     {
         fclose(g_stream);
     }
