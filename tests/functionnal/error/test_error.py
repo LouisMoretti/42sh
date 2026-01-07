@@ -5,7 +5,7 @@ import subprocess as sp
 def run_ref_command_string(command):
     command = "'" + command + "'"
     proc = sp.Popen(["bash --posix", "-c", command], stdout=sp.PIPE, stderr=sp.STDOUT, bufsize=0)
-    
+
     time.sleep(0.1)
     return proc
 
@@ -16,12 +16,18 @@ def run_command_string(command):
     executable = ". " + executable
 
     proc = sp.Popen([executable, "-c", command], stdout=sp.PIPE, stderr=sp.STDOUT, bufsize=0)
-    
+
     time.sleep(0.1)
     return proc
 
 def kill_42sh(proc):
     proc.kill()
+
+
+
+# ----------------------
+#       COMMENTS
+# ----------------------
 
 def test_example():
     command_to_run = "echo"
