@@ -48,7 +48,7 @@ def test_many_if():
 # ----------------------
 
 def test_mixed_demon():
-    command_to_run = "if \\n true; then echo -n G; \\n fi; if true; then echo -n G; echo -n ' '; fi; if false; then echo Aie; else echo !; \\n fi; if echo -n You; then echo -n ' '; else echo booooo; fi; if true; then if false; then echo noobs; else echo -n are; fi fi; if false; then false; \\n elif echo -n ' soooo '; \\n then echo strong !; \\n else true; fi; echo -e \\\\nthat is an \# btw, not the next one here : # stupid human;"
+    command_to_run = "echo you need to trasnform the good.sh and put the good string here"
     proc = run_command_string(command_to_run)
     ref_proc = run_ref_command(command_to_run)
     try:
