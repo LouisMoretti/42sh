@@ -7,8 +7,11 @@
 
 #include "../iobackend/iobackend.h"
 
+#define BUFFER_SIZE 1024
+
 static int g_has_cur = 0;
-static struct token g_cur_token = { .type = WORD, .data = NULL };
+static char buffer[BUFFER_SIZE] = { 0 };
+static struct token g_cur_token = { .type = WORD, .data = buffer };
 
 static const char *keywords[KEYWORD_COUNT] = {
     [IF] = "if",     [THEN] = "then", [ELIF] = "elif",
@@ -39,19 +42,25 @@ struct token *peek_token(enum keyword_policy policy)
     if (g_has_cur)
         return &g_cur_token;
 
-    if (g_cur_token.data)
-    {
-        free(g_cur_token.data);
-        g_cur_token.data = NULL;
-    }
-
     int c = peek_chr();
+
+    // TODO: Loop skip whitespace and skip comment.
 
     // Skip whitespace.
     while (is_space(c))
     {
         pop_chr();
         c = peek_chr();
+    }
+
+    // TODO: Skip comment.
+    if (c == '#')
+    {
+        while (c != EOF || c != '\n')
+        {
+            pop_chr();
+            c = peek_chr();
+        }
     }
 
     // TODO: Handle end token.
@@ -62,33 +71,40 @@ struct token *peek_token(enum keyword_policy policy)
     {
         // TODO: Handle double semicolon token (For step 4).
         g_cur_token.type = SEMICOLON;
-        g_cur_token.data = NULL;
         g_has_cur = 1;
         return &g_cur_token;
     }
 
-    char buffer[1024];
     int index = 0;
 
     int is_quoted = 0;
+    char quote_chr = '\0';
     int is_escaped = 0;
 
-    while (c != EOF && index < sizeof(buffer))
+    while (c != EOF && index < BUFFER_SIZE)
     {
         // 11 Rules from the SCL
+        // TODO: Add '>' to break loop
 
-        if (!is_escaped && is_space(c))
+        if (!is_quoted && !is_escaped && (is_space(c) || c == ';')) // Rule #8
             break;
 
-        if (!is_escaped && c == '\'')
+        // Rule #4: Quoting.
+        if (!is_escaped && (c == '\"' || c == '\'')
+            && (!is_quoted || c == quote_chr))
+        {
             is_quoted = !is_quoted;
+            quote_chr = c;
+        }
 
-        // ...
+        if (!is_escaped && c == '\\')
+            is_escaped = 1;
+        else
+            is_escaped = 0;
 
         buffer[index++] = c;
         pop_chr();
         c = peek_chr();
-        is_escaped = 0;
     }
 
     // TODO: Handle token too long error.
@@ -108,12 +124,8 @@ struct token *peek_token(enum keyword_policy policy)
     buffer[index] = '\0';
 
     g_cur_token.type = get_token_type(buffer, policy);
-    if (g_cur_token.type == WORD)
-        g_cur_token.data = strdup(buffer);
-    else
-        g_cur_token.data = NULL;
-
     g_has_cur = 1;
+
     return &g_cur_token;
 }
 
@@ -128,9 +140,4 @@ struct token *get_token(enum keyword_policy policy)
 void pop_token(void)
 {
     g_has_cur = 0;
-    if (g_cur_token.data)
-    {
-        free(g_cur_token.data);
-        g_cur_token.data = NULL;
-    }
 }
