@@ -28,7 +28,7 @@ def kill_42sh(proc):
 # ----------------------
 
 def test_echo_arg_with_newline():
-    command_to_run = "echo -e Helloo WoRld\\n\\n"
+    command_to_run = "echo -e Helloo\\\\nWoRld\\\\n!"
     proc = run_command_string(command_to_run)
     ref_proc = run_ref_command(command_to_run)
     try:
@@ -41,8 +41,8 @@ def test_echo_arg_with_newline():
         kill_42sh(proc)
         kill_42sh(ref_proc)
 
-def test_echo_arg_with_newline():
-    command_to_run = "echo -e Helloo WoRld a\\\\nd bye bye \\n hihi !"
+def test_echo_arg_with_skip_and_newline():
+    command_to_run = "echo -e Helloo WoRld a\\nd bye bye \\\\n hihi !"
     proc = run_command_string(command_to_run)
     ref_proc = run_ref_command(command_to_run)
     try:
