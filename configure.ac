@@ -28,6 +28,7 @@ AC_CONFIG_FILES([
                  src/expansion/Makefile
                  src/iobackend/Makefile
                  src/config/Makefile
+                 tests/Makefile
                  ])
 
 AC_OUTPUT
