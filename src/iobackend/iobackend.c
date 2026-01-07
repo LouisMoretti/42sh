@@ -26,7 +26,7 @@ int peek_chr(void)
 
 void pop_chr(void)
 {
-    if (g_has_peek != 0)
+    if (g_has_peek == 0)
         fgetc(g_stream);
     g_has_peek = 0;
 }
@@ -47,7 +47,7 @@ static int io_setup_file(char *filepath)
     return 0;
 }
 
-static int io_setup_string(char *string)
+int io_setup_string(char *string) // Not static in order for testing
 {
     int size = strlen(string);
     g_stream = fmemopen(string, size, "r");
