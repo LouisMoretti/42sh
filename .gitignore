@@ -16,6 +16,9 @@ config.status
 **/Makefile
 **/Makefile.in
 
+# Testsuite
+**/__pycache__
+
 compile_commands.json
 42sh
 # Prerequisites

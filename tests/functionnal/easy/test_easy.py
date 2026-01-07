@@ -11,10 +11,10 @@ def run_ref_command_string(command):
     return proc
 
 def run_command_string(command):
-    executable = os.environ["BIN_PATH"]
+    executable = os.getenv("BIN_PATH")
     if executable is None:
         executable = "/42sh"
-    executable = "." + executable
+    executable = ". " + executable
 
     proc = sp.Popen([executable, "-c", command], stdout=sp.PIPE, stderr=sp.STDOUT, bufsize=0)
     
@@ -41,7 +41,7 @@ def test_echo_no_arg():
         kill_42sh(proc)
         kill_42sh(ref_proc)
 
-def test_echo_one_arg:
+def test_echo_one_arg():
     command_to_run = "echo Helloo"
     proc = run_command_string(command_to_run)
     ref_proc = run_ref_command(command_to_run)
@@ -55,7 +55,7 @@ def test_echo_one_arg:
         kill_42sh(proc)
         kill_42sh(ref_proc)
 
-def test_echo_two_args:
+def test_echo_two_args():
     command_to_run = "echo Helloo WORLD"
     proc = run_command_string(command_to_run)
     ref_proc = run_ref_command(command_to_run)
@@ -70,7 +70,7 @@ def test_echo_two_args:
         kill_42sh(ref_proc)
     
 
-def test_echo_some_args:
+def test_echo_some_args():
     command_to_run = "echo ACUs have some good advices"
     proc = run_command_string(command_to_run)
     ref_proc = run_ref_command(command_to_run)
@@ -85,7 +85,7 @@ def test_echo_some_args:
         kill_42sh(ref_proc)
     
 
-def test_echo_del_echo:
+def test_echo_del_echo():
     command_to_run = "echo Helloo;"
     proc = run_command_string(command_to_run)
     ref_proc = run_ref_command(command_to_run)
@@ -100,7 +100,7 @@ def test_echo_del_echo:
         kill_42sh(ref_proc)
     
 
-def test_three_echo:
+def test_three_echo():
     command_to_run = "echo Helloo; echo World; echo !;"
     proc = run_command_string(command_to_run)
     ref_proc = run_ref_command(command_to_run)
@@ -115,7 +115,7 @@ def test_three_echo:
         kill_42sh(ref_proc)
     
 
-def test_echo_newline:
+def test_echo_newline():
     command_to_run = "echo \\n"
     proc = run_command_string(command_to_run)
     ref_proc = run_ref_command(command_to_run)
@@ -130,7 +130,7 @@ def test_echo_newline:
         kill_42sh(ref_proc)
     
 
-def test_echo_arg_with_newline:
+def test_echo_arg_with_newline():
     command_to_run = "echo Helloo WoRld\\n\\n"
     proc = run_command_string(command_to_run)
     ref_proc = run_ref_command(command_to_run)
@@ -148,7 +148,7 @@ def test_echo_arg_with_newline:
 # ----------------------
 #          IF
 # ----------------------
-def test_simple_condition:
+def test_simple_condition():
     command_to_run = "if 1=1 then echo True fi"
     proc = run_command_string(command_to_run)
     ref_proc = run_ref_command(command_to_run)
@@ -163,7 +163,7 @@ def test_simple_condition:
         kill_42sh(ref_proc)
     
 
-def test_loud_condition:
+def test_loud_condition():
     command_to_run = "if echo Helloo then echo Worlddd! fi"
     proc = run_command_string(command_to_run)
     ref_proc = run_ref_command(command_to_run)
@@ -178,7 +178,7 @@ def test_loud_condition:
         kill_42sh(ref_proc)
     
 
-def test_if_else_fi:
+def test_if_else_fi():
     command_to_run = "if 42=21 then echo Ouch else HIhaHaHA fi"
     proc = run_command_string(command_to_run)
     ref_proc = run_ref_command(command_to_run)
@@ -195,7 +195,7 @@ def test_if_else_fi:
 # ----------------------
 #        BOOLEAN
 # ----------------------
-def test_true:
+def test_true():
     command_to_run = "true"
     proc = run_command_string(command_to_run)
     ref_proc = run_ref_command(command_to_run)
@@ -209,7 +209,7 @@ def test_true:
         kill_42sh(proc)
         kill_42sh(ref_proc)
 
-def test_false:
+def test_false():
     command_to_run = "false"
     proc = run_command_string(command_to_run)
     ref_proc = run_ref_command(command_to_run)
@@ -223,7 +223,7 @@ def test_false:
         kill_42sh(proc)
         kill_42sh(ref_proc)
 
-def test_if_true:
+def test_if_true():
     command_to_run = "if true then echo Heyy fi"
     proc = run_command_string(command_to_run)
     ref_proc = run_ref_command(command_to_run)
@@ -237,7 +237,7 @@ def test_if_true:
         kill_42sh(proc)
         kill_42sh(ref_proc)
     
-def test_if_false:
+def test_if_false():
     command_to_run = "if false then echo AieAieAie else echo Dragono Succeed fi"
     proc = run_command_string(command_to_run)
     ref_proc = run_ref_command(command_to_run)
@@ -256,7 +256,7 @@ def test_if_false:
 #        QUOTES
 # ----------------------
 
-def test_echo_with_single_quote:
+def test_echo_with_single_quote():
     command_to_run = "echo 'Hey ratoons'"
     proc = run_command_string(command_to_run)
     ref_proc = run_ref_command(command_to_run)
@@ -270,7 +270,7 @@ def test_echo_with_single_quote:
         kill_42sh(proc)
         kill_42sh(ref_proc)
 
-def test_echo_single_quote_command:
+def test_echo_single_quote_command():
     command_to_run = "echo 'if true then echo Failed to parse... fi'"
     proc = run_command_string(command_to_run)
     ref_proc = run_ref_command(command_to_run)
@@ -288,7 +288,7 @@ def test_echo_single_quote_command:
 #       COMMENTS
 # ----------------------
 
-def test_simple_comment:
+def test_simple_comment():
     command_to_run = "echo Hey I want a little #poney"
     proc = run_command_string(command_to_run)
     ref_proc = run_ref_command(command_to_run)
