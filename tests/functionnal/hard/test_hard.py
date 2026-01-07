@@ -5,7 +5,7 @@ import subprocess as sp
 def run_ref_command_string(command):
     command = "'" + command + "'"
     proc = sp.Popen(["bash --posix", "-c", command], stdout=sp.PIPE, stderr=sp.STDOUT, bufsize=0)
-    
+
     time.sleep(0.1)
     return proc
 
@@ -16,7 +16,7 @@ def run_command_string(command):
     executable = ". " + executable
 
     proc = sp.Popen([executable, "-c", command], stdout=sp.PIPE, stderr=sp.STDOUT, bufsize=0)
-    
+
     time.sleep(0.1)
     return proc
 
@@ -48,7 +48,7 @@ def test_many_if():
 # ----------------------
 
 def test_mixed_demon():
-    command_to_run = "if true; then echo -n G; fi; if true; then echo -n G; echo -n ' '; fi; if false; then echo Aie; else echo !; fi; if echo -n You; then echo -n ' '; else echo booooo; fi; if true; then if false; then echo noobs; else echo -n are; fi fi; if false; then false; elif echo -n ' soooo '; then echo strong !; else true; fi; echo -e \\\\nthat is an \# btw, not the next one here : # stupid human;"
+    command_to_run = "if \\n true; then echo -n G; \\n fi; if true; then echo -n G; echo -n ' '; fi; if false; then echo Aie; else echo !; \\n fi; if echo -n You; then echo -n ' '; else echo booooo; fi; if true; then if false; then echo noobs; else echo -n are; fi fi; if false; then false; \\n elif echo -n ' soooo '; \\n then echo strong !; \\n else true; fi; echo -e \\\\nthat is an \# btw, not the next one here : # stupid human;"
     proc = run_command_string(command_to_run)
     ref_proc = run_ref_command(command_to_run)
     try:
