@@ -47,7 +47,7 @@ static int io_setup_file(char *filepath)
     return 0;
 }
 
-int io_setup_string(char *string) // Not static in order for testing
+static int io_setup_string(char *string)
 {
     int size = strlen(string);
     g_stream = fmemopen(string, size, "r");

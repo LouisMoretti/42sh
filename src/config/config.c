@@ -1,4 +1,5 @@
 #include "config.h"
+
 static struct config my_conf;
 
 int set_conf(int argc, char **argv)

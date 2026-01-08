@@ -28,8 +28,8 @@ enum token_type
     // IN,
     // ESAC,
     KEYWORD_COUNT, // Keep this here, add keywords above only
-    WORD, // Same here
-    ENDOFFILE
+    WORD,
+    END_OF_FILE
 };
 
 enum keyword_policy
