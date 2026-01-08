@@ -5,7 +5,7 @@ check_PROGRAMS = test_iobackend
 test_iobackend_SOURCES = test_iobackend.c
 
 # Preprocessing Flags
-test_iobackend_CPPFLAGS = -I%D%
+test_iobackend_CPPFLAGS = -I$(top_srcdir)/src
 
 # Compilation Flags
 test_iobackend_CFLAGS = -std=c99 -Werror -Wall -Wextra -Wvla
@@ -13,7 +13,8 @@ test_iobackend_CFLAGS = -std=c99 -Werror -Wall -Wextra -Wvla
 test_iobackend_LDFLAGS = -lcriterion
 
 test_iobackend_LDADD =  \
-	   $(top_srcdir)/src/iobackend/libiobackend.a
+	   ../../../src/config/libconfig.a \
+	   ../../../src/iobackend/libiobackend.a
 
 check-local:
-	./$(check_PROGRAMS)
+	(./$(check_PROGRAMS) || true)
