@@ -17,8 +17,8 @@ int peek_chr(void)
     {
         int c = fgetc(g_stream);
         g_peek = c;
-        g_has_peek = 1;
     }
+    g_has_peek = 1;
     return g_peek;
 }
 
