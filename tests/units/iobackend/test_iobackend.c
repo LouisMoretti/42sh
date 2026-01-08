@@ -2,6 +2,7 @@
 #include <criterion/new/assert.h>
 #include <criterion/redirect.h>
 #include <stddef.h>
+#include <stdio.h>
 #include <string.h>
 
 #include "config/config.h"
@@ -110,13 +111,11 @@ Test(Iobackend_setup, test_get)
     while (st[i] != '\0')
     {
         int res = get_chr();
-
         cr_expect(res == st[i]);
         i++;
     }
 
     int res = get_chr();
-
     cr_expect(res == EOF);
 
     io_close();

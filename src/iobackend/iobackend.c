@@ -12,12 +12,10 @@ static int g_peek;
 int peek_chr(void)
 {
     if (!g_stream)
-        return EOF;
-    if (!g_has_peek)
+        g_peek = EOF;
+    else if (!g_has_peek)
     {
         int c = fgetc(g_stream);
-        if (c == EOF)
-            return EOF;
         g_peek = c;
         g_has_peek = 1;
     }
