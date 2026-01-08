@@ -17,7 +17,7 @@ struct ast_simple_cmd *simple_cmd()
 
     struct element_list *list = NULL;
     tok = peek_token(DISABLE_KEYWORDS);
-    while (tok->type == WORD)
+    while (tok != NULL && tok->type == WORD)
     {
         struct element_list *tmp = init_element_list();
         if (!list)
@@ -25,6 +25,8 @@ struct ast_simple_cmd *simple_cmd()
         else
             list->next = tmp;
         list = tmp;
+
+        list->element.word = strdup(tok->data);
 
         pop_token();
         tok = peek_token(DISABLE_KEYWORDS);
