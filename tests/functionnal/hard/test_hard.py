@@ -13,7 +13,7 @@ def run_ref_command_string(command):
 def run_command_string(command):
     executable = os.getenv("BIN_PATH")
     if executable is None:
-        executable = "../../../src/42sh"
+        executable = "../../src/42sh"
 
     proc = sp.Popen([executable, "-c", command], stdout=sp.PIPE, stderr=sp.STDOUT, bufsize=0)
 
