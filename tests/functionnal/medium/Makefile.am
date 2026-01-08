@@ -1,4 +1,4 @@
 SUBDIRS=
 
 check-local:
-	(pytest || true) && deactivate
+	(pytest || true)
