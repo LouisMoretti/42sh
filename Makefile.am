@@ -1,5 +1,6 @@
 SUBDIRS=src tests
 
+MAKEFLAGS=--no-print-directory
 AUTOTOOLTRASH = aclocal.m4 ar-lib compile config.log config.status configure configure~ depcomp install-sh install-sh~ missing
 
 clean: clean-recursive
