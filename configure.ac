@@ -38,6 +38,7 @@ AC_CONFIG_FILES([
                  tests/units/parser/Makefile
                  tests/units/expansion/Makefile
                  tests/units/execution/Makefile
+                 src/config/Makefile
                  ])
 
 AC_OUTPUT

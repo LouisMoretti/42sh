@@ -1,5 +1,6 @@
 # Sub directories
 SUBDIRS = parser \
+		  config \
 		  lexer \
 		  execution \
 		  expansion \
@@ -20,6 +21,7 @@ bin_PROGRAMS = 42sh
 42sh_LDADD =  \
        parser/libparser.a \
 	   lexer/liblexer.a \
+	   config/libconfig.a \
 	   execution/libexecution.a \
 	   expansion/libexpansion.a \
 	   iobackend/libiobackend.a

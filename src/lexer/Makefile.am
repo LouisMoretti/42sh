@@ -4,9 +4,7 @@ lib_LIBRARIES = liblexer.a
 # Source Files
 liblexer_a_SOURCES = \
 				   lexer.c \
-				   lexer.h \
-				   token.c \
-				   token.h
+				   lexer.h
 
 # Preprocessing Flags
 liblexer_a_CPPFLAGS = -I$(top_srcdir)/src
