@@ -18,6 +18,13 @@ config.status
 
 # Testsuite
 **/__pycache__
+**/.pytest_cache
+**/.deps
+tests/units/execution/test_execution
+tests/units/expansion/test_expansion
+tests/units/iobackend/test_iobackend
+tests/units/lexer/test_lexer
+tests/units/parser/test_parser
 
 compile_commands.json
 42sh

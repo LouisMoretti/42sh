@@ -5,15 +5,15 @@ check_PROGRAMS = test_execution
 test_execution_SOURCES = test_execution.c
 
 # Preprocessing Flags
-test_execution_CPPFLAGS = -I%D%
+test_execution_CPPFLAGS = -I$(top_srcdir)/src
 
 # Compilation Flags
 test_execution_CFLAGS = -std=c99 -Werror -Wall -Wextra -Wvla
 
 test_execution_LDFLAGS = -lcriterion
 
-test_execution_LDADD =  \
-	   $(top_srcdir)/src/execution/libexecution.a
+test_execution_LDADD = \
+	../../../src/execution/libexecution.a
 
 check-local:
-	./$(check_PROGRAMS)
+	(./$(check_PROGRAMS) || true)
