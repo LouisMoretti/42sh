@@ -94,10 +94,15 @@ Test(Iobackend_setup, test_pop)
 
 Test(Iobackend_setup, test_get)
 {
+    /*
     char *argv[2] = { "-c", "echo a" };
     set_conf(2, argv);
     io_setup();
     struct config *conf = get_conf();
+    */
+
+    struct config conf = { STRING, "echo a" };
+    io_setup(&conf);
 
     char *st = "echo a";
     size_t i = 0;
