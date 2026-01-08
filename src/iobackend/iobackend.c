@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "config/config.h"
+#include "../config/config.h"
 
 static FILE *g_stream;
 static int g_stream_ownership;
