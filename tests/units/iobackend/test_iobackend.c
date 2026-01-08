@@ -3,8 +3,8 @@
 #include <criterion/redirect.h>
 #include <string.h>
 
-#include "../../../src/config/config.h"
-#include "../../../src/iobackend/iobackend.h"
+#include "config/config.h"
+#include "iobackend/iobackend.h"
 
 TestSuite(Iobackend_setup);
 
