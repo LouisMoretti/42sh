@@ -1,19 +1,18 @@
 #include <criterion/criterion.h>
 #include <criterion/new/assert.h>
 #include <criterion/redirect.h>
+#include <stddef.h>
 #include <string.h>
 
-#include "../../../src/config/config.h"
-#include "../../../src/iobackend/iobackend.h"
+#include "config/config.h"
+#include "iobackend/iobackend.h"
 
 TestSuite(Iobackend_setup);
 
 Test(Iobackend_setup, setup_c)
 {
-    char *argv[2] = { "-c", "echo a" };
-    int s = set_conf(2, argv);
-    int res = io_setup();
-    struct config *conf = get_conf();
+    struct config conf = { STRING, "echo a" };
+    int res = io_setup(&conf);
 
     cr_expect(s == 0);
     cr_expect(res == 0);
@@ -25,10 +24,15 @@ Test(Iobackend_setup, setup_c)
 
 Test(Iobackend_setup, setup_file)
 {
+    /*
     char *argv[1] = { "script.sh" };
     int s = set_conf(1, argv);
     int res = io_setup();
     struct config *conf = get_conf();
+    */
+
+    struct config conf = { FILEPATH, "script.sh" };
+    int res = io_setup(&conf);
 
     cr_expect(s == 0);
     cr_expect(res == 0);
@@ -40,10 +44,15 @@ Test(Iobackend_setup, setup_file)
 
 Test(Iobackend_setup, setup_stdin)
 {
+    /*
     char **argv = NULL;
     int s = set_conf(0, argv);
     int res = io_setup();
     struct config *conf = get_conf();
+    */
+
+    struct config conf = { STDIN, NULL };
+    int res = io_setup(&conf);
 
     cr_expect(s == 0);
     cr_expect(res == 0);
@@ -55,10 +64,15 @@ Test(Iobackend_setup, setup_stdin)
 
 Test(Iobackend_setup, test_peek)
 {
+    /*
     char *argv[2] = { "-c", "echo a" };
     set_conf(2, argv);
     io_setup();
     struct config *conf = get_conf();
+    */
+
+    struct config conf = { STRING, "echo a" };
+    io_setup(&conf);
 
     int res = peek_chr();
 
@@ -71,10 +85,15 @@ Test(Iobackend_setup, test_peek)
 
 Test(Iobackend_setup, test_pop)
 {
+    /*
     char *argv[2] = { "-c", "echo a" };
     set_conf(2, argv);
     io_setup();
     struct config *conf = get_conf();
+    */
+
+    struct config conf = { STRING, "echo a" };
+    io_setup(&conf);
 
     pop_chr();
     int res = peek_chr();
