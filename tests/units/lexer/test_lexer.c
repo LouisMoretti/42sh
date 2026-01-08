@@ -56,10 +56,13 @@ ParameterizedTestParameters(Peak_token, SimpleWord)
 
 ParameterizedTest(struct my_params *param, Peak_token, SimpleWord)
 {
-    int argc = 3;
-    char *argv[] = { "./42sh", "-c", param->input };
-    set_conf(argc, argv);
-    io_setup();
+    // int argc = 3;
+    // char *argv[] = { "./42sh", "-c", param->input };
+    // set_conf(argc, argv);
+    // io_setup();
+
+    struct config test_conf = { STRING, param->input };
+    io_setup(&test_conf);
 
     int i = 0;
     while (i < 32 && param->result[i].type != END_OF_FILE)
