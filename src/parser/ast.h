@@ -140,12 +140,18 @@ struct ast_compound_list
     struct and_or_list *and_or_list;
 };
 
+struct word_list
+{
+    char *word;
+    struct word_list *next;
+};
+
 struct ast_rule_for
 {
     struct ast base;
-    char *word;
-    char *in_word;
-    struct ast *ast_compound_list;
+    char *word_condition;
+    struct word_list *word_list_in;
+    struct ast *compound_list;
 };
 
 struct ast_rule_while
@@ -197,14 +203,10 @@ struct ast_case_clause
     struct case_item_list *case_item_list;
 };
 
-struct word_list
-{
-    char *word;
-    struct word_list *next;
-};
-
 struct ast_case_item
 {
+    struct ast base;
+    char *word;
     struct word_list *word_list;
     struct ast *compound_list;
 }
