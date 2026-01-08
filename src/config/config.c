@@ -14,8 +14,10 @@ int set_conf(int argc, char **argv)
             {
                 if (i + 1 >= argc)
                     return 2;
+
                 my_conf.method = STRING;
                 my_conf.str_stream = argv[i + 1];
+                i++; // Skip string argument.
             }
             // Verbose - Pretty Print
         }
