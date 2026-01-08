@@ -2,11 +2,12 @@
 #include <criterion/new/assert.h>
 #include <criterion/parameterized.h>
 #include <criterion/redirect.h>
-#include <string.h>
 #include <stdio.h>
+#include <string.h>
 
-#include "../../../src/iobackend/iobackend.h"
-#include "../../../src/lexer/lexer.h"
+#include "config/config.h"
+#include "iobackend/iobackend.h"
+#include "lexer/lexer.h"
 
 struct my_params
 {
@@ -27,22 +28,26 @@ TestSuite(Peak_token);
 ParameterizedTestParameters(Peak_token, SimpleWord)
 {
     static struct my_params params[] = {
-        { .input = "echo", .result = { { WORD, "echo" }, { ENDOFFILE, "" } } },
-        { .input = "toto", .result = { { WORD, "toto" }, { ENDOFFILE, "" } } },
+        { .input = "echo",
+          .result = { { WORD, "echo" }, { END_OF_FILE, "" } } },
+        { .input = "toto",
+          .result = { { WORD, "toto" }, { END_OF_FILE, "" } } },
         { .input = "cat tata",
-          .result = { { WORD, "cat" }, { WORD, "tata" }, { ENDOFFILE, "" } } },
+          .result = { { WORD, "cat" },
+                      { WORD, "tata" },
+                      { END_OF_FILE, "" } } },
         { .input = "if true then echo trou else echo 'faux le se' fi;",
           .result = { { IF, "" },
                       { WORD, "true" },
                       { THEN, "" },
-                      {WORD, "echo"},
+                      { WORD, "echo" },
                       { WORD, "trou" },
                       { ELSE, "" },
                       { WORD, "echo" },
                       { WORD, "'faux le se'" },
                       { FI, "" },
                       { SEMICOLON, "" },
-                      { ENDOFFILE, "" } } }
+                      { END_OF_FILE, "" } } }
     };
 
     size_t nb_params = sizeof(params) / sizeof(struct my_params);
@@ -51,9 +56,13 @@ ParameterizedTestParameters(Peak_token, SimpleWord)
 
 ParameterizedTest(struct my_params *param, Peak_token, SimpleWord)
 {
-    io_setup_string(param->input);
+    int argc = 3;
+    char *argv[] = { "./42sh", "-c", param->input };
+    set_conf(argc, argv);
+    io_setup();
+
     int i = 0;
-    while (i < 32 && param->result[i].type != ENDOFFILE)
+    while (i < 32 && param->result[i].type != END_OF_FILE)
     {
         struct token *token = get_token(ENABLE_KEYWORDS);
         cr_expect_eq(token->type, param->result[i].type,
