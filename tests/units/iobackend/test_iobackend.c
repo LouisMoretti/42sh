@@ -14,10 +14,7 @@ Test(Iobackend_setup, setup_c)
     struct config conf = { STRING, "echo a" };
     int res = io_setup(&conf);
 
-    cr_expect(s == 0);
     cr_expect(res == 0);
-    cr_expect(conf->method == STRING);
-    cr_expect(strcmp(conf->str_stream, "echo a"));
 
     io_close();
 }
@@ -34,10 +31,7 @@ Test(Iobackend_setup, setup_file)
     struct config conf = { FILEPATH, "script.sh" };
     int res = io_setup(&conf);
 
-    cr_expect(s == 0);
     cr_expect(res == 0);
-    cr_expect(conf->method == FILEPATH);
-    cr_expect(strcmp(conf->str_stream, "script.sh"));
 
     io_close();
 }
@@ -54,10 +48,7 @@ Test(Iobackend_setup, setup_stdin)
     struct config conf = { STDIN, NULL };
     int res = io_setup(&conf);
 
-    cr_expect(s == 0);
     cr_expect(res == 0);
-    cr_expect(conf->method == STDIN);
-    cr_expect(conf->str_stream == NULL);
 
     io_close();
 }
@@ -76,8 +67,6 @@ Test(Iobackend_setup, test_peek)
 
     int res = peek_chr();
 
-    cr_expect(conf->method == STRING);
-    cr_expect(strcmp(conf->str_stream, "echo a"));
     cr_expect(res == 'e');
 
     io_close();
@@ -98,8 +87,6 @@ Test(Iobackend_setup, test_pop)
     pop_chr();
     int res = peek_chr();
 
-    cr_expect(conf->method == STRING);
-    cr_expect(strcmp(conf->str_stream, "echo a"));
     cr_expect(res == 'c');
 
     io_close();
@@ -119,8 +106,6 @@ Test(Iobackend_setup, test_get)
     {
         int res = get_chr();
 
-        cr_expect(conf->method == STRING);
-        cr_expect(strcmp(conf->str_stream, st + i));
         cr_expect(res == st[i]);
         i++;
     }
