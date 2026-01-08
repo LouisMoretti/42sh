@@ -6,7 +6,10 @@ clean: clean-recursive
 	(find . -name "__pycache__" -exec rm -rf {} \; 2>/dev/null || true)
 	(find . -name ".pytest_cache" -exec rm -rf {} \; 2>/dev/null || true)
 	(find . -name ".deps" -exec rm -rf {} \; 2>/dev/null || true)
+
+clean-conf:
 	find . -name "Makefile.in" -exec rm {} \;
 	$(RM) $(AUTOTOOLTRASH)
 	$(RM) -r autom4te.cache
 	find . -name "Makefile" -exec rm {} \;
+
