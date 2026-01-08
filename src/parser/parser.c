@@ -1,4 +1,1 @@
-int to_delete(void)
-{
-    return 0;
-}
+void to_delete(void);
