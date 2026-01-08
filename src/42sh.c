@@ -10,7 +10,7 @@ int main(int argc, char **argv)
         return 2;
 
     // Setup IO from config
-    if (io_setup() != 0)
+    if (io_setup(get_conf()) != 0)
         return 2;
 
     // Call parser for AST

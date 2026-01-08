@@ -63,9 +63,8 @@ static int io_setup_stdin()
     return 0;
 }
 
-int io_setup(void)
+int io_setup(struct config *my_conf)
 {
-    struct config *my_conf = get_conf();
     switch (my_conf->method)
     {
     case STRING:
