@@ -15,6 +15,12 @@ int main(int argc, char **argv)
         return 2;
 
     // Call parser for AST
+    struct ast_simple_cmd *cmd = simple_cmd();
+
+    struct ast test = cmd->base;
+
+    if (test.type != AST_SIMPLE_CMD)
+        return 42;
 
     // Execute AST
 
