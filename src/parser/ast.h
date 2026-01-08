@@ -128,4 +128,85 @@ struct ast_redirection
     char *word;
 };
 
+struct and_or_list
+{
+    struct ast ast_and_or;
+    struct ast *next;
+};
+
+struct ast_compound_list
+{
+    struct ast base;
+    struct and_or_list *and_or_list;
+};
+
+struct ast_rule_for
+{
+    struct ast base;
+    char *word;
+    char *in_word;
+    struct ast *ast_compound_list;
+};
+
+struct ast_rule_while
+{
+    struct ast base;
+    struct ast *condition_compound_list;
+    struct ast *body_compound_list;
+};
+
+struct ast_rule_until
+{
+    struct ast base;
+    struct ast *condition_compound_list;
+    struct ast *body_compound_list;
+};
+
+struct ast_rule_case
+{
+    struct ast base;
+    char *word;
+    struct ast *case_clause;
+};
+
+struct ast_rule_if
+{
+    struct ast base;
+    struct ast *condition_compound_list;
+    struct ast *body_compound_list;
+    struct ast *else_clause;
+};
+
+struct ast_else_clause
+{
+    struct ast base;
+    struct ast *condition_compound_list;
+    struct ast *body_compound_list;
+    struct ast *else_clause;
+};
+
+struct case_item_list
+{
+    struct ast case_item;
+    struct ast *next;
+};
+
+struct ast_case_clause
+{
+    struct ast base;
+    struct case_item_list *case_item_list;
+};
+
+struct word_list
+{
+    char *word;
+    struct word_list *next;
+};
+
+struct ast_case_item
+{
+    struct word_list *word_list;
+    struct ast *compound_list;
+}
+
 #endif // ! AST_H
