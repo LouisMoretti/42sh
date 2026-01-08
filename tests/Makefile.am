@@ -1,4 +1,4 @@
-SUBDIRS=functionnal
+SUBDIRS=functionnal units
 
 check-local:
 
