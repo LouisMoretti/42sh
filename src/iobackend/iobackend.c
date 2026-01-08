@@ -26,7 +26,7 @@ int peek_chr(void)
 
 void pop_chr(void)
 {
-    if (g_has_peek != 0)
+    if (g_has_peek == 0)
         fgetc(g_stream);
     g_has_peek = 0;
 }
