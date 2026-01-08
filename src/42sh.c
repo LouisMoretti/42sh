@@ -2,6 +2,7 @@
 
 #include "config/config.h"
 #include "iobackend/iobackend.h"
+#include "parser/parser.h"
 
 int main(int argc, char **argv)
 {

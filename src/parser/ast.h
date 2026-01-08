@@ -81,7 +81,7 @@ struct ast_prefix
 
 struct prefix_list
 {
-    struct prefix prefix;
+    struct ast_prefix prefix;
     struct prefix_list *next;
 };
 
@@ -94,13 +94,14 @@ struct ast_element
 
 struct element_list
 {
-    struct element element;
+    struct ast_element element;
     struct element_list *next;
 };
 
 struct ast_simple_cmd
 {
     struct ast base;
+    struct ast *prefix;
     struct prefix_list *prefix_list;
     char *word;
     struct element_list *element_list;
@@ -120,13 +121,13 @@ struct ast_funcdec
     struct ast *shell_cmd;
 };
 
-struct ast_redirection
-{
-    struct ast base;
-    int io_number;
-    enum redirection_type;
-    char *word;
-};
+// struct ast_redirection
+// {
+//     struct ast base;
+//     int io_number;
+//     enum redirection_type;
+//     char *word;
+// };
 
 struct and_or_list
 {
@@ -209,6 +210,9 @@ struct ast_case_item
     char *word;
     struct word_list *word_list;
     struct ast *compound_list;
-}
+};
+
+struct ast_simple_cmd *init_ast_simple_cmd();
+struct element_list *init_element_list();
 
 #endif // ! AST_H
