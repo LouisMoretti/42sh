@@ -37,44 +37,15 @@ static enum token_type get_token_type(char *str, enum keyword_policy policy)
     return WORD;
 }
 
-struct token *peek_token(enum keyword_policy policy)
+static int pop_peek_chr()
 {
-    if (g_has_cur)
-        return &g_cur_token;
+    pop_chr();
+    return peek_chr();
+}
 
+static int fill_buffer()
+{
     int c = peek_chr();
-
-    // TODO: Loop skip whitespace and skip comment.
-
-    // Skip whitespace.
-    while (is_space(c))
-    {
-        pop_chr();
-        c = peek_chr();
-    }
-
-    // TODO: Skip comment.
-    if (c == '#')
-    {
-        while (c != EOF || c != '\n')
-        {
-            pop_chr();
-            c = peek_chr();
-        }
-    }
-
-    // TODO: Handle end token.
-    if (c == EOF)
-        return NULL;
-
-    if (c == ';')
-    {
-        // TODO: Handle double semicolon token (For step 4).
-        g_cur_token.type = SEMICOLON;
-        g_has_cur = 1;
-        return &g_cur_token;
-    }
-
     int index = 0;
 
     int is_quoted = 0;
@@ -103,25 +74,59 @@ struct token *peek_token(enum keyword_policy policy)
             is_escaped = 0;
 
         buffer[index++] = c;
-        pop_chr();
-        c = peek_chr();
+        c = pop_peek_chr();
     }
 
     // TODO: Handle token too long error.
     if (index == sizeof(buffer))
     {
         fprintf(stderr, "peek_token(): Token too long\n");
-        return NULL;
+        return 2;
     }
 
     // TODO: Handle missing quote error.
     if (is_quoted)
     {
         fprintf(stderr, "peek_token(): Missing quote\n");
-        return NULL;
+        return 2;
     }
 
     buffer[index] = '\0';
+    return 0;
+}
+
+struct token *peek_token(enum keyword_policy policy)
+{
+    if (g_has_cur)
+        return &g_cur_token;
+
+    int c = peek_chr();
+
+    // TODO: Loop skip whitespace and skip comment.
+
+    // Skip whitespace.
+    while (is_space(c))
+        c = pop_peek_chr();
+
+    // TODO: Skip comment.
+    if (c == '#')
+        while (c != EOF || c != '\n')
+            c = pop_peek_chr();
+
+    // TODO: Handle end token.
+    if (c == EOF)
+        return NULL;
+
+    if (c == ';')
+    {
+        // TODO: Handle double semicolon token (For step 4).
+        g_cur_token.type = SEMICOLON;
+        g_has_cur = 1;
+        return &g_cur_token;
+    }
+
+    if (fill_buffer() != 0)
+        return NULL;
 
     g_cur_token.type = get_token_type(buffer, policy);
     g_has_cur = 1;
