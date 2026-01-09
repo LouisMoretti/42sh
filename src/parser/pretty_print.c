@@ -37,6 +37,7 @@ static fptr pp_functions[] = { [AST_INPUT] = &pp_input,
 
 static void pp_prefix(struct ast *ast)
 {
+    assert(ast->type == AST_PREFIX);
     struct ast_prefix *pref = (struct ast_prefix *)ast;
 
     if (pref->assignment_word != NULL)
@@ -51,6 +52,7 @@ static void pp_prefix(struct ast *ast)
 
 static void pp_element(struct ast *ast)
 {
+    assert(ast->type == AST_ELEMENT);
     struct ast_element *elm = (struct ast_element *)ast;
 
     if (elm->word != NULL)
@@ -65,6 +67,7 @@ static void pp_element(struct ast *ast)
 
 static void pp_prefix_list(struct ast *ast)
 {
+    assert(ast->type == AST_PREFIX_LIST);
     struct ast_prefix_list *ast_pref_list = (struct ast_prefix_list *)ast;
 
     if (ast_pref_list != NULL)
@@ -85,6 +88,7 @@ static void pp_prefix_list(struct ast *ast)
 
 static void pp_element_list(struct ast *ast)
 {
+    assert(ast->type == AST_ELEMENT_LIST);
     struct ast_element_list *ast_element_list = (struct ast_element_list *)ast;
 
     if (ast_element_list != NULL)
@@ -105,6 +109,7 @@ static void pp_element_list(struct ast *ast)
 
 static void pp_simple_cmd(struct ast *ast)
 {
+    assert(ast->type == AST_SIMPLE_CMD);
     struct ast_simple_cmd *a = (struct ast_simple_cmd *)ast;
 
     if (a->prefix != NULL)
@@ -123,6 +128,7 @@ static void pp_simple_cmd(struct ast *ast)
 
 static void pp_compound_list(struct ast *ast)
 {
+    assert(ast->type == AST_AND_OR);
     struct ast_compound_list *ast_and_or = (struct ast_compound_list *)ast;
 
     pp_and_or(ast_and_or->ast_and_or);
@@ -141,6 +147,7 @@ static void pp_compound_list(struct ast *ast)
 
 static void pp_word_list(struct ast *ast)
 {
+    assert(ast->type == AST_WORD_LIST);
     struct ast_word_list *ast_word_list = (struct ast_word_list *)ast;
 
     if (ast_word_list != NULL)
@@ -158,6 +165,7 @@ static void pp_word_list(struct ast *ast)
 
 static void pp_rule_for(struct ast *ast)
 {
+    assert(ast->type == AST_RULE_FOR);
     struct ast *ast_rule_for = (struct ast_rule_for *)ast;
 
     printf("for %s ", ast_rule_for->condition_word);
@@ -175,6 +183,7 @@ static void pp_rule_for(struct ast *ast)
 
 static void pp_rule_while(struct ast *ast)
 {
+    assert(ast->type == AST_RULE_WHILE);
     struct ast_rule_while *ast_rule_while = (struct ast_rule_while *)ast;
 
     printf("while ");
@@ -186,6 +195,7 @@ static void pp_rule_while(struct ast *ast)
 
 static void pp_rule_until(struct ast *ast)
 {
+    assert(ast->type == AST_RULE_UNTIL);
     struct ast_rule_until *ast_rule_until = (struct ast_rule_until *)ast;
 
     printf("until ");
@@ -197,6 +207,7 @@ static void pp_rule_until(struct ast *ast)
 
 static void pp_else_clause(struct ast *ast)
 {
+    assert(ast->type == AST_CLAUSE_ELSE);
     struct ast *ast_else_clause = (struct ast_else_clause)ast;
 
     if (ast_else_clause->body_compound_list == NULL)
@@ -218,6 +229,7 @@ static void pp_else_clause(struct ast *ast)
 
 static void pp_case_item(struct ast *)
 {
+    assert(ast->type == AST_CASE_ITEM);
     struct ast_case_item *ast_case_item = (struct ast_case_item *)ast;
 
     pp_word_list(ast_case_item->word_list);
@@ -229,6 +241,7 @@ static void pp_case_item(struct ast *)
 
 static void pp_case_item_list(struct ast *ast)
 {
+    assert(ast->type == AST_CASE_ITEM_LIST);
     struct ast_case_item_list *ast_case_item_list =
         (struct ast_case_item_list *)ast;
 
@@ -244,6 +257,7 @@ static void pp_case_item_list(struct ast *ast)
 
 static void pp_case_clause(struct ast *ast)
 {
+    assert(ast->type == AST_CLAUSE_CASE);
     struct ast_case_clause *ast_case_clause = (struct ast_case_clause *)ast;
 
     pp_case_item_list(ast_case_clause->case_item_list);
@@ -251,6 +265,7 @@ static void pp_case_clause(struct ast *ast)
 
 static void pp_rule_case(struct ast *ast)
 {
+    assert(ast->type == AST_RULE_CASE);
     struct ast_rule_case *ast_rule_case = (struct ast_rule_case *)ast;
 
     printf("case %s ", ast_rule_case->word);
@@ -267,6 +282,7 @@ static void pp_rule_case(struct ast *ast)
 
 static void pp_rule_if(struct ast *ast)
 {
+    assert(ast->type == AST_RULE_IF);
     struct ast_rule_if *ast_rule_if = (struct ast_rule_if *)ast;
 
     printf("if ");
@@ -285,6 +301,7 @@ static void pp_rule_if(struct ast *ast)
 
 static void pp_shell_cmd(struct ast *ast)
 {
+    assert(ast->type == AST_SHELL_CMD);
     struct ast *ast_shell_cmd = (struct ast_shell_cmd *)ast;
 
     if (ast_shell_cmd->compound_list != NULL)
@@ -310,6 +327,7 @@ static void pp_shell_cmd(struct ast *ast)
 
 static void pp_funcdec(struct ast *ast)
 {
+    assert(ast->type == AST_FUNCDEC);
     struct ast_funcdec *ast_funcdec = (struct ast_funcdec *)ast;
 
     printf("%s ()\n", ast_funcdec->name);
@@ -320,6 +338,7 @@ static void pp_funcdec(struct ast *ast)
 /* TODO: complete when redirection will be done
 static void pp_redirection(struct ast *ast)
 {
+    assert(ast->type == AST_REDIRECTION);
     struct ast_redirection *ast_redirection = (struct ast_redirection *)ast;
 
     printf("%i ", ast_redirection->io_number);
@@ -334,6 +353,7 @@ static void pp_redirection(struct ast *ast)
 
 static void pp_cmd(struct ast *ast)
 {
+    assert(ast->type == AST_CMD);
     struct ast_cmd *ast_cmd = (struct ast_cmd *)ast;
 
     if (ast_cmd != NULL)
@@ -355,6 +375,7 @@ static void pp_cmd(struct ast *ast)
 
 static void pp_pipeline(struct ast *ast)
 {
+    assert(ast->type == AST_PIPELINE);
     struct ast_pipeline *ap = (struct ast_pipeline *)ast;
 
     if (ap->negation != 0)
@@ -373,6 +394,7 @@ static void pp_pipeline(struct ast *ast)
 
 static void pp_and_or(struct ast *ast)
 {
+    assert(ast->type == AST_AND_OR);
     struct ast_and_or *ast_and_or = (struct ast_and_or *)ast;
 
     while (ast_and_or->next != NULL)
@@ -397,6 +419,7 @@ static void pp_and_or(struct ast *ast)
 
 static void pp_list(struct ast *ast)
 {
+    assert(ast->type == AST_LIST);
     struct ast_list *ast_list = (struct ast_list *)ast;
 
     while (ast_list != NULL)
@@ -409,6 +432,7 @@ static void pp_list(struct ast *ast)
 
 static void pp_input(struct ast *ast)
 {
+    assert(ast->type == AST_INPUT);
     struct ast_list *a = (struct ast_list *)ast;
     pp_list(a->list);
     printf("\n");
