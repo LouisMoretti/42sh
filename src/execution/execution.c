@@ -3,8 +3,8 @@
 #include <assert.h>
 #include <stddef.h>
 
-#include "parser/ast.h"
 #include "execution/builtin.h"
+#include "parser/ast.h"
 
 #define BUILTIN_ECHO "echo"
 #define BUILTIN_FALSE "false"
@@ -12,14 +12,14 @@
 
 typedef int (*fptr)(struct ast *);
 
-static fptr execute_functions = {
-    [AST_INPUT] = &execute_ast_input;
-    [AST_LIST] = &execute_ast_list;
-    [AST_AND_OR] = &execute_ast_and_or;
-    [AST_PIPELINE] = &execute_ast_pipeline;
-    [AST_CMD] = &execute_ast_cmd;
-    [AST_SIMPLE_CMD] = &execute_ast_simple_cmd;
-};
+static fptr execute_functions = { [AST_INPUT] = &execute_ast_input;
+[AST_LIST] = &execute_ast_list;
+[AST_AND_OR] = &execute_ast_and_or;
+[AST_PIPELINE] = &execute_ast_pipeline;
+[AST_CMD] = &execute_ast_cmd;
+[AST_SIMPLE_CMD] = &execute_ast_simple_cmd;
+}
+;
 
 static int evaluate_command(char **command)
 {
@@ -39,12 +39,11 @@ static int evaluate_command(char **command)
     }
 }
 
-
 int execute_ast(struct ast *ast)
 {
     if (!ast)
         return 0;
-    
+
     return (*fptr)[ast->type](ast);
 }
 
@@ -55,7 +54,7 @@ static int execute_ast_input(struct ast *ast)
 
     assert(ast->type == AST_INPUT);
     struct ast_input *ast_input = (struct ast_input *)ast;
-    
+
     return execute_ast_list(ast_input->list);
 }
 
@@ -133,7 +132,7 @@ static int execute_ast_simple_cmd(struct ast *ast)
     assert(ast->type == AST_SIMPLE_CMD);
     struct ast_simple_cmd *ast_simple_cmd = (struct ast_simple_cmd *)ast;
     assert(ast_simple_cmd->word != NULL);
-    
+
     if (!strcmp(ast_simple_cmd->word, BUILTIN_ECHO))
         return builtin_echo(ast_simple_cmd);
     else if (!strcmp(ast_simple_cmd->word, BUILTIN_FALSE))
@@ -150,7 +149,8 @@ static int execute_ast_simple_cmd(struct ast *ast)
         command[0] = ast_simple_cmd->word;
 
         int i = 1;
-        struct ast_element_list * ast_element_list = ast_simple_cmd->element_list;
+        struct ast_element_list *ast_element_list =
+            ast_simple_cmd->element_list;
         while (i < size)
         {
             struct ast_element *ast_element = ast_element_list->element;
@@ -166,18 +166,3 @@ static int execute_ast_simple_cmd(struct ast *ast)
         return exit_code;
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
