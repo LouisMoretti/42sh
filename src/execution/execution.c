@@ -4,6 +4,7 @@
 #include <stddef.h>
 
 #include "execution/builtin.h"
+#include "parser/ast.h"
 
 #define BUILTIN_ECHO "echo"
 #define BUILTIN_FALSE "false"
