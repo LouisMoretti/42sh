@@ -15,10 +15,9 @@ int main(int argc, char **argv)
         return 2;
 
     // Call parser for AST
-    struct ast_input *input = parse_input();
+    struct ast *input = parse_input();
 
-    struct ast test = input->base;
-    if (test.type != AST_INPUT)
+    if (input->type != AST_INPUT)
         return 42;
 
     // Execute AST
