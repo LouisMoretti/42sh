@@ -1,6 +1,5 @@
 #include <criterion/criterion.h>
 #include <criterion/new/assert.h>
-#include <criterion/parameterized.h>
 #include <criterion/redirect.h>
 #include <stddef.h>
 #include <string.h>
