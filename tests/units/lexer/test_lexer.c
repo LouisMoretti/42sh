@@ -24,41 +24,45 @@ TestSuite(Peak_token);
     cr_expect_str_eq(token->data, "echo");
 }*/
 
+static struct my_params params[] = {
+    { .input = "echo", .result = { { WORD, "echo" }, { END_OF_FILE, "" } } },
+    { .input = "toto", .result = { { WORD, "toto" }, { END_OF_FILE, "" } } },
+    { .input = "cat tata",
+      .result = { { WORD, "cat" }, { WORD, "tata" }, { END_OF_FILE, "" } } },
+    { .input = "if true then echo trou else echo 'faux le se' fi;",
+      .result = { { IF, "" },
+                  { WORD, "true" },
+                  { THEN, "" },
+                  { WORD, "echo" },
+                  { WORD, "trou" },
+                  { ELSE, "" },
+                  { WORD, "echo" },
+                  { WORD, "'faux le se'" },
+                  { FI, "" },
+                  { SEMICOLON, "" },
+                  { END_OF_FILE, "" } } }
+};
+
 ParameterizedTestParameters(Peak_token, SimpleWord)
 {
-    static struct my_params params[] = {
-        { .input = "echo",
-          .result = { { WORD, "echo" }, { END_OF_FILE, "" } } },
-        { .input = "toto",
-          .result = { { WORD, "toto" }, { END_OF_FILE, "" } } },
-        { .input = "cat tata",
-          .result = { { WORD, "cat" },
-                      { WORD, "tata" },
-                      { END_OF_FILE, "" } } },
-        { .input = "if true then echo trou else echo 'faux le se' fi;",
-          .result = { { IF, "" },
-                      { WORD, "true" },
-                      { THEN, "" },
-                      { WORD, "echo" },
-                      { WORD, "trou" },
-                      { ELSE, "" },
-                      { WORD, "echo" },
-                      { WORD, "'faux le se'" },
-                      { FI, "" },
-                      { SEMICOLON, "" },
-                      { END_OF_FILE, "" } } }
-    };
-
+    static int indices[42] = { 0 };
     size_t nb_params = sizeof(params) / sizeof(struct my_params);
-    return cr_make_param_array(struct my_params, params, nb_params);
+    cr_assert(nb_params < 42, "Too many parameters for the test");
+
+    for (size_t i = 0; i < nb_params; i++)
+        indices[i] = i;
+
+    return cr_make_param_array(int, indices, nb_params);
 }
 
-ParameterizedTest(struct my_params *param, Peak_token, SimpleWord)
+ParameterizedTest(int *index, Peak_token, SimpleWord)
 {
     // int argc = 3;
     // char *argv[] = { "./42sh", "-c", param->input };
     // set_conf(argc, argv);
     // io_setup();
+
+    struct my_params *param = &params[*index];
 
     struct config test_conf = { STRING, param->input };
     io_setup(&test_conf);
