@@ -15,16 +15,15 @@ int main(int argc, char **argv)
         return 2;
 
     // Call parser for AST
-    struct ast_simple_cmd *cmd = simple_cmd();
+    struct ast_input *input = parse_input();
 
-    struct ast test = cmd->base;
-
-    if (test.type != AST_SIMPLE_CMD)
+    struct ast test = input->base;
+    if (test.type != AST_INPUT)
         return 42;
 
     // Execute AST
 
-    free_ast_simple_cmd(cmd);
+    free_ast_input(input);
 
     io_close();
     return 0;
