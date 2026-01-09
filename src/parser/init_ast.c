@@ -443,4 +443,3 @@ static struct ast *init_ast_case_clause()
 
     return (struct ast *)case_clause;
 }
-
