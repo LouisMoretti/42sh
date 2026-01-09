@@ -15,18 +15,21 @@ struct ast_simple_cmd *simple_cmd()
     cmd->word = strdup(tok->data);
     pop_token();
 
-    struct element_list *list = NULL;
+    struct ast_element_list *list = NULL;
     tok = peek_token(DISABLE_KEYWORDS);
     while (tok != NULL && tok->type == WORD)
     {
-        struct element_list *tmp = init_element_list();
+        struct ast_element_list *tmp_element_list = init_ast_element_list();
         if (!list)
-            cmd->element_list = tmp;
+            cmd->element_list = (struct ast *)tmp_element_list;
         else
-            list->next = tmp;
-        list = tmp;
+            list->next = (struct ast *)tmp_element_list;
+        list = tmp_element_list;
 
-        list->element.word = strdup(tok->data);
+        struct ast_element *tmp_element = init_ast_element();
+        tmp_element->word = strdup(tok->data);
+
+        list->element = (struct ast *)tmp_element;
 
         pop_token();
         tok = peek_token(DISABLE_KEYWORDS);
