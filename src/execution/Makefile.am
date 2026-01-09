@@ -3,8 +3,11 @@ lib_LIBRARIES = libexecution.a
 
 # Source Files
 libexecution_a_SOURCES = \
-				   execution.c \
-				   execution.h
+						 echo.c \
+						 boolean.c \
+						 builtin.h \
+						 execution.c \
+						 execution.h
 
 # Preprocessing Flags
 libexecution_a_CPPFLAGS = -I$(top_srcdir)/src
