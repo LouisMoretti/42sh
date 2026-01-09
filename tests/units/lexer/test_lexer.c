@@ -2,7 +2,6 @@
 #include <criterion/new/assert.h>
 #include <criterion/parameterized.h>
 #include <criterion/redirect.h>
-#include <stdio.h>
 #include <string.h>
 
 #include "config/config.h"
@@ -12,8 +11,10 @@
 
 struct my_params
 {
+    char *name_test;
     char *input;
     struct token result[32];
+    enum keyword_policy policy;
 };
 
 const char *type_name[9] = { "IF",         "THEN",      "ELIF",          "ELSE",
@@ -31,11 +32,20 @@ TestSuite(Peak_token);
 }*/
 
 static struct my_params params[] = {
-    { .input = "echo", .result = { { WORD, "echo" }, { END_OF_FILE, "" } } },
-    { .input = "toto", .result = { { WORD, "toto" }, { END_OF_FILE, "" } } },
-    { .input = "cat tata",
-      .result = { { WORD, "cat" }, { WORD, "tata" }, { END_OF_FILE, "" } } },
-    { .input = "if true then echo trou else echo 'faux le se' fi;",
+    { .name_test = "simple_word",
+      .input = "echo",
+      .result = { { WORD, "echo" }, { END_OF_FILE, "" } },
+      .policy = ENABLE_KEYWORDS },
+    { .name_test = "semicolon",
+      .input = "toto;",
+      .result = { { WORD, "toto" }, { SEMICOLON, "" }, { END_OF_FILE, "" } },
+      .policy = ENABLE_KEYWORDS },
+    { .name_test = "multiple_words",
+      .input = "cat tata",
+      .result = { { WORD, "cat" }, { WORD, "tata" }, { END_OF_FILE, "" } },
+      .policy = ENABLE_KEYWORDS },
+    { .name_test = "if_else",
+      .input = "if true then echo trou else echo 'faux le se' fi;",
       .result = { { IF, "" },
                   { WORD, "true" },
                   { THEN, "" },
@@ -46,8 +56,10 @@ static struct my_params params[] = {
                   { WORD, "'faux le se'" },
                   { FI, "" },
                   { SEMICOLON, "" },
-                  { END_OF_FILE, "" } } },
-    { .input = "if true then echo trou else echo 'faux le se' fi;",
+                  { END_OF_FILE, "" } },
+      .policy = ENABLE_KEYWORDS },
+    { .name_test = "single_quote_simple",
+      .input = "if true then echo trou else echo 'faux le se' fi;",
       .result = { { IF, "" },
                   { WORD, "true" },
                   { THEN, "" },
@@ -58,41 +70,61 @@ static struct my_params params[] = {
                   { WORD, "'faux le se'" },
                   { FI, "" },
                   { SEMICOLON, "" },
-                  { END_OF_FILE, "" } } },
-    { .input = "echo     \t \t lol;",
+                  { END_OF_FILE, "" } },
+      .policy = ENABLE_KEYWORDS },
+    { .name_test = "blank_chars",
+      .input = "echo     \t \t lol;",
       .result = { { WORD, "echo" },
                   { WORD, "lol" },
                   { SEMICOLON, "" },
-                  { END_OF_FILE, "" } } },
-    { .input = "cat '\\\\  \\`';",
-      { { WORD, "cat" },
-        { WORD, "'\\\\  \\`'" },
-        { SEMICOLON, "" },
-        { END_OF_FILE, "" } } },
-    { .input = "echo '\\ \t$'",
-      .result = { { WORD, "echo" },
-                  { WORD, "'\\ \t$'" },
-                  { END_OF_FILE, "" } } },
-    { .input = "echo' toto'",
-      .result = { { WORD, "echo' toto'" } } }, // Crashing
-    { .input = "ec'''''''''ho' toto",
-      .result = { { WORD, "ec'''''''''ho'" }, { WORD, "toto" } } }, // Crashing
-    { .input = "if true;\nthen true;\n else if false;\n then false;",
-      .result = { { IF, "" },
-                  { WORD, "true" },
+                  { END_OF_FILE, "" } },
+      .policy = ENABLE_KEYWORDS },
+    { .name_test = "backslash_singleq_graveaccent`",
+      .input = "cat '\\\\  \\`';",
+      .result = { { WORD, "cat" },
+                  { WORD, "'\\\\  \\`'" },
                   { SEMICOLON, "" },
-                  { THEN, "" },
-                  { WORD, "true" },
+                  { END_OF_FILE, "" } },
+      .policy = ENABLE_KEYWORDS },
+    { .name_test = "dollar",
+      .input = "echo '\\ \t$'",
+      .result = { { WORD, "echo" }, { WORD, "'\\ \t$'" }, { END_OF_FILE, "" } },
+      .policy = ENABLE_KEYWORDS },
+    { .name_test = "squote_medium_cursed",
+      .input = "echo' toto'",
+      .result = { { WORD, "echo' toto'" } },
+      .policy = ENABLE_KEYWORDS }, // Crashing
+    { .name_test = "squote_medium_odd",
+      .input = "ec'''''''''ho' toto",
+      .result = { { WORD, "ec'''''''''ho'" }, { WORD, "toto" } },
+      .policy = ENABLE_KEYWORDS }, // Crashing
+    { .name_test = "squote_medium_even",
+      .input = "c''''''at; '42.sh'",
+      .result = { { WORD, "c''''''at" },
                   { SEMICOLON, "" },
-                  { ELSE, "" },
-                  { IF, "" },
-                  { WORD, "false" },
-                  { SEMICOLON, "" },
-                  { THEN, "" },
-                  { WORD, "false" },
-                  { SEMICOLON, "" },
-                  { END_OF_FILE, "" } } }, // Not Working but not crashing
-    { .input = "if true then echo \"\\'\\\\\" else if false then cat "
+                  { WORD, "'42.sh'" },
+                  { END_OF_FILE, "" } },
+      .policy = ENABLE_KEYWORDS },
+    {
+        .name_test = "multiple_newlines",
+        .input = "if true;\nthen true;\n else if false;\n then false;",
+        .result = { { IF, "" },
+                    { WORD, "true" },
+                    { SEMICOLON, "" },
+                    { THEN, "" },
+                    { WORD, "true" },
+                    { SEMICOLON, "" },
+                    { ELSE, "" },
+                    { IF, "" },
+                    { WORD, "false" },
+                    { SEMICOLON, "" },
+                    { THEN, "" },
+                    { WORD, "false" },
+                    { SEMICOLON, "" },
+                    { END_OF_FILE, "" } },
+        .policy = ENABLE_KEYWORDS }, // Not Working but not crashing
+    { .name_test = "dquote_backslash",
+      .input = "if true then echo \"\\'\\\\\" else if false then cat "
                "'\\\"\\\\' else "
                "echo 'else "
                "if then "
@@ -113,9 +145,35 @@ static struct my_params params[] = {
                   { WORD, "'else if then else'" },
                   { FI, "" },
                   { SEMICOLON, "" },
-                  { END_OF_FILE, "" } } },
-    {.input = "ls; #aaa\n cd;", .result = {{WORD, "ls"}, {SEMICOLON, ""}, {WORD,"cd"}, {SEMICOLON, ""}, {END_OF_FILE, ""}} // Not working
-}};
+                  { END_OF_FILE, "" } },
+      .policy = ENABLE_KEYWORDS },
+    {
+        .name_test = "comment_newline",
+        .input = "ls; #aaa\n cd;",
+        .result = { { WORD, "ls" },
+                    { SEMICOLON, "" },
+                    { WORD, "cd" },
+                    { SEMICOLON, "" },
+                    { END_OF_FILE, "" } },
+        .policy = ENABLE_KEYWORDS // Not working
+    },
+    { .name_test = "comment",
+      .input = "a #b",
+      .result = { { WORD, "a" }, { END_OF_FILE, "" } },
+      .policy = ENABLE_KEYWORDS },
+    { .input = "echo then if else fi then",
+      .result = { { WORD, "echo" },
+                  { WORD, "then" },
+                  { WORD, "if" },
+                  { WORD, "else" },
+                  { WORD, "fi" },
+                  { WORD, "then" },
+                  { END_OF_FILE, "" } },
+      .policy = DISABLE_KEYWORDS },
+    { .input = "",
+      .result = { { END_OF_FILE, "" } },
+      .policy = ENABLE_KEYWORDS }
+};
 
 ParameterizedTestParameters(Peak_token, SimpleWord)
 {
@@ -141,18 +199,20 @@ ParameterizedTest(int *index, Peak_token, SimpleWord)
 
     struct config test_conf = { STRING, param->input };
     io_setup(&test_conf);
-
     int i = 0;
     while (i < 32 && param->result[i].type != END_OF_FILE)
     {
-        struct token *token = get_token(ENABLE_KEYWORDS);
-        cr_expect_eq(token->type, param->result[i].type,
-                     "Test %i - Wrong %dnth Token Type - Expected: %s | Got: %s",*index, i,
-                     type_name[param->result[i].type], type_name[token->type]);
+        struct token *token = get_token(param->policy);
+        cr_expect_eq(
+            token->type, param->result[i].type,
+            "Test %s - Wrong %dnth Token Type - Expected: %s | Got: %s",
+            param->name_test, i, type_name[param->result[i].type],
+            type_name[token->type]);
         if (param->result[i].type == WORD && token->type == WORD)
-            cr_expect_str_eq(token->data, param->result[i].data,
-                             "Test %i - Wrong %dnth Token - Expected: %s | Got: %s",*index, i,
-                             param->result[i].data, token->data);
+            cr_expect_str_eq(
+                token->data, param->result[i].data,
+                "Test %i - Wrong %dnth Token - Expected: %s | Got: %s",
+                param->name_test, i, param->result[i].data, token->data);
         i++;
     }
 }
