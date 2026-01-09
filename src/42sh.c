@@ -24,6 +24,8 @@ int main(int argc, char **argv)
 
     // Execute AST
 
+    free_ast_simple_cmd(cmd);
+
     io_close();
     return 0;
 }
