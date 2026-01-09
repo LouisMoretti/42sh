@@ -3,6 +3,7 @@
 
 #include "parser/ast.h"
 
-struct ast_simple_cmd *simple_cmd();
+struct ast_input *parse_input();
+struct ast_simple_cmd *parse_simple_cmd();
 
 #endif // ! PARSER_H
