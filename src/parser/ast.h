@@ -13,8 +13,11 @@ enum ast_type
     AST_FUNCDEC,
     AST_REDIRECTION,
     AST_PREFIX,
+    AST_PREFIX_LIST,
     AST_ELEMENT,
+    AST_ELEMENT_LIST,
     AST_COMPOUND_LIST,
+    AST_WORD_LIST,
     AST_RULE_FOR,
     AST_RULE_WHILE,
     AST_RULE_UNTIL,
@@ -22,7 +25,8 @@ enum ast_type
     AST_RULE_IF,
     AST_CLAUSE_ELSE,
     AST_CLAUSE_CASE,
-    AST_CASE_ITEM
+    AST_CASE_ITEM,
+    AST_CASE_ITEM_LIST
 };
 
 struct ast
@@ -60,7 +64,7 @@ struct ast_and_or
 struct ast_pipeline
 {
     struct ast base;
-    int negation;
+    int negation; // TODO: Use bool or enum
     struct ast *cmd;
     struct ast *next;
 };
@@ -79,10 +83,11 @@ struct ast_prefix
     struct ast *redirection;
 };
 
-struct prefix_list
+struct ast_prefix_list
 {
-    struct ast_prefix prefix;
-    struct prefix_list *next;
+    struct ast base;
+    struct ast *prefix;
+    struct ast *next;
 };
 
 struct ast_element
@@ -92,32 +97,33 @@ struct ast_element
     struct ast *redirection;
 };
 
-struct element_list
+struct ast_element_list
 {
-    struct ast_element element;
-    struct element_list *next;
+    struct ast base;
+    struct ast *element;
+    struct ast *next;
 };
 
 struct ast_simple_cmd
 {
     struct ast base;
     struct ast *prefix;
-    struct prefix_list *prefix_list;
+    struct ast *prefix_list;
     char *word;
-    struct element_list *element_list;
+    struct ast *element_list;
 };
 
 struct ast_shell_cmd
 {
     struct ast base;
     struct ast *compound_list;
-    struct ast *keyword;
+    struct ast *rule;
 };
 
 struct ast_funcdec
 {
     struct ast base;
-    char *word;
+    char *name;
     struct ast *shell_cmd;
 };
 
@@ -129,30 +135,33 @@ struct ast_funcdec
 //     char *word;
 // };
 
-struct and_or_list
-{
-    struct ast ast_and_or;
-    struct ast *next;
-};
+// struct and_or_list
+// {
+//     struct ast_and_or ast_and_or;
+//     struct ast *next;
+// };
 
 struct ast_compound_list
 {
     struct ast base;
-    struct and_or_list *and_or_list;
+    // struct and_or_list *and_or_list;
+    struct ast *ast_and_or;
+    struct ast *next;
 };
 
-struct word_list
+struct ast_word_list
 {
+    struct ast base;
     char *word;
-    struct word_list *next;
+    struct ast *next;
 };
 
 struct ast_rule_for
 {
     struct ast base;
-    char *word_condition;
-    struct word_list *word_list_in;
-    struct ast *compound_list;
+    char *condition_word;
+    struct ast *in_word_list;
+    struct ast *body_compound_list;
 };
 
 struct ast_rule_while
@@ -192,24 +201,25 @@ struct ast_else_clause
     struct ast *else_clause;
 };
 
-struct case_item_list
+struct ast_case_item
 {
-    struct ast case_item;
+    struct ast base;
+    // char *word;
+    struct ast *word_list;
+    struct ast *compound_list;
+};
+
+struct ast_case_item_list
+{
+    struct ast base;
+    struct ast *case_item;
     struct ast *next;
 };
 
 struct ast_case_clause
 {
     struct ast base;
-    struct case_item_list *case_item_list;
-};
-
-struct ast_case_item
-{
-    struct ast base;
-    char *word;
-    struct word_list *word_list;
-    struct ast *compound_list;
+    struct ast *case_item_list;
 };
 
 struct ast_simple_cmd *init_ast_simple_cmd();
