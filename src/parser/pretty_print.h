@@ -3,6 +3,6 @@
 
 #include "parser/ast.h"
 
-char *pretty_print(struct ast *ast);
+void pretty_print(struct ast *ast);
 
 #endif /* ! PRETTY_PRINT_H */

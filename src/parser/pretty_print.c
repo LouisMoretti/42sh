@@ -8,29 +8,25 @@
 
 #include "parser/ast.h"
 
-static char *pp_prefix(struct ast *ast)
+static void pp_prefix(struct ast *ast)
 {
     struct ast_prefix *pref = (struct ast_prefix *)ast;
 
     if (pref->assignment_word != NULL)
     {
-        return strdup(pref->assignment_word);
+        printf(pref->assignment_word);
     }
     else
     {
         // TODO: add pp for the redirection part
-        return NULL;
     }
 }
 
-static char *pp_rule_if(struct ast *ast)
+static void pp_rule_if(struct ast *ast)
 {
     if (ast == NULL)
-        return NULL;
-    // size_t len_res = 6;
-    char *res = strdup("if { ");
-
-    return res;
+        return;
+    printf("if { ");
 }
 
 static char *pp_simple_cmd(struct ast *ast)
@@ -39,31 +35,17 @@ static char *pp_simple_cmd(struct ast *ast)
 
     struct ast_simple_cmd *a = (struct ast_simple_cmd *)ast;
 
-    char *res = pp_prefix(a->prefix);
-
-    size_t len_res = strlen(res);
+    pp_prefix(a->prefix);
 
     struct ast_prefix_list *pref_list =
         (struct ast_prefix_list *)a->prefix_list;
 
     while (pref_list != NULL)
     {
-        char *prefix_str = pp_prefix(pref_list->prefix);
-
-        if (prefix_str == NULL)
-        {
-            free(res);
-            return NULL;
-        }
-
-        len_res += strlen(prefix_str);
-        res = realloc(res, sizeof(char) * len_res);
-        res = strcat(res, prefix_str);
-        free(prefix_str);
+        printf(" ");
+        pp_prefix(pref_list->prefix);
         pref_list = (struct ast_prefix_list *)pref_list->next;
     }
-
-    return res;
 }
 
 char *pretty_print(struct ast *ast)
