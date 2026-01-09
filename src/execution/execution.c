@@ -42,7 +42,6 @@ int execute_ast(struct ast *ast)
 {
     if (!ast)
         return 0;
-
     return (*fptr)[ast->type](ast);
 }
 
@@ -53,7 +52,6 @@ static int execute_ast_input(struct ast *ast)
 
     assert(ast->type == AST_INPUT);
     struct ast_input *ast_input = (struct ast_input *)ast;
-
     return execute_ast_list(ast_input->list);
 }
 
@@ -131,7 +129,6 @@ static int execute_ast_simple_cmd(struct ast *ast)
     assert(ast->type == AST_SIMPLE_CMD);
     struct ast_simple_cmd *ast_simple_cmd = (struct ast_simple_cmd *)ast;
     assert(ast_simple_cmd->word != NULL);
-
     if (!strcmp(ast_simple_cmd->word, BUILTIN_ECHO))
         return builtin_echo(ast_simple_cmd);
     else if (!strcmp(ast_simple_cmd->word, BUILTIN_FALSE))
