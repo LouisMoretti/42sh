@@ -14,7 +14,21 @@ static void pp_prefix(struct ast *ast)
 
     if (pref->assignment_word != NULL)
     {
-        printf(pref->assignment_word);
+        printf("%s", pref->assignment_word);
+    }
+    else
+    {
+        // TODO: add pp for the redirection part
+    }
+}
+
+static void pp_element(struct ast *ast)
+{
+    struct ast_element *elm = (struct ast_element *)ast;
+
+    if (elm->word != NULL)
+    {
+        printf("%s", elm->word);
     }
     else
     {
@@ -27,35 +41,65 @@ static void pp_rule_if(struct ast *ast)
     if (ast == NULL)
         return;
     printf("if { ");
+
+    printf("\n");
 }
 
-static char *pp_simple_cmd(struct ast *ast)
+static void pp_simple_cmd(struct ast *ast)
 {
-    // how to differenciate the two different cases of the simple cmd ?
-
     struct ast_simple_cmd *a = (struct ast_simple_cmd *)ast;
 
-    pp_prefix(a->prefix);
-
-    struct ast_prefix_list *pref_list =
-        (struct ast_prefix_list *)a->prefix_list;
-
-    while (pref_list != NULL)
+    if (a->prefix != NULL)
     {
-        printf(" ");
-        pp_prefix(pref_list->prefix);
-        pref_list = (struct ast_prefix_list *)pref_list->next;
+        pp_prefix(a->prefix);
+
+        struct ast_prefix_list *pref_list =
+            (struct ast_prefix_list *)a->prefix_list;
+
+        while (pref_list != NULL)
+        {
+            printf(" ");
+            pp_prefix(pref_list->prefix);
+            pref_list = (struct ast_prefix_list *)pref_list->next;
+        }
     }
+    else
+    {
+        struct ast_prefix_list *pref_list =
+            (struct ast_prefix_list *)a->prefix_list;
+
+        while (pref_list != null)
+        {
+            pp_prefix(pref_list->prefix);
+            pref_list = (struct ast_prefix_list *)pref_list->next;
+            printf(" ");
+        }
+
+        printf(a->word);
+        printf(" ");
+
+        struct ast_element_list *elm_list =
+            (struct ast_element_list *)a->element_list;
+
+        while (element_list != null)
+        {
+            printf(" ");
+            pp_element(elm_list->element);
+            elm_list = (struct ast_element_list *)elm_list->next;
+        }
+    }
+
+    printf("\n");
 }
 
-char *pretty_print(struct ast *ast)
+void pretty_print(struct ast *ast)
 {
     if (ast->type == AST_RULE_IF)
     {
-        return pp_rule_if(ast);
+        pp_rule_if(ast);
     }
     else if (ast->type == AST_SIMPLE_CMD)
     {
-        return pp_simple_cmd(ast);
+        pp_simple_cmd(ast);
     }
 }
