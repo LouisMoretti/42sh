@@ -6,6 +6,7 @@
 #include <string.h>
 
 #include "config/config.h"
+#include "execution/builtin.h"
 #include "parser/ast.h"
 
 TestSuite(Execution);
@@ -38,4 +39,36 @@ Test(Execution, simple_cmd)
 
     int res = execute_ast(ast);
     cr_expect(res == 0);
+}
+
+Test(Execution, cmd_true)
+{
+    struct ast_simple_cmd *ast_simple_cmd =
+        malloc(sizeof(struct ast_simple_cmd));
+
+    ast_simple_cmd->prefix_list = NULL;
+    ast_simple_cmd->prefix = NULL;
+    ast_simple_cmd->word = "true";
+    ast_simple_cmd->element_list = NULL;
+
+    struct ast *ast = (struct ast *)ast_simple_cmd;
+
+    int res = execute_ast(ast);
+    cr_expect(res == 0);
+}
+
+Test(Execution, cmd_false)
+{
+    struct ast_simple_cmd *ast_simple_cmd =
+        malloc(sizeof(struct ast_simple_cmd));
+
+    ast_simple_cmd->prefix_list = NULL;
+    ast_simple_cmd->prefix = NULL;
+    ast_simple_cmd->word = "false";
+    ast_simple_cmd->element_list = NULL;
+
+    struct ast *ast = (struct ast *)ast_simple_cmd;
+
+    int res = execute_ast(ast);
+    cr_expect(res == 1);
 }
