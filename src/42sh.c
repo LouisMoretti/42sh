@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <stdio.h>
 
 #include "config/config.h"
@@ -17,10 +18,8 @@ int main(int argc, char **argv)
     // Call parser for AST
     struct ast *input = parse_input();
 
-    if (input->type != AST_INPUT)
-        return 42;
-
     // Execute AST
+    assert(input->type == AST_INPUT);
 
     free_ast_input(input);
 
