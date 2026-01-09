@@ -7,7 +7,6 @@
 
 #include "config/config.h"
 #include "execution/builtin.h"
-#include "parser/ast.h"
 
 TestSuite(Execution);
 
@@ -18,7 +17,7 @@ Test(Execution, simple_cmd)
 
     ast_simple_cmd->prefix_list = NULL;
     ast_simple_cmd->prefix = NULL;
-    ast_simple_cmd->word = "ls";
+    ast_simple_cmd->word = "echo";
 
     struct ast_element_list *ast_element_list =
         malloc(sizeof(struct ast_element_list));
@@ -27,7 +26,7 @@ Test(Execution, simple_cmd)
 
     struct ast_element *ast_element = malloc(sizeof(struct ast_element));
     ast_element->base = AST_ELEMENT;
-    ast_element->word = "-a";
+    ast_element->word = "coucou";
     ast_element->redirection = NULL;
 
     ast_element_list->element = ast_element;
