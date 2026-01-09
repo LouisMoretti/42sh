@@ -8,6 +8,33 @@
 
 #include "parser/ast.h"
 
+typedef void (*fptr)(struct ast *);
+
+static fptr pp_functions[] = { [AST_INPUT] = &pp_input,
+                               [AST_LIST] = &pp_list,
+                               [AST_AND_OR] = &pp_and_or,
+                               [AST_PIPELINE] = &pp_pipeline,
+                               [AST_CMD] = &pp_cmd,
+                               [AST_SIMPLE_CMD] = &pp_simple_cmd,
+                               [AST_SHELL_CMD] = &pp_shell_cmd,
+                               [AST_FUNCDEC] = &pp_funcdec,
+                               [AST_REDIRECTION] = &pp_redirection,
+                               [AST_PREFIX] = &pp_prefix,
+                               [AST_PREFIX_LIST] = &pp_prefix_list,
+                               [AST_ELEMENT] = &pp_element,
+                               [AST_ELEMENT_LIST] = &pp_element_list,
+                               [AST_COMPOUND_LIST] = &pp_compound_list,
+                               [AST_WORD_LIST] = &pp_word_list,
+                               [AST_RULE_FOR] = &pp_rule_for,
+                               [AST_RULE_WHILE] = &pp_rule_while,
+                               [AST_RULE_UNTIL] = &pp_rule_until,
+                               [AST_RULE_CASE] = &pp_rule_case,
+                               [AST_RULE_IF] = &pp_rule_if,
+                               [AST_CLAUSE_ELSE] = &pp_else_clause,
+                               [AST_CLAUSE_CASE] = &pp_case_clause,
+                               [AST_CASE_ITEM] = &pp_case_item,
+                               [AST_CASE_ITEM_LIST] = &pp_case_item_list };
+
 static void pp_prefix(struct ast *ast)
 {
     struct ast_prefix *pref = (struct ast_prefix *)ast;
@@ -389,100 +416,5 @@ static void pp_input(struct ast *ast)
 
 void pretty_print(struct ast *ast)
 {
-    if (ast->type == AST_INPUT)
-    {
-        pp_input(ast);
-    }
-    else if (ast->type == AST_LIST)
-    {
-        pp_list(ast);
-    }
-    else if (ast->type == AST_AND_OR)
-    {
-        pp_and_or(ast);
-    }
-    else if (ast->type == AST_PIPELINE)
-    {
-        pp_pipeline(ast);
-    }
-    else if (ast->type == AST_CMD)
-    {
-        pp_cmd(ast);
-    }
-    else if (ast->type == AST_SIMPLE_CMD)
-    {
-        pp_simple_cmd(ast);
-    }
-    else if (ast->type == AST_SHELL_CMD)
-    {
-        pp_shell_cmd(ast);
-    }
-    else if (ast->type == AST_FUNCDEC)
-    {
-        pp_funcdec(ast);
-    }
-    else if (ast->type == AST_REDIRECTION)
-    {
-        // pp_redirection(ast);
-    }
-    else if (ast->type == AST_PREFIX)
-    {
-        pp_prefix(ast);
-    }
-    else if (ast->type == AST_PREFIX_LIST)
-    {
-        pp_prefix_list(ast);
-    }
-    else if (ast->type == AST_ELEMENT)
-    {
-        pp_element(ast);
-    }
-    else if (ast->type == AST_ELEMENT_LIST)
-    {
-        pp_element_list(ast);
-    }
-    else if (ast->type == AST_COMPOUND_LIST)
-    {
-        pp_compound_list(ast);
-    }
-    else if (ast->type == AST_WORD_LIST)
-    {
-        pp_word_list(ast);
-    }
-    else if (ast->type == AST_RULE_FOR)
-    {
-        pp_rule_for(ast);
-    }
-    else if (ast->type == AST_RULE_WHILE)
-    {
-        pp_rule_while(ast);
-    }
-    else if (ast->type == AST_RULE_UNTIL)
-    {
-        pp_rule_until(ast);
-    }
-    else if (ast->type == AST_RULE_CASE)
-    {
-        pp_rule_case(ast);
-    }
-    else if (ast->type == AST_RULE_IF)
-    {
-        pp_rule_if(ast);
-    }
-    else if (ast->type == AST_CLAUSE_ELSE)
-    {
-        pp_else_clause(ast);
-    }
-    else if (ast->type == AST_CLAUSE_CASE)
-    {
-        pp_case_clause(ast);
-    }
-    else if (ast->type == AST_CASE_ITEM)
-    {
-        pp_case_item(ast);
-    }
-    else if (ast->type == AST_CASE_ITEM_LIST)
-    {
-        pp_case_item_list(ast);
-    }
+    *pp_functions[ast->type](ast);
 }
