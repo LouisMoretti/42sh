@@ -8,6 +8,8 @@
 #include "iobackend/iobackend.h"
 #include "lexer/lexer.h"
 
+#define INDICES_ARRAY_SIZE 42
+
 struct my_params
 {
     char *input;
@@ -45,9 +47,10 @@ static struct my_params params[] = {
 
 ParameterizedTestParameters(Peak_token, SimpleWord)
 {
-    static int indices[42] = { 0 };
+    static int indices[INDICES_ARRAY_SIZE] = { 0 };
     size_t nb_params = sizeof(params) / sizeof(struct my_params);
-    cr_assert(nb_params < 42, "Too many parameters for the test");
+    cr_assert(nb_params < INDICES_ARRAY_SIZE,
+              "Too many parameters for indices array");
 
     for (size_t i = 0; i < nb_params; i++)
         indices[i] = i;
