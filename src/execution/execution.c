@@ -24,7 +24,7 @@ static int evaluate_command(char **command)
 {
     int pid = fork();
     if (pid == -1)
-        return -1;
+        return 1;
     if (!pid)
     {
         exit(execvp(command[0], command));
