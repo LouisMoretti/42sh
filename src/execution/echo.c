@@ -52,9 +52,14 @@ int builtin_echo(struct ast_simple_cmd *command)
                 has_left_flags = 1;
         }
         if (has_left_flags)
-            printf("%s", str); // TODO: Add expansion with checking n e and N
-                               // and add stream
-        fflush(stdout); // TODO:Change stream
+        {
+            if (has_n)
+                printf("%s", str);
+            else
+                printf("%s\n", str);
+        }
+
+        fflush(stdout);
         cur = cur->next;
     }
     return 0;
