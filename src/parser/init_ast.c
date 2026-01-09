@@ -68,6 +68,7 @@ struct ast *init_ast(enum ast_type type)
 static struct ast *init_ast_input()
 {
     struct ast_input *input = malloc(sizeof(struct ast_input));
+    assert(input != NULL);
 
     input->base.type = AST_INPUT;
     input->list = NULL;
@@ -82,6 +83,7 @@ static struct ast *init_ast_input()
 static struct ast *init_ast_list()
 {
     struct ast_list *list = malloc(sizeof(struct ast_list));
+    assert(list != NULL);
 
     list->base.type = AST_LIST;
     list->and_or = NULL;
@@ -97,6 +99,7 @@ static struct ast *init_ast_list()
 static struct ast *init_ast_and_or()
 {
     struct ast_and_or *and_or = malloc(sizeof(struct ast_and_or));
+    assert(and_or != NULL);
 
     and_or->base.type = AST_AND_OR;
     and_or->pipeline = NULL;
@@ -113,6 +116,7 @@ static struct ast *init_ast_and_or()
 static struct ast *init_ast_pipeline()
 {
     struct ast_pipeline *pipeline = malloc(sizeof(struct ast_pipeline));
+    assert(pipeline != NULL);
 
     pipeline->base.type = AST_PIPELINE;
     pipeline->negation = 0;
@@ -129,6 +133,7 @@ static struct ast *init_ast_pipeline()
 static struct ast *init_ast_cmd()
 {
     struct ast_cmd *cmd = malloc(sizeof(struct ast_cmd));
+    assert(cmd != NULL);
 
     cmd->base.type = AST_CMD;
     cmd->cmd = NULL;
@@ -144,6 +149,7 @@ static struct ast *init_ast_cmd()
 static struct ast *init_ast_prefix()
 {
     struct ast_prefix *prefix = malloc(sizeof(struct ast_prefix));
+    assert(prefix != NULL);
 
     prefix->base.type = AST_PREFIX;
     prefix->assignment_word = NULL;
@@ -159,6 +165,7 @@ static struct ast *init_ast_prefix()
 static struct ast *init_ast_prefix_list()
 {
     struct ast_prefix_list *list = malloc(sizeof(struct ast_prefix_list));
+    assert(list != NULL);
 
     list->base.type = AST_PREFIX_LIST;
     list->prefix = NULL;
@@ -174,6 +181,7 @@ static struct ast *init_ast_prefix_list()
 static struct ast *init_ast_element()
 {
     struct ast_element *element = malloc(sizeof(struct ast_element));
+    assert(element != NULL);
 
     element->base.type = AST_ELEMENT;
     element->word = NULL;
@@ -189,6 +197,7 @@ static struct ast *init_ast_element()
 static struct ast *init_ast_element_list()
 {
     struct ast_element_list *list = malloc(sizeof(struct ast_element_list));
+    assert(list != NULL);
 
     list->base.type = AST_ELEMENT_LIST;
     list->element = NULL;
@@ -204,6 +213,7 @@ static struct ast *init_ast_element_list()
 static struct ast *init_ast_simple_cmd()
 {
     struct ast_simple_cmd *cmd = malloc(sizeof(struct ast_simple_cmd));
+    assert(cmd != NULL);
 
     cmd->base.type = AST_SIMPLE_CMD;
     cmd->prefix = NULL;
@@ -221,6 +231,7 @@ static struct ast *init_ast_simple_cmd()
 static struct ast *init_ast_shell_cmd()
 {
     struct ast_shell_cmd *shell_cmd = malloc(sizeof(struct ast_shell_cmd));
+    assert(shell_cmd != NULL);
 
     shell_cmd->base.type = AST_SHELL_CMD;
     shell_cmd->compound_list = NULL;
@@ -236,6 +247,7 @@ static struct ast *init_ast_shell_cmd()
 static struct ast *init_ast_funcdec()
 {
     struct ast_funcdec *funcdec = malloc(sizeof(struct ast_funcdec));
+    assert(funcdec != NULL);
 
     funcdec->base.type = AST_FUNCDEC;
     funcdec->name = NULL;
@@ -258,6 +270,7 @@ static struct ast *init_ast_compound_list()
 {
     struct ast_compound_list *compound_list =
         malloc(sizeof(struct ast_compound_list));
+    assert(compound_list != NULL);
 
     compound_list->base.type = AST_COMPOUND_LIST;
     compound_list->ast_and_or = NULL;
@@ -273,6 +286,7 @@ static struct ast *init_ast_compound_list()
 static struct ast *init_ast_word_list()
 {
     struct ast_word_list *list = malloc(sizeof(struct ast_word_list));
+    assert(list != NULL);
 
     list->base.type = AST_WORD_LIST;
     list->word = NULL;
@@ -288,6 +302,7 @@ static struct ast *init_ast_word_list()
 static struct ast *init_ast_rule_for()
 {
     struct ast_rule_for *rule_for = malloc(sizeof(struct ast_rule_for));
+    assert(rule_for != NULL);
 
     rule_for->base.type = AST_RULE_FOR;
     rule_for->condition_word = NULL;
@@ -304,6 +319,7 @@ static struct ast *init_ast_rule_for()
 static struct ast *init_ast_rule_while()
 {
     struct ast_rule_while *rule_while = malloc(sizeof(struct ast_rule_while));
+    assert(rule_while != NULL);
 
     rule_while->base.type = AST_RULE_WHILE;
     rule_while->condition_compound_list = NULL;
@@ -319,6 +335,7 @@ static struct ast *init_ast_rule_while()
 static struct ast *init_ast_rule_until()
 {
     struct ast_rule_until *rule_until = malloc(sizeof(struct ast_rule_until));
+    assert(rule_until != NULL);
 
     rule_until->base.type = AST_RULE_UNTIL;
     rule_until->condition_compound_list = NULL;
@@ -334,6 +351,7 @@ static struct ast *init_ast_rule_until()
 static struct ast *init_ast_rule_case()
 {
     struct ast_rule_case *rule_case = malloc(sizeof(struct ast_rule_case));
+    assert(rule_case != NULL);
 
     rule_case->base.type = AST_RULE_CASE;
     rule_case->word = NULL;
@@ -349,6 +367,7 @@ static struct ast *init_ast_rule_case()
 static struct ast *init_ast_rule_if()
 {
     struct ast_rule_if *rule_if = malloc(sizeof(struct ast_rule_if));
+    assert(rule_if != NULL);
 
     rule_if->base.type = AST_RULE_IF;
     rule_if->condition_compound_list = NULL;
@@ -366,6 +385,7 @@ static struct ast *init_ast_else_clause()
 {
     struct ast_else_clause *else_clause =
         malloc(sizeof(struct ast_else_clause));
+    assert(else_clause != NULL);
 
     else_clause->base.type = AST_CLAUSE_ELSE;
     else_clause->condition_compound_list = NULL;
@@ -382,6 +402,7 @@ static struct ast *init_ast_else_clause()
 static struct ast *init_ast_case_item()
 {
     struct ast_case_item *case_item = malloc(sizeof(struct ast_case_item));
+    assert(case_item != NULL);
 
     case_item->base.type = AST_CASE_ITEM;
     // case_item->word = NULL;
@@ -398,6 +419,7 @@ static struct ast *init_ast_case_item()
 static struct ast *init_ast_case_item_list()
 {
     struct ast_case_item_list *list = malloc(sizeof(struct ast_case_item_list));
+    assert(list != NULL);
 
     list->base.type = AST_CASE_ITEM_LIST;
     list->case_item = NULL;
@@ -414,6 +436,7 @@ static struct ast *init_ast_case_clause()
 {
     struct ast_case_clause *case_clause =
         malloc(sizeof(struct ast_case_clause));
+    assert(case_clause != NULL);
 
     case_clause->base.type = AST_CLAUSE_CASE;
     case_clause->case_item_list = NULL;
