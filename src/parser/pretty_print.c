@@ -36,11 +36,42 @@ static void pp_element(struct ast *ast)
     }
 }
 
-static void pp_rule_if(struct ast *ast)
+static void pp_prefix_list(struct ast *ast)
 {
-    if (ast == NULL)
-        return;
-    printf("if { ");
+    struct ast_prefix_list *ast_pref_list = (struct ast_prefix_list *)ast;
+
+    if (ast_pref_list != NULL)
+    {
+        pp_prefix(ast_pref_list->prefix);
+        ast_pref_list = ast_pref_list->next;
+    }
+
+    while (ast_pref_list != NULL)
+    {
+        printf(" ");
+        pp_prefix(ast_pref_list->prefix);
+        ast_pref_list = (struct ast_prefix_list *)ast_pref_list->next;
+    }
+
+    printf("\n");
+}
+
+static void pp_element_list(struct ast *ast)
+{
+    struct ast_element_list *ast_element_list = (struct ast_element_list *)ast;
+
+    if (ast_element_list != NULL)
+    {
+        pp_element(ast_element_list->element);
+        ast_element_list = ast_element_list->next;
+    }
+
+    while (ast_element_list != NULL)
+    {
+        printf(" ");
+        pp_element(ast_element_list);
+        ast_element_list = ast_element_list->next;
+    }
 
     printf("\n");
 }
@@ -52,54 +83,406 @@ static void pp_simple_cmd(struct ast *ast)
     if (a->prefix != NULL)
     {
         pp_prefix(a->prefix);
-
-        struct ast_prefix_list *pref_list =
-            (struct ast_prefix_list *)a->prefix_list;
-
-        while (pref_list != NULL)
-        {
-            printf(" ");
-            pp_prefix(pref_list->prefix);
-            pref_list = (struct ast_prefix_list *)pref_list->next;
-        }
+        printf(" ");
+        pp_prefix_list(ast->prefix_list);
     }
     else
     {
-        struct ast_prefix_list *pref_list =
-            (struct ast_prefix_list *)a->prefix_list;
-
-        while (pref_list != null)
-        {
-            pp_prefix(pref_list->prefix);
-            pref_list = (struct ast_prefix_list *)pref_list->next;
-            printf(" ");
-        }
-
+        pp_prefix_list(a->prefix_list);
         printf(a->word);
-        printf(" ");
+        pp_element_list(a->element_list);
+    }
+}
 
-        struct ast_element_list *elm_list =
-            (struct ast_element_list *)a->element_list;
+static void pp_compound_list(struct ast *ast)
+{
+    struct ast_compound_list *ast_and_or = (struct ast_compound_list *)ast;
 
-        while (element_list != null)
-        {
-            printf(" ");
-            pp_element(elm_list->element);
-            elm_list = (struct ast_element_list *)elm_list->next;
-        }
+    pp_and_or(ast_and_or->ast_and_or);
+    printf("\n");
+    ast_and_or = ast_and_or->next;
+
+    while (ast_and_or != NULL)
+    {
+        printf("\n");
+        pp_and_or(ast_and_or->ast_and_or);
+        ast_and_or = ast_and_or->next;
     }
 
     printf("\n");
 }
 
+static void pp_word_list(struct ast *ast)
+{
+    struct ast_word_list *ast_word_list = (struct ast_word_list *)ast;
+
+    if (ast_word_list != NULL)
+    {
+        printf("%s", ast_word_list->word);
+        ast_word_list = ast_word_list->next;
+    }
+
+    while (ast_word_list != NULL)
+    {
+        printf(" %s", ast_word_list->word);
+        ast_word_list = ast_word_list->next;
+    }
+}
+
+static void pp_rule_for(struct ast *ast)
+{
+    struct ast *ast_rule_for = (struct ast_rule_for *)ast;
+
+    printf("for %s ", ast_rule_for->condition_word);
+
+    if (ast_rule_for->in_word_list != NULL)
+    {
+        printf("in ");
+        pp_word_list(ast_rule_for->in_word_list);
+    }
+
+    printf("do ");
+    pp_compound_list(ast_rule_for->body_compound_list);
+    printf("done\n");
+}
+
+static void pp_rule_while(struct ast *ast)
+{
+    struct ast_rule_while *ast_rule_while = (struct ast_rule_while *)ast;
+
+    printf("while ");
+    pp_compound_list(ast_rule_while->condition_compound_list);
+    printf("do ");
+    pp_compound_list(ast_rule_while->body_compound_list);
+    printf("done\n");
+}
+
+static void pp_rule_until(struct ast *ast)
+{
+    struct ast_rule_until *ast_rule_until = (struct ast_rule_until *)ast;
+
+    printf("until ");
+    pp_compound_list(ast_rule_until->condition_compound_list);
+    printf("do ");
+    pp_compound_list(ast_rule_until->body_compound_list);
+    printf("done\n");
+}
+
+static void pp_else_clause(struct ast *ast)
+{
+    struct ast *ast_else_clause = (struct ast_else_clause)ast;
+
+    if (ast_else_clause->body_compound_list == NULL)
+    {
+        printf("else ");
+        pp_compound_list(ast_else_clause->condition_compound_list);
+    }
+    else
+    {
+        printf("elif ");
+        pp_compound_list(ast_else_clause->condition_compound_list);
+        printf("then ");
+        pp_compound_list(ast_else_clause->body_compound_list);
+        if (ast_else_clause->else_clause != NULL)
+            pp_else_clause(ast_else_clause->else_clause);
+    }
+    printf("\n");
+}
+
+static void pp_case_item(struct ast *)
+{
+    struct ast_case_item *ast_case_item = (struct ast_case_item *)ast;
+
+    pp_word_list(ast_case_item->word_list);
+    printf("\n");
+
+    if (ast_case_item->compound_list != NULL)
+        pp_compound_list(ast_case_item->condition_list);
+}
+
+static void pp_case_item_list(struct ast *ast)
+{
+    struct ast_case_item_list *ast_case_item_list =
+        (struct ast_case_item_list *)ast;
+
+    pp_case_item(ast_case_item_list->case_item);
+    ast_case_item_list = ast_case_item_list->next;
+
+    while (ast_case_item_list != NULL)
+    {
+        pp_case_item(ast_case_item_list);
+        ast_case_item_list = ast_case_item_list->next;
+    }
+}
+
+static void pp_case_clause(struct ast *ast)
+{
+    struct ast_case_clause *ast_case_clause = (struct ast_case_clause *)ast;
+
+    pp_case_item_list(ast_case_clause->case_item_list);
+}
+
+static void pp_rule_case(struct ast *ast)
+{
+    struct ast_rule_case *ast_rule_case = (struct ast_rule_case *)ast;
+
+    printf("case %s ", ast_rule_case->word);
+
+    printf("in ");
+
+    if (ast_rule_case->case_clause != NULL)
+    {
+        pp_case_clause(ast_rule_case->case_clause);
+    }
+
+    printf("esac\n");
+}
+
+static void pp_rule_if(struct ast *ast)
+{
+    struct ast_rule_if *ast_rule_if = (struct ast_rule_if *)ast;
+
+    printf("if ");
+
+    pp_compound_list(ast_rule_if->condition_compound_list);
+
+    printf("then ");
+
+    pp_compound_list(ast_rule_if->body_compound_list);
+
+    if (ast_rule_if->else_clause != NULL)
+        pp_else_clause(ast_rule_if->else_clause);
+
+    printf("fi\n");
+}
+
+static void pp_shell_cmd(struct ast *ast)
+{
+    struct ast *ast_shell_cmd = (struct ast_shell_cmd *)ast;
+
+    if (ast_shell_cmd->compound_list != NULL)
+    {
+        printf("(");
+        pp_compound_list(ast_shell_cmd->compound_list);
+        printf(")");
+    }
+    else
+    {
+        if (ast_shell_cmd->rule->type == AST_RULE_FOR)
+            pp_rule_for(ast_shell_cmd->rule);
+        else if (ast_shell_cmd->rule->type == AST_RULE_WHILE)
+            pp_rule_while(ast_shell_cmd->rule);
+        else if (ast_shell_cmd->rule->type == AST_RULE_UNTIL)
+            pp_rule_until(ast_shell_cmd->rule);
+        else if (ast_shell_cmd->rule->type == AST_RULE_CASE)
+            pp_rule_case(ast_shell_cmd->rule);
+        else if (ast_shell_cmd->rule->type == AST_RULE_IF)
+            pp_rule_if(ast_shell_cmd->rule);
+    }
+}
+
+static void pp_funcdec(struct ast *ast)
+{
+    struct ast_funcdec *ast_funcdec = (struct ast_funcdec *)ast;
+
+    printf("%s ()\n", ast_funcdec->name);
+
+    pp_shell_cmd(ast_funcdec->shell_cmd);
+}
+
+/* TODO: complete when redirection will be done
+static void pp_redirection(struct ast *ast)
+{
+    struct ast_redirection *ast_redirection = (struct ast_redirection *)ast;
+
+    printf("%i ", ast_redirection->io_number);
+
+    if (ast_redirection->redirection_type == 1)
+    {
+        printf("1 ");
+        printf("%s", ast_redirection->word);
+    }
+}
+*/
+
+static void pp_cmd(struct ast *ast)
+{
+    struct ast_cmd *ast_cmd = (struct ast_cmd *)ast;
+
+    if (ast_cmd != NULL)
+    {
+        if (ast_cmd->cmd->type == AST_SIMPLE_CMD)
+            pp_simple_cmd(ast_cmd->cmd);
+        else if (ast_cmd->cmd->type == AST_SHELL_CMD)
+        {
+            pp_shell_cmd(ast_cmd->cmd);
+            // pp_redirection(ast_cdm->redirection);
+        }
+        else if (ast_cmd->cmd->type == AST_FUNCDEC)
+        {
+            pp_shell_cmd(ast_cmd->cmd);
+            // pp_redirection(ast_cdm->redirection);
+        }
+    }
+}
+
+static void pp_pipeline(struct ast *ast)
+{
+    struct ast_pipeline *ap = (struct ast_pipeline *)ast;
+
+    if (ap->negation != 0)
+    {
+        printf("! ");
+    }
+
+    while (ap != NULL)
+    {
+        printf("\n|\n");
+        pp_cmd(ap->cmd);
+
+        ap = ap->next;
+    }
+}
+
+static void pp_and_or(struct ast *ast)
+{
+    struct ast_and_or *ast_and_or = (struct ast_and_or *)ast;
+
+    while (ast_and_or->next != NULL)
+    {
+        pp_pipeline(ast_and_or->pipeline);
+        printf("\n");
+
+        if (ast_and_or->operand == AND)
+        {
+            printf("&&\n");
+        }
+        else
+        {
+            printf("||\n");
+        }
+
+        ast_and_or = ast_and_or->next;
+    }
+
+    pp_pipeline(ast_and_or->pipeline);
+}
+
+static void pp_list(struct ast *ast)
+{
+    struct ast_list *ast_list = (struct ast_list *)ast;
+
+    while (ast_list != NULL)
+    {
+        pp_and_or(ast_list->and_or);
+        printf(" ; ");
+        ast_list = ast_list->next;
+    }
+}
+
+static void pp_input(struct ast *ast)
+{
+    struct ast_list *a = (struct ast_list *)ast;
+    pp_list(a->list);
+    printf("\n");
+}
+
 void pretty_print(struct ast *ast)
 {
-    if (ast->type == AST_RULE_IF)
+    if (ast->type == AST_INPUT)
     {
-        pp_rule_if(ast);
+        pp_input(ast);
+    }
+    else if (ast->type == AST_LIST)
+    {
+        pp_list(ast);
+    }
+    else if (ast->type == AST_AND_OR)
+    {
+        pp_and_or(ast);
+    }
+    else if (ast->type == AST_PIPELINE)
+    {
+        pp_pipeline(ast);
+    }
+    else if (ast->type == AST_CMD)
+    {
+        pp_cmd(ast);
     }
     else if (ast->type == AST_SIMPLE_CMD)
     {
         pp_simple_cmd(ast);
+    }
+    else if (ast->type == AST_SHELL_CMD)
+    {
+        pp_shell_cmd(ast);
+    }
+    else if (ast->type == AST_FUNCDEC)
+    {
+        pp_funcdec(ast);
+    }
+    else if (ast->type == AST_REDIRECTION)
+    {
+        // pp_redirection(ast);
+    }
+    else if (ast->type == AST_PREFIX)
+    {
+        pp_prefix(ast);
+    }
+    else if (ast->type == AST_PREFIX_LIST)
+    {
+        pp_prefix_list(ast);
+    }
+    else if (ast->type == AST_ELEMENT)
+    {
+        pp_element(ast);
+    }
+    else if (ast->type == AST_ELEMENT_LIST)
+    {
+        pp_element_list(ast);
+    }
+    else if (ast->type == AST_COMPOUND_LIST)
+    {
+        pp_compound_list(ast);
+    }
+    else if (ast->type == AST_WORD_LIST)
+    {
+        pp_word_list(ast);
+    }
+    else if (ast->type == AST_RULE_FOR)
+    {
+        pp_rule_for(ast);
+    }
+    else if (ast->type == AST_RULE_WHILE)
+    {
+        pp_rule_while(ast);
+    }
+    else if (ast->type == AST_RULE_UNTIL)
+    {
+        pp_rule_until(ast);
+    }
+    else if (ast->type == AST_RULE_CASE)
+    {
+        pp_rule_case(ast);
+    }
+    else if (ast->type == AST_RULE_IF)
+    {
+        pp_rule_if(ast);
+    }
+    else if (ast->type == AST_CLAUSE_ELSE)
+    {
+        pp_else_clause(ast);
+    }
+    else if (ast->type == AST_CLAUSE_CASE)
+    {
+        pp_case_clause(ast);
+    }
+    else if (ast->type == AST_CASE_ITEM)
+    {
+        pp_case_item(ast);
+    }
+    else if (ast->type == AST_CASE_ITEM_LIST)
+    {
+        pp_case_item_list(ast);
     }
 }
