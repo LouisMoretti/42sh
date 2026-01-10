@@ -67,8 +67,9 @@ int builtin_echo(struct ast_simple_cmd *command)
         {
             if (str[0] != '-' || !update_flags(str, &has_n, &has_e, &has_E))
                 has_left_flags = 1;
+            printf("%s", str);
         }
-        if (has_left_flags)
+        else if (has_left_flags)
         {
             printf(" %s", str);
             fflush(stdout);
@@ -76,9 +77,9 @@ int builtin_echo(struct ast_simple_cmd *command)
         cur = (struct ast_element_list *)cur->next;
     }
     if (!has_n)
-    {
         printf("\n");
-        fflush(stdout);
-    }
+
+    fflush(stdout);
+
     return 0;
 }

@@ -4,7 +4,6 @@ import subprocess as sp
 import time
 
 def run_ref_command_string(command):
-    command = "'" + command + "'"
     proc = sp.Popen(["bash", "--posix", "-c", command], stdout=sp.PIPE, stderr=sp.STDOUT, bufsize=0)
 
     return proc
