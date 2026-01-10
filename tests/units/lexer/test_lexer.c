@@ -93,13 +93,13 @@ static struct my_params params[] = {
     { .name_test = "squote_medium_cursed",
       .input = "echo' toto'",
       .result = { { WORD, "echo' toto'" }, { END_OF_FILE, "" } },
-      .policy = ENABLE_KEYWORDS }, // Crashing
+      .policy = ENABLE_KEYWORDS },
     { .name_test = "squote_medium_odd",
       .input = "ec'''''''''ho' toto",
       .result = { { WORD, "ec'''''''''ho'" },
                   { WORD, "toto" },
                   { END_OF_FILE, "" } },
-      .policy = ENABLE_KEYWORDS }, // Crashing
+      .policy = ENABLE_KEYWORDS },
     { .name_test = "squote_medium_even",
       .input = "c''''''at; '42.sh'",
       .result = { { WORD, "c''''''at" },
