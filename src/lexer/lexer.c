@@ -97,6 +97,7 @@ static int fill_buffer()
 
 struct token *peek_token(enum keyword_policy policy)
 {
+    // TODO: REMEMBER LAST POLICY
     if (g_has_cur)
         return &g_cur_token;
 
