@@ -102,29 +102,39 @@ struct token *peek_token(enum keyword_policy policy)
 
     int c = peek_chr();
 
-    // TODO: Loop skip whitespace and skip comment.
-
-    // Skip whitespace.
-    while (is_space(c))
-        c = pop_peek_chr();
-
-    // TODO: Skip comment.
-    if (c == '#')
-        while (c != EOF || c != '\n')
+    // Loop skip whitespace and skip comment.
+    while (is_space(c) || c == '#')
+    {
+        // Skip whitespace.
+        while (is_space(c))
             c = pop_peek_chr();
 
-    // TODO: Handle end token.
+        // Skip comment.
+        if (c == '#')
+        {
+            while (c != EOF && c != '\n')
+                c = pop_peek_chr();
+            pop_peek_chr();
+        }
+    }
+
     if (c == EOF)
-        return NULL;
+    {
+        g_cur_token.type = END_OF_FILE;
+        g_has_cur = 1;
+        return &g_cur_token;
+    }
 
     if (c == ';')
     {
         // TODO: Handle double semicolon token (For step 4).
         g_cur_token.type = SEMICOLON;
         g_has_cur = 1;
+        pop_chr();
         return &g_cur_token;
     }
 
+    // TODO: Handle grammar errors.
     if (fill_buffer() != 0)
         return NULL;
 

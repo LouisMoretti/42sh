@@ -123,7 +123,7 @@ static struct my_params params[] = {
                   { WORD, "false" },
                   { SEMICOLON, "" },
                   { END_OF_FILE, "" } },
-      .policy = ENABLE_KEYWORDS }, // Not Working but not crashing
+      .policy = ENABLE_KEYWORDS },
     { .name_test = "dquote_backslash",
       .input = "if true then echo \"\\'\\\\\" else if false then cat "
                "'\\\"\\\\' else "
@@ -148,16 +148,14 @@ static struct my_params params[] = {
                   { SEMICOLON, "" },
                   { END_OF_FILE, "" } },
       .policy = ENABLE_KEYWORDS },
-    {
-        .name_test = "comment_newline",
-        .input = "ls; #aaa\n cd;",
-        .result = { { WORD, "ls" },
-                    { SEMICOLON, "" },
-                    { WORD, "cd" },
-                    { SEMICOLON, "" },
-                    { END_OF_FILE, "" } },
-        .policy = ENABLE_KEYWORDS // Not working
-    },
+    { .name_test = "comment_newline",
+      .input = "ls; #aaa\n cd;",
+      .result = { { WORD, "ls" },
+                  { SEMICOLON, "" },
+                  { WORD, "cd" },
+                  { SEMICOLON, "" },
+                  { END_OF_FILE, "" } },
+      .policy = ENABLE_KEYWORDS },
     { .name_test = "comment",
       .input = "a #b",
       .result = { { WORD, "a" }, { END_OF_FILE, "" } },
