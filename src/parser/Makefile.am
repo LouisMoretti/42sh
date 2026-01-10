@@ -5,7 +5,8 @@ lib_LIBRARIES = libparser.a
 libparser_a_SOURCES = \
 				   parser.c \
 				   parser.h \
-				   ast.c \
+				   init_ast.c \
+				   free_ast.c \
 				   ast.h
 
 # Preprocessing Flags
