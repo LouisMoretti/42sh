@@ -49,7 +49,7 @@ int builtin_echo(struct ast_simple_cmd *command)
     if (str[0] != '-' || !update_flags(str, &has_n, &has_e, &has_E))
     {
         has_left_flags = 1;
-        printf("%s");
+        printf("%s",str);
         fflush(stdout);
     }
     cur = (struct ast_element_list *)cur->next;
