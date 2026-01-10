@@ -196,7 +196,7 @@ ParameterizedTest(int *index, Peak_token, SimpleWord)
 
     struct my_params *param = &params[*index];
 
-    struct config test_conf = { STRING, param->input };
+    struct config test_conf = { STRING, param->input, 0 };
     io_setup(&test_conf);
     int i = 0;
     while (i < 32 && param->result[i].type != END_OF_FILE)

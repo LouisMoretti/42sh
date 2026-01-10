@@ -12,6 +12,7 @@ struct config
 {
     enum input_method method;
     char *str_stream;
+    int pretty_print;
 };
 
 int set_conf(int argc, char **argv);

@@ -1,6 +1,7 @@
 #include "config.h"
 
 #include <stddef.h>
+#include <string.h>
 
 static struct config my_conf;
 
@@ -8,6 +9,7 @@ int set_conf(int argc, char **argv)
 {
     my_conf.method = STDIN; // Default method is stdin
     my_conf.str_stream = NULL; // Default stream is NULL
+    my_conf.pretty_print = 0; // No pretty print by default
     int i = 1;
     while (i < argc)
     {
@@ -22,7 +24,13 @@ int set_conf(int argc, char **argv)
                 my_conf.str_stream = argv[i + 1];
                 i++; // Skip string argument.
             }
-            // Verbose - Pretty Print
+            else if (argv[i][1] == '-')
+            {
+                if (strcmp((*argv) + 2, "pretty_print") == 0)
+                {
+                    my_conf.pretty_print = 1;
+                }
+            }
         }
         else
         {
