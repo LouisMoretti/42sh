@@ -3,6 +3,7 @@
 #include "config/config.h"
 #include "iobackend/iobackend.h"
 #include "parser/parser.h"
+#include "parser/pretty_print.h"
 
 int main(int argc, char **argv)
 {
@@ -22,6 +23,7 @@ int main(int argc, char **argv)
         return 42;
 
     // Execute AST
+    pretty_print((struct ast *)input);
 
     free_ast_input(input);
 
