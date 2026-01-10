@@ -2,6 +2,7 @@
 #include <stdio.h>
 
 #include "config/config.h"
+#include "execution/execution.h"
 #include "iobackend/iobackend.h"
 #include "parser/parser.h"
 
@@ -20,6 +21,8 @@ int main(int argc, char **argv)
 
     // Execute AST
     assert(input->type == AST_INPUT);
+
+    execute_ast(input);
 
     free_ast_input(input);
 
