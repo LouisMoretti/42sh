@@ -6,6 +6,7 @@
 
 #include "config/config.h"
 #include "execution/builtin.h"
+#include "execution/execution.h"
 
 TestSuite(Execution);
 
@@ -14,6 +15,7 @@ Test(Execution, simple_cmd)
     struct ast_simple_cmd *ast_simple_cmd =
         malloc(sizeof(struct ast_simple_cmd));
 
+    ast_simple_cmd->base.type = AST_SIMPLE_CMD;
     ast_simple_cmd->prefix_list = NULL;
     ast_simple_cmd->prefix = NULL;
     ast_simple_cmd->word = "echo";
@@ -21,23 +23,23 @@ Test(Execution, simple_cmd)
     struct ast_element_list *ast_element_list =
         malloc(sizeof(struct ast_element_list));
 
-    ast_element_list->base = AST_ELEMENT_LIST;
+    ast_element_list->base.type = AST_ELEMENT_LIST;
 
     struct ast_element *ast_element = malloc(sizeof(struct ast_element));
-    ast_element->base = AST_ELEMENT;
+    ast_element->base.type = AST_ELEMENT;
     ast_element->word = "coucou";
     ast_element->redirection = NULL;
 
-    ast_element_list->element = ast_element;
+    ast_element_list->element = (struct ast *)ast_element;
     ast_element_list->next = NULL;
 
-    ast_simple_cmd->element_list = ast_element_list;
+    ast_simple_cmd->element_list = (struct ast *)ast_element_list;
 
     struct ast *ast = (struct ast *)ast_simple_cmd;
 
     int res = execute_ast(ast);
     free(ast_element);
-    free(ast_list);
+    free(ast_element_list);
     free(ast_simple_cmd);
 
     cr_expect(res == 0);
@@ -48,6 +50,7 @@ Test(Execution, cmd_true)
     struct ast_simple_cmd *ast_simple_cmd =
         malloc(sizeof(struct ast_simple_cmd));
 
+    ast_simple_cmd->base.type = AST_SIMPLE_CMD;
     ast_simple_cmd->prefix_list = NULL;
     ast_simple_cmd->prefix = NULL;
     ast_simple_cmd->word = "true";
@@ -66,6 +69,7 @@ Test(Execution, cmd_false)
     struct ast_simple_cmd *ast_simple_cmd =
         malloc(sizeof(struct ast_simple_cmd));
 
+    ast_simple_cmd->base.type = AST_SIMPLE_CMD;
     ast_simple_cmd->prefix_list = NULL;
     ast_simple_cmd->prefix = NULL;
     ast_simple_cmd->word = "false";
