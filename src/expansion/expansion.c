@@ -1,4 +1,9 @@
+#define _POSIX_C_SOURCE 200809L
+
 #include "expansion/expansion.h"
+
+#include <stdlib.h>
+#include <string.h>
 
 static char *merge(char *src1, char *src2)
 {
@@ -42,17 +47,127 @@ static char *merge(char *src1, char *src2)
     return src1;
 }
 
+char *middle_merge(char *result, char *copy, size_t beg, size_t i)
+{
+    char *classic = strndup(copy + beg, i - beg);
+    if (!classic)
+    {
+        free(result);
+        free(copy);
+
+        return NULL;
+    }
+
+    result = merge(result, classic);
+    if (!result)
+    {
+        free(copy);
+
+        return NULL;
+    }
+
+    return result;
+}
+
 char *expand_string(char *string)
 {
+    char *copy = strndup(string, strlen(string));
+    if (!copy)
+        return NULL;
 
+    char *result = calloc(1, sizeof(char));
+    if (!result)
+    {
+        free(copy);
+
+        return NULL;
+    }
+    size_t i = 0;
+    size_t beg = 0;
+
+    while (copy[i])
+    {
+        if (copy[i] == '\'')
+        {
+            result = expand_single_quote(result, copy, &beg, &i);
+            if (!result)
+                return NULL;
+        }
+        else if (copy[i] == '\\')
+        {
+            result = expand_escape(result, copy, &beg, &i);
+            if (!result)
+                return NULL;
+        }
+
+        i++;
+    }
+    if (beg != i)
+        result = middle_merge(result, copy, beg, i);
+    if (!result)
+        return NULL;
+
+    free(copy);
+
+    return result;
 }
 
-char *expand_single_quote(char *string)
+char *expand_single_quote(char *result, char *copy, size_t *beg, size_t *i)
 {
+    if (*beg != *i)
+        result = middle_merge(result, copy, *beg, *i);
+    if (!result)
+        return NULL;
 
+    (*i)++;
+    *beg = *i;
+    while (copy[*i] && copy[*i] != '\'')
+        (*i)++;
+
+    if (!copy[*i])
+    {
+        free(copy);
+        free(result);
+
+        return NULL;
+    }
+
+    char *quoted = strndup(copy + *beg, *i - *beg);
+    result = merge(result, quoted);
+    if (!result)
+    {
+        free(copy);
+
+        return NULL;
+    }
+
+    *beg = *i + 1;
+
+    return result;
 }
 
-char *expand_escape(char *string)
+char *expand_escape(char *result, char *copy, size_t *beg, size_t *i)
 {
+    if (*beg != *i)
+        result = middle_merge(result, copy, *beg, *i);
+    if (!result)
+        return NULL;
 
+    (*i)++;
+    char escaped = copy[*i];
+    if (escaped == 'n')
+        escaped = '\n';
+
+    char *tmp = strndup(&escaped, 1);
+    result = merge(result, tmp);
+    if (!result)
+    {
+        free(copy);
+
+        return NULL;
+    }
+
+    *beg = *i;
+
+    return result;
 }
