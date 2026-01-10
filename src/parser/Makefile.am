@@ -7,7 +7,9 @@ libparser_a_SOURCES = \
 				   parser.h \
 				   init_ast.c \
 				   free_ast.c \
-				   ast.h
+				   ast.h \
+				   pretty_print.c \
+				   pretty_print.h
 
 # Preprocessing Flags
 libparser_a_CPPFLAGS = -I$(top_srcdir)/src

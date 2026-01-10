@@ -11,7 +11,7 @@ TestSuite(Iobackend_setup);
 
 Test(Iobackend_setup, setup_c)
 {
-    struct config conf = { STRING, "echo a" };
+    struct config conf = { STRING, "echo a", 0 };
     int res = io_setup(&conf);
 
     cr_expect(res == 0);
@@ -28,7 +28,7 @@ Test(Iobackend_setup, setup_file)
     struct config *conf = get_conf();
     */
 
-    struct config conf = { FILEPATH, "script.sh" };
+    struct config conf = { FILEPATH, "script.sh", 0 };
     int res = io_setup(&conf);
 
     cr_expect(res == 0);
@@ -45,7 +45,7 @@ Test(Iobackend_setup, setup_stdin)
     struct config *conf = get_conf();
     */
 
-    struct config conf = { STDIN, NULL };
+    struct config conf = { STDIN, NULL, 0 };
     int res = io_setup(&conf);
 
     cr_expect(res == 0);
@@ -62,7 +62,7 @@ Test(Iobackend_setup, test_peek)
     struct config *conf = get_conf();
     */
 
-    struct config conf = { STRING, "echo a" };
+    struct config conf = { STRING, "echo a", 0 };
     io_setup(&conf);
 
     int res = peek_chr();
@@ -81,7 +81,7 @@ Test(Iobackend_setup, test_pop)
     struct config *conf = get_conf();
     */
 
-    struct config conf = { STRING, "echo a" };
+    struct config conf = { STRING, "echo a", 0 };
     io_setup(&conf);
 
     pop_chr();
@@ -101,7 +101,7 @@ Test(Iobackend_setup, test_get)
     struct config *conf = get_conf();
     */
 
-    struct config conf = { STRING, "echo a" };
+    struct config conf = { STRING, "echo a", 0 };
     io_setup(&conf);
 
     char *st = "echo a";

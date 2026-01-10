@@ -13,8 +13,10 @@ int main(int argc, char **argv)
     if (set_conf(argc, argv) != 0)
         return 2;
 
+    struct config *conf = get_conf();
+
     // Setup IO from config
-    if (io_setup(get_conf()) != 0)
+    if (io_setup(conf) != 0)
         return 2;
 
     // Call parser for AST
@@ -23,7 +25,8 @@ int main(int argc, char **argv)
     // Execute AST
     assert(input->type == AST_INPUT);
 
-    // pretty_print((struct ast *)input);
+    if (conf->pretty_print)
+        pretty_print((struct ast *)input);
 
     execute_ast(input);
 
