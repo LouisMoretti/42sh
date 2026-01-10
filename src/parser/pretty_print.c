@@ -1,6 +1,6 @@
 #define _POSIX_C_SOURCE 200809L
 
-#include "pretty_print.h"
+#include "parser/pretty_print.h"
 
 #include <assert.h>
 #include <stdio.h>
