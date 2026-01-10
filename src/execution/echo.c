@@ -43,6 +43,12 @@ int builtin_echo(struct ast_simple_cmd *command)
     int has_E = 0;
     struct ast_element_list *cur =
         (struct ast_element_list *)command->element_list;
+    if(!cur)
+    {
+        printf("\n");
+        fflush(stdout);
+        return 0;
+    }
     int has_left_flags = 0;
     struct ast_element *ast_element = (struct ast_element *)cur->element;
     char *str = ast_element->word;
@@ -70,6 +76,9 @@ int builtin_echo(struct ast_simple_cmd *command)
         cur = (struct ast_element_list *)cur->next;
     }
     if(!has_n)
+    {
         printf("\n");
+        fflush(stdout);
+    }
     return 0;
 }
