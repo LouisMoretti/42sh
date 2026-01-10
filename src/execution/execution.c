@@ -32,6 +32,7 @@ static int evaluate_command(char **command)
         return WEXITSTATUS(wstatus);
     }
 }
+
 static int count_ast_element(struct ast *ast)
 {
     if (!ast)
