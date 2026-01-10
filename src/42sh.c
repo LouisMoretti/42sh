@@ -18,14 +18,14 @@ int main(int argc, char **argv)
         return 2;
 
     // Call parser for AST
-    struct ast_input *input = parse_input();
-
-    struct ast test = input->base;
-    if (test.type != AST_INPUT)
-        return 42;
+    struct ast *input = parse_input();
 
     // Execute AST
-    pretty_print((struct ast *)input);
+    assert(input->type == AST_INPUT);
+
+    // pretty_print((struct ast *)input);
+
+    execute_ast(input);
 
     free_ast_input(input);
 
