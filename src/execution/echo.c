@@ -38,14 +38,16 @@ static int update_flags(char *str, int *has_n, int *has_e, int *has_E)
 
 int builtin_echo(struct ast_simple_cmd *command)
 {
-    struct element_list *cur = command->element_list;
+    struct ast_element_list *cur =
+        (struct ast_element_list *)command->element_list;
     int has_n = 0;
     int has_e = 0;
     int has_E = 0;
     int has_left_flags = 0;
     while (cur != NULL)
     {
-        char *str = cur->element->word;
+        struct ast_element *ast_element = (struct ast_element *)cur->element;
+        char *str = ast_element->word;
         if (!has_left_flags)
         {
             if (str[0] != '-' || !update_flags(str, &has_n, &has_e, &has_E))
@@ -60,7 +62,7 @@ int builtin_echo(struct ast_simple_cmd *command)
         }
 
         fflush(stdout);
-        cur = cur->next;
+        cur = (struct ast_element_list *)cur->next;
     }
     return 0;
 }

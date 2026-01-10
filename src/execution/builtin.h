@@ -4,7 +4,7 @@
 #include "parser/ast.h"
 
 int builtin_echo(struct ast_simple_cmd *command);
-int builtin_false(struct ast_simple_cmd *ast_simple_cmd);
-int builtin_true(struct ast_simple_cmd *ast_simple_cmd);
+int builtin_false(void);
+int builtin_true(void);
 
 #endif // ! BUILTIN_H

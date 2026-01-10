@@ -1,11 +1,11 @@
 #include "builtin.h"
 
-int builtin_false(struct ast_simple_cmd *ast_simple_cmd)
+int builtin_false(void)
 {
     return 1;
 }
 
-int builtin_true(struct ast_simple_cmd *ast_simple_cmd)
+int builtin_true(void)
 {
     return 0;
 }
