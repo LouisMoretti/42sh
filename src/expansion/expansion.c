@@ -157,6 +157,8 @@ char *expand_escape(char *result, char *copy, size_t *beg, size_t *i)
     char escaped = copy[*i];
     if (escaped == 'n')
         escaped = '\n';
+    else if (escaped == 't')
+        escaped = '\t';
 
     char *tmp = strndup(&escaped, 1);
     result = merge(result, tmp);
@@ -167,7 +169,7 @@ char *expand_escape(char *result, char *copy, size_t *beg, size_t *i)
         return NULL;
     }
 
-    *beg = *i;
+    *beg = *i + 1;
 
     return result;
 }
