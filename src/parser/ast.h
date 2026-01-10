@@ -37,14 +37,14 @@ struct ast
 struct ast_input
 {
     struct ast base;
-    struct ast *list;
+    struct ast *list; // NULL if empty input
 };
 
 struct ast_list
 {
     struct ast base;
-    struct ast *and_or;
-    struct ast *next;
+    struct ast *and_or; // NOT NULL
+    struct ast *next; // NULL if last element of list
 };
 
 enum and_or
@@ -56,17 +56,17 @@ enum and_or
 struct ast_and_or
 {
     struct ast base;
-    struct ast *pipeline;
-    enum and_or operand;
-    struct ast *next;
+    struct ast *pipeline; // NOT NULL
+    enum and_or operand; // Only set if next is NULL
+    struct ast *next; // NULL if last element of list
 };
 
 struct ast_pipeline
 {
     struct ast base;
     int negation; // TODO: Use bool or enum.
-    struct ast *cmd;
-    struct ast *next;
+    struct ast *cmd; // NOT NULL
+    struct ast *next; // NULL if last element of list
 };
 
 struct ast_cmd
@@ -79,6 +79,7 @@ struct ast_cmd
 struct ast_prefix
 {
     struct ast base;
+    // Must be either assignment_word or redirection
     char *assignment_word;
     struct ast *redirection;
 };
@@ -86,13 +87,14 @@ struct ast_prefix
 struct ast_prefix_list
 {
     struct ast base;
-    struct ast *prefix;
-    struct ast *next;
+    struct ast *prefix; // NOT NULL
+    struct ast *next; // NULL if last element of list
 };
 
 struct ast_element
 {
     struct ast base;
+    // Must be either word or redirection
     char *word;
     struct ast *redirection;
 };
@@ -100,24 +102,24 @@ struct ast_element
 struct ast_element_list
 {
     struct ast base;
-    struct ast *element;
-    struct ast *next;
+    struct ast *element; // NOT NULL
+    struct ast *next; // NULL if last element of list
 };
 
 struct ast_simple_cmd
 {
     struct ast base;
+    // Must be either prefix or word
     struct ast *prefix;
-    struct ast *prefix_list;
+    struct ast *prefix_list; // Can be NULL
     char *word;
-    struct ast *element_list;
+    struct ast *element_list; // Can be NULL
 };
 
 struct ast_shell_cmd
 {
     struct ast base;
-    // TODO: Choose if we let these two fields or use just one, beacause only
-    // one of the two will be used at the same time.
+    // Must be either compound_list or rule
     struct ast *compound_list;
     struct ast *rule;
 };
@@ -125,8 +127,8 @@ struct ast_shell_cmd
 struct ast_funcdec
 {
     struct ast base;
-    char *name;
-    struct ast *shell_cmd;
+    char *name; // NOT NULL
+    struct ast *shell_cmd; // NOT NULL
 };
 
 // struct ast_redirection
@@ -147,81 +149,82 @@ struct ast_compound_list
 {
     struct ast base;
     // struct and_or_list *and_or_list;
-    struct ast *ast_and_or;
-    struct ast *next;
+    struct ast *ast_and_or; // NOT NULL
+    struct ast *next; // NULL if last element of list
 };
 
 struct ast_word_list
 {
     struct ast base;
-    char *word;
-    struct ast *next;
+    char *word; // NOT NULL
+    struct ast *next; // NULL if last element of list
 };
 
 struct ast_rule_for
 {
     struct ast base;
-    char *condition_word;
-    struct ast *in_word_list;
-    struct ast *body_compound_list;
+    char *condition_word; // NOT NULL
+    struct ast *in_word_list; // Can be NULL
+    struct ast *body_compound_list; // NOT NULL
 };
 
 struct ast_rule_while
 {
     struct ast base;
-    struct ast *condition_compound_list;
-    struct ast *body_compound_list;
+    struct ast *condition_compound_list; // NOT NULL
+    struct ast *body_compound_list; // NOT NULL
 };
 
 struct ast_rule_until
 {
     struct ast base;
-    struct ast *condition_compound_list;
-    struct ast *body_compound_list;
+    struct ast *condition_compound_list; // NOT NULL
+    struct ast *body_compound_list; // NOT NULL
 };
 
 struct ast_rule_case
 {
     struct ast base;
-    char *word;
-    struct ast *case_clause;
+    char *word; // NOT NULL
+    struct ast *case_clause; // Can be NULL
 };
 
 struct ast_rule_if
 {
     struct ast base;
-    struct ast *condition_compound_list;
-    struct ast *body_compound_list;
-    struct ast *else_clause;
+    struct ast *condition_compound_list; // NOT NULL
+    struct ast *body_compound_list; // NOT NULL
+    struct ast *else_clause; // Can be NULL
 };
 
 struct ast_else_clause
 {
     struct ast base;
-    struct ast *condition_compound_list;
-    struct ast *body_compound_list;
-    struct ast *else_clause;
+
+    struct ast *condition_compound_list; // Can be NULL with else_clause
+    struct ast *body_compound_list; // NOT NULL
+    struct ast *else_clause; // Can be NULL with condition_compound_list
 };
 
 struct ast_case_item
 {
     struct ast base;
     // char *word;
-    struct ast *word_list;
-    struct ast *compound_list;
+    struct ast *word_list; // NOT NULL
+    struct ast *compound_list; // Can be NULL
 };
 
 struct ast_case_item_list
 {
     struct ast base;
-    struct ast *case_item;
-    struct ast *next;
+    struct ast *case_item; // NOT NULL
+    struct ast *next; // NULL if last element of list
 };
 
 struct ast_case_clause
 {
     struct ast base;
-    struct ast *case_item_list;
+    struct ast *case_item_list; // NOT NULL
 };
 
 struct ast *init_ast(enum ast_type type);
