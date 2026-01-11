@@ -8,7 +8,6 @@ enum token_type
     ELIF,
     ELSE,
     FI,
-    SEMICOLON,
     // DOUBLE_SEMICOLON,
     // PIPE,
     // DOUBLE_PIPE,
@@ -28,6 +27,7 @@ enum token_type
     // IN,
     // ESAC,
     KEYWORD_COUNT, // Keep this here, add keywords above only
+    SEMICOLON,
     WORD,
     END_OF_FILE
 };

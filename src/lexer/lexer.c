@@ -11,23 +11,22 @@
 
 static int g_has_cur = 0;
 static char buffer[BUFFER_SIZE] = { 0 };
+static enum token_type g_cur_type_before_policy = WORD;
 static struct token g_cur_token = { .type = WORD, .data = buffer };
 
-static const char *keywords[KEYWORD_COUNT] = {
-    [IF] = "if",     [THEN] = "then", [ELIF] = "elif",
-    [ELSE] = "else", [FI] = "fi",     [SEMICOLON] = ";"
-};
+static const char *keywords[KEYWORD_COUNT] = { [IF] = "if",
+                                               [THEN] = "then",
+                                               [ELIF] = "elif",
+                                               [ELSE] = "else",
+                                               [FI] = "fi" };
 
 static int is_space(int c)
 {
     return c == ' ' || c == '\t' || c == '\n';
 }
 
-static enum token_type get_token_type(char *str, enum keyword_policy policy)
+static enum token_type get_token_type(char *str)
 {
-    if (policy == DISABLE_KEYWORDS)
-        return WORD;
-
     for (int i = 0; i < KEYWORD_COUNT; i++)
     {
         if (strcmp(str, keywords[i]) == 0)
@@ -95,11 +94,22 @@ static int fill_buffer()
     return 0;
 }
 
+static void set_token_type_with_policy(enum keyword_policy policy)
+{
+    if (g_cur_type_before_policy < KEYWORD_COUNT && policy == DISABLE_KEYWORDS)
+        g_cur_token.type = WORD;
+    else
+        g_cur_token.type = g_cur_type_before_policy;
+}
+
 struct token *peek_token(enum keyword_policy policy)
 {
     // TODO: REMEMBER LAST POLICY
     if (g_has_cur)
+    {
+        set_token_type_with_policy(policy);
         return &g_cur_token;
+    }
 
     int c = peek_chr();
 
@@ -121,7 +131,8 @@ struct token *peek_token(enum keyword_policy policy)
 
     if (c == EOF)
     {
-        g_cur_token.type = END_OF_FILE;
+        g_cur_type_before_policy = END_OF_FILE;
+        set_token_type_with_policy(policy);
         g_has_cur = 1;
         return &g_cur_token;
     }
@@ -129,7 +140,8 @@ struct token *peek_token(enum keyword_policy policy)
     if (c == ';')
     {
         // TODO: Handle double semicolon token (For step 4).
-        g_cur_token.type = SEMICOLON;
+        g_cur_type_before_policy = SEMICOLON;
+        set_token_type_with_policy(policy);
         g_has_cur = 1;
         pop_chr();
         return &g_cur_token;
@@ -139,7 +151,8 @@ struct token *peek_token(enum keyword_policy policy)
     if (fill_buffer() != 0)
         return NULL;
 
-    g_cur_token.type = get_token_type(buffer, policy);
+    g_cur_type_before_policy = get_token_type(buffer);
+    set_token_type_with_policy(policy);
     g_has_cur = 1;
 
     return &g_cur_token;

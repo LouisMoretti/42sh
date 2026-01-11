@@ -17,9 +17,15 @@ struct my_params
     enum keyword_policy policy;
 };
 
-const char *type_name[9] = { "IF",         "THEN",      "ELIF",          "ELSE",
-                             "FI",         "SEMICOLON", "KEYWORD_COUNT", "WORD",
-                             "END_OF_FILE" };
+const char *type_name[] = { [IF] = "IF",
+                            [THEN] = "THEN",
+                            [ELIF] = "ELIF",
+                            [ELSE] = "ELSE",
+                            [FI] = "FI",
+                            // [KEYWORD_COUNT] = "KEYWORD_COUNT",
+                            [SEMICOLON] = "SEMICOLON",
+                            [WORD] = "WORD",
+                            [END_OF_FILE] = "END_OF_FILE" };
 
 TestSuite(Peak_token);
 
