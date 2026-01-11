@@ -171,17 +171,17 @@ static void pp_compound_list(struct ast *ast)
 {
     assert(ast != NULL);
     assert(ast->type == AST_AND_OR);
-    struct ast_compound_list *ast_and_or = (struct ast_compound_list *)ast;
+    struct ast_compound_list *ast_compound_list = (struct ast_compound_list *)ast;
 
-    pp_and_or(ast_and_or->ast_and_or);
+    pp_and_or(ast_compound_list->ast_and_or);
     printf("\n");
-    ast_and_or = (struct ast_compound_list *)ast_and_or->next;
+    ast_compound_list = (struct ast_compound_list *)ast_compound_list->next;
 
-    while (ast_and_or != NULL)
+    while (ast_compound_list != NULL)
     {
         printf("\n");
-        pp_and_or(ast_and_or->ast_and_or);
-        ast_and_or = (struct ast_compound_list *)ast_and_or->next;
+        pp_and_or(ast_compound_list->ast_and_or);
+        ast_compound_list = (struct ast_compound_list *)ast_compound_list->next;
     }
 
     printf("\n");
@@ -212,17 +212,18 @@ static void pp_rule_for(struct ast *ast)
     assert(ast->type == AST_RULE_FOR);
     struct ast_rule_for *ast_rule_for = (struct ast_rule_for *)ast;
 
-    printf("for %s ", ast_rule_for->condition_word);
+    printf("for %s", ast_rule_for->condition_word);
 
     if (ast_rule_for->in_word_list != NULL)
     {
-        printf("in ");
+        printf("in {\n");
         pp_word_list(ast_rule_for->in_word_list);
+        printf("}");
     }
 
-    printf("do ");
+    printf(" do {\n");
     pp_compound_list(ast_rule_for->body_compound_list);
-    printf("done\n");
+    printf("} done\n");
 }
 
 static void pp_rule_while(struct ast *ast)
@@ -231,11 +232,11 @@ static void pp_rule_while(struct ast *ast)
     assert(ast->type == AST_RULE_WHILE);
     struct ast_rule_while *ast_rule_while = (struct ast_rule_while *)ast;
 
-    printf("while ");
+    printf("while {\n");
     pp_compound_list(ast_rule_while->condition_compound_list);
-    printf("do ");
+    printf("}\ndo {\n");
     pp_compound_list(ast_rule_while->body_compound_list);
-    printf("done\n");
+    printf("} done\n");
 }
 
 static void pp_rule_until(struct ast *ast)
@@ -244,11 +245,11 @@ static void pp_rule_until(struct ast *ast)
     assert(ast->type == AST_RULE_UNTIL);
     struct ast_rule_until *ast_rule_until = (struct ast_rule_until *)ast;
 
-    printf("until ");
+    printf("until {\n");
     pp_compound_list(ast_rule_until->condition_compound_list);
-    printf("do ");
+    printf("}\ndo {\n");
     pp_compound_list(ast_rule_until->body_compound_list);
-    printf("done\n");
+    printf("} done\n");
 }
 
 static void pp_else_clause(struct ast *ast)
@@ -259,15 +260,17 @@ static void pp_else_clause(struct ast *ast)
 
     if (ast_else_clause->body_compound_list == NULL)
     {
-        printf("else ");
+        printf("else {\n");
         pp_compound_list(ast_else_clause->condition_compound_list);
+        printf("}\n");
     }
     else
     {
-        printf("elif ");
+        printf("elif {\n");
         pp_compound_list(ast_else_clause->condition_compound_list);
-        printf("then ");
+        printf("}\nthen {\n}");
         pp_compound_list(ast_else_clause->body_compound_list);
+        printf("}\n");
         if (ast_else_clause->else_clause != NULL)
             pp_else_clause(ast_else_clause->else_clause);
     }
@@ -320,13 +323,15 @@ static void pp_rule_case(struct ast *ast)
     assert(ast->type == AST_RULE_CASE);
     struct ast_rule_case *ast_rule_case = (struct ast_rule_case *)ast;
 
-    printf("case %s ", ast_rule_case->word);
+    printf("case %s", ast_rule_case->word);
 
     printf("in ");
 
     if (ast_rule_case->case_clause != NULL)
     {
+        printf("{\n");
         pp_case_clause(ast_rule_case->case_clause);
+        printf("} ");
     }
 
     printf("esac\n");
@@ -338,18 +343,18 @@ static void pp_rule_if(struct ast *ast)
     assert(ast->type == AST_RULE_IF);
     struct ast_rule_if *ast_rule_if = (struct ast_rule_if *)ast;
 
-    printf("if ");
+    printf("if {\n");
 
     pp_compound_list(ast_rule_if->condition_compound_list);
 
-    printf("then ");
+    printf("\n} then {\n");
 
     pp_compound_list(ast_rule_if->body_compound_list);
 
     if (ast_rule_if->else_clause != NULL)
         pp_else_clause(ast_rule_if->else_clause);
 
-    printf("fi\n");
+    printf("\n} fi\n");
 }
 
 static void pp_shell_cmd(struct ast *ast)
