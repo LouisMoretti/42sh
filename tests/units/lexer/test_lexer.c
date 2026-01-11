@@ -35,7 +35,7 @@ const char *type_name[] = { [IF] = "IF",
                             [WORD] = "WORD",
                             [END_OF_FILE] = "END_OF_FILE" };
 
-TestSuite(Lexer);
+TestSuite(Lexer, .timeout = 1);
 
 /*Test(Peak_token, simple_word)
 {
