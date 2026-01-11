@@ -7,11 +7,14 @@
 #include "config/config.h"
 #include "iobackend/iobackend.h"
 
-TestSuite(Iobackend_setup);
+TestSuite(Iobackend_setup, .timeout = 1);
 
-Test(Iobackend_setup, setup_c)
+Test(Iobackend_setup, test_setup_c)
 {
-    struct config conf = { STRING, "echo a", 0 };
+    struct config conf = { 0 };
+    conf.method = STRING;
+    conf.str_stream = "echo a";
+
     int res = io_setup(&conf);
 
     cr_expect(res == 0);
@@ -19,16 +22,12 @@ Test(Iobackend_setup, setup_c)
     io_close();
 }
 
-Test(Iobackend_setup, setup_file)
+Test(Iobackend_setup, test_setup_file)
 {
-    /*
-    char *argv[1] = { "script.sh" };
-    int s = set_conf(1, argv);
-    int res = io_setup();
-    struct config *conf = get_conf();
-    */
+    struct config conf = { 0 };
+    conf.method = FILEPATH;
+    conf.str_stream = "script.sh";
 
-    struct config conf = { FILEPATH, "script.sh", 0 };
     int res = io_setup(&conf);
 
     cr_expect(res == 0);
@@ -36,16 +35,12 @@ Test(Iobackend_setup, setup_file)
     io_close();
 }
 
-Test(Iobackend_setup, setup_stdin)
+Test(Iobackend_setup, test_setup_stdin)
 {
-    /*
-    char **argv = NULL;
-    int s = set_conf(0, argv);
-    int res = io_setup();
-    struct config *conf = get_conf();
-    */
+    struct config conf = { 0 };
+    conf.method = STDIN;
+    conf.str_stream = NULL;
 
-    struct config conf = { STDIN, NULL, 0 };
     int res = io_setup(&conf);
 
     cr_expect(res == 0);
@@ -53,16 +48,12 @@ Test(Iobackend_setup, setup_stdin)
     io_close();
 }
 
-Test(Iobackend_setup, test_peek)
+Test(Iobackend_setup, test_string_peek)
 {
-    /*
-    char *argv[2] = { "-c", "echo a" };
-    set_conf(2, argv);
-    io_setup();
-    struct config *conf = get_conf();
-    */
+    struct config conf = { 0 };
+    conf.method = STRING;
+    conf.str_stream = "echo a";
 
-    struct config conf = { STRING, "echo a", 0 };
     io_setup(&conf);
 
     int res = peek_chr();
@@ -72,19 +63,18 @@ Test(Iobackend_setup, test_peek)
     io_close();
 }
 
-Test(Iobackend_setup, test_pop)
+Test(Iobackend_setup, test_string_pop_peek)
 {
-    /*
-    char *argv[2] = { "-c", "echo a" };
-    set_conf(2, argv);
-    io_setup();
-    struct config *conf = get_conf();
-    */
+    struct config conf = { 0 };
+    conf.method = STRING;
+    conf.str_stream = "echo a";
 
-    struct config conf = { STRING, "echo a", 0 };
     io_setup(&conf);
 
+    // Skip one char
     pop_chr();
+
+    // Check second char
     int res = peek_chr();
 
     cr_expect(res == 'c');
@@ -92,16 +82,32 @@ Test(Iobackend_setup, test_pop)
     io_close();
 }
 
-Test(Iobackend_setup, test_get)
+Test(Iobackend_setup, test_string_peek_pop_peek)
 {
-    /*
-    char *argv[2] = { "-c", "echo a" };
-    set_conf(2, argv);
-    io_setup();
-    struct config *conf = get_conf();
-    */
+    struct config conf = { 0 };
+    conf.method = STRING;
+    conf.str_stream = "echo a";
 
-    struct config conf = { STRING, "echo a", 0 };
+    io_setup(&conf);
+
+    // Skip one char
+    peek_chr();
+    pop_chr();
+
+    // Check second char
+    int res = peek_chr();
+
+    cr_expect(res == 'c');
+
+    io_close();
+}
+
+Test(Iobackend_setup, test_string_get)
+{
+    struct config conf = { 0 };
+    conf.method = STRING;
+    conf.str_stream = "echo a";
+
     io_setup(&conf);
 
     char *st = "echo a";
