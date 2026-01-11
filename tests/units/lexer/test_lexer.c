@@ -182,7 +182,7 @@ static struct token_list_params token_list_params[] = {
       .policy = ENABLE_KEYWORDS }
 };
 
-ParameterizedTestParameters(Lexer, Get_token)
+ParameterizedTestParameters(Lexer, test_get_token)
 {
     static int indices[INDICES_ARRAY_SIZE] = { 0 };
     size_t nb_params =
@@ -196,7 +196,7 @@ ParameterizedTestParameters(Lexer, Get_token)
     return cr_make_param_array(int, indices, nb_params);
 }
 
-ParameterizedTest(int *index, Lexer, Get_token)
+ParameterizedTest(int *index, Lexer, test_get_token)
 {
     struct token_list_params *param = &token_list_params[*index];
 
@@ -220,7 +220,7 @@ ParameterizedTest(int *index, Lexer, Get_token)
     }
 }
 
-ParameterizedTestParameters(Lexer, Peek_pop_token)
+ParameterizedTestParameters(Lexer, test_peek_pop_token)
 {
     static int indices[INDICES_ARRAY_SIZE] = { 0 };
     size_t nb_params =
@@ -234,7 +234,7 @@ ParameterizedTestParameters(Lexer, Peek_pop_token)
     return cr_make_param_array(int, indices, nb_params);
 }
 
-ParameterizedTest(int *index, Lexer, Peek_pop_token)
+ParameterizedTest(int *index, Lexer, test_peek_pop_token)
 {
     struct token_list_params *param = &token_list_params[*index];
 
@@ -294,7 +294,7 @@ static struct token_consistency_params token_consistency_params[] = {
       .disable = { END_OF_FILE, "" } }
 };
 
-ParameterizedTestParameters(Lexer, Token_consistency_enable_enable)
+ParameterizedTestParameters(Lexer, test_token_consistency_enable_enable)
 {
     static int indices[INDICES_ARRAY_SIZE] = { 0 };
     size_t nb_params = sizeof(token_consistency_params)
@@ -308,7 +308,7 @@ ParameterizedTestParameters(Lexer, Token_consistency_enable_enable)
     return cr_make_param_array(int, indices, nb_params);
 }
 
-ParameterizedTest(int *index, Lexer, Token_consistency_enable_enable)
+ParameterizedTest(int *index, Lexer, test_token_consistency_enable_enable)
 {
     struct token_consistency_params *param = &token_consistency_params[*index];
 
@@ -340,7 +340,7 @@ ParameterizedTest(int *index, Lexer, Token_consistency_enable_enable)
                          param->name_test, param->enable.data, token->data);
 }
 
-ParameterizedTestParameters(Lexer, Token_consistency_disable_disable)
+ParameterizedTestParameters(Lexer, test_token_consistency_disable_disable)
 {
     static int indices[INDICES_ARRAY_SIZE] = { 0 };
     size_t nb_params = sizeof(token_consistency_params)
@@ -354,7 +354,7 @@ ParameterizedTestParameters(Lexer, Token_consistency_disable_disable)
     return cr_make_param_array(int, indices, nb_params);
 }
 
-ParameterizedTest(int *index, Lexer, Token_consistency_disable_disable)
+ParameterizedTest(int *index, Lexer, test_token_consistency_disable_disable)
 {
     struct token_consistency_params *param = &token_consistency_params[*index];
 
@@ -386,7 +386,7 @@ ParameterizedTest(int *index, Lexer, Token_consistency_disable_disable)
                          param->name_test, param->disable.data, token->data);
 }
 
-ParameterizedTestParameters(Lexer, Token_consistency_enable_disable)
+ParameterizedTestParameters(Lexer, test_token_consistency_enable_disable)
 {
     static int indices[INDICES_ARRAY_SIZE] = { 0 };
     size_t nb_params = sizeof(token_consistency_params)
@@ -400,7 +400,7 @@ ParameterizedTestParameters(Lexer, Token_consistency_enable_disable)
     return cr_make_param_array(int, indices, nb_params);
 }
 
-ParameterizedTest(int *index, Lexer, Token_consistency_enable_disable)
+ParameterizedTest(int *index, Lexer, test_token_consistency_enable_disable)
 {
     struct token_consistency_params *param = &token_consistency_params[*index];
 
@@ -432,7 +432,7 @@ ParameterizedTest(int *index, Lexer, Token_consistency_enable_disable)
                          param->name_test, param->disable.data, token->data);
 }
 
-ParameterizedTestParameters(Lexer, Token_consistency_disable_enable)
+ParameterizedTestParameters(Lexer, test_token_consistency_disable_enable)
 {
     static int indices[INDICES_ARRAY_SIZE] = { 0 };
     size_t nb_params = sizeof(token_consistency_params)
@@ -446,7 +446,7 @@ ParameterizedTestParameters(Lexer, Token_consistency_disable_enable)
     return cr_make_param_array(int, indices, nb_params);
 }
 
-ParameterizedTest(int *index, Lexer, Token_consistency_disable_enable)
+ParameterizedTest(int *index, Lexer, test_token_consistency_disable_enable)
 {
     struct token_consistency_params *param = &token_consistency_params[*index];
 

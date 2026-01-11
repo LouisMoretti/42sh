@@ -8,9 +8,9 @@
 #include "execution/builtin.h"
 #include "execution/execution.h"
 
-TestSuite(Execution);
+TestSuite(Execution, .timeout = 1);
 
-Test(Execution, simple_cmd)
+Test(Execution, test_simple_cmd)
 {
     struct ast_simple_cmd *ast_simple_cmd =
         malloc(sizeof(struct ast_simple_cmd));
@@ -45,7 +45,7 @@ Test(Execution, simple_cmd)
     cr_expect(res == 0);
 }
 
-Test(Execution, cmd_true)
+Test(Execution, test_cmd_builtin_true)
 {
     struct ast_simple_cmd *ast_simple_cmd =
         malloc(sizeof(struct ast_simple_cmd));
@@ -64,7 +64,7 @@ Test(Execution, cmd_true)
     cr_expect(res == 0);
 }
 
-Test(Execution, cmd_false)
+Test(Execution, test_cmd_builtin_false)
 {
     struct ast_simple_cmd *ast_simple_cmd =
         malloc(sizeof(struct ast_simple_cmd));
