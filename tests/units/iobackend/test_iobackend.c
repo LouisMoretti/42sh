@@ -7,9 +7,9 @@
 #include "config/config.h"
 #include "iobackend/iobackend.h"
 
-TestSuite(Iobackend_setup, .timeout = 1);
+TestSuite(Iobackend, .timeout = 1);
 
-Test(Iobackend_setup, test_setup_c)
+Test(Iobackend, test_setup_string)
 {
     struct config conf = { 0 };
     conf.method = STRING;
@@ -22,7 +22,7 @@ Test(Iobackend_setup, test_setup_c)
     io_close();
 }
 
-Test(Iobackend_setup, test_setup_file)
+Test(Iobackend, test_setup_file)
 {
     struct config conf = { 0 };
     conf.method = FILEPATH;
@@ -35,7 +35,7 @@ Test(Iobackend_setup, test_setup_file)
     io_close();
 }
 
-Test(Iobackend_setup, test_setup_stdin)
+Test(Iobackend, test_setup_stdin)
 {
     struct config conf = { 0 };
     conf.method = STDIN;
@@ -48,7 +48,7 @@ Test(Iobackend_setup, test_setup_stdin)
     io_close();
 }
 
-Test(Iobackend_setup, test_string_peek)
+Test(Iobackend, test_string_peek)
 {
     struct config conf = { 0 };
     conf.method = STRING;
@@ -63,7 +63,7 @@ Test(Iobackend_setup, test_string_peek)
     io_close();
 }
 
-Test(Iobackend_setup, test_string_pop_peek)
+Test(Iobackend, test_string_pop_peek)
 {
     struct config conf = { 0 };
     conf.method = STRING;
@@ -82,7 +82,7 @@ Test(Iobackend_setup, test_string_pop_peek)
     io_close();
 }
 
-Test(Iobackend_setup, test_string_peek_pop_peek)
+Test(Iobackend, test_string_peek_pop_peek)
 {
     struct config conf = { 0 };
     conf.method = STRING;
@@ -102,7 +102,7 @@ Test(Iobackend_setup, test_string_peek_pop_peek)
     io_close();
 }
 
-Test(Iobackend_setup, test_string_get)
+Test(Iobackend, test_string_get)
 {
     struct config conf = { 0 };
     conf.method = STRING;
