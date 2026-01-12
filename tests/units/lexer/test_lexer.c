@@ -7,13 +7,15 @@
 #include "config/config.h"
 #include "iobackend/iobackend.h"
 #include "lexer/lexer.h"
+
+#define RESULT_TOKEN_ARRAY_SIZE 32
 #define INDICES_ARRAY_SIZE 42
 
 struct token_list_params
 {
     char *name_test;
     char *input;
-    struct token result[32];
+    struct token result[RESULT_TOKEN_ARRAY_SIZE];
     enum keyword_policy policy;
 };
 
@@ -36,14 +38,6 @@ const char *type_name[] = { [IF] = "IF",
                             [END_OF_FILE] = "END_OF_FILE" };
 
 TestSuite(Lexer, .timeout = 1);
-
-/*Test(Peak_token, simple_word)
-{
-    io_setup_string("echo");
-    struct token *token = peek_token(DISABLE_KEYWORDS);
-    cr_expect_eq(token->type, WORD);
-    cr_expect_str_eq(token->data, "echo");
-}*/
 
 static struct token_list_params token_list_params[] = {
     { .name_test = "simple_word",
@@ -188,7 +182,7 @@ static struct token_list_params token_list_params[] = {
       .policy = ENABLE_KEYWORDS }
 };
 
-ParameterizedTestParameters(Lexer, Get_token)
+ParameterizedTestParameters(Lexer, test_get_token)
 {
     static int indices[INDICES_ARRAY_SIZE] = { 0 };
     size_t nb_params =
@@ -202,19 +196,14 @@ ParameterizedTestParameters(Lexer, Get_token)
     return cr_make_param_array(int, indices, nb_params);
 }
 
-ParameterizedTest(int *index, Lexer, Get_token)
+ParameterizedTest(int *index, Lexer, test_get_token)
 {
-    // int argc = 3;
-    // char *argv[] = { "./42sh", "-c", param->input };
-    // set_conf(argc, argv);
-    // io_setup();
-
     struct token_list_params *param = &token_list_params[*index];
 
     struct config test_conf = { STRING, param->input, 0 };
     io_setup(&test_conf);
     int i = 0;
-    while (i < 32 && param->result[i].type != END_OF_FILE)
+    while (i < RESULT_TOKEN_ARRAY_SIZE && param->result[i].type != END_OF_FILE)
     {
         struct token *token = get_token(param->policy);
         cr_expect_eq(
@@ -231,7 +220,7 @@ ParameterizedTest(int *index, Lexer, Get_token)
     }
 }
 
-ParameterizedTestParameters(Lexer, Peek_pop_token)
+ParameterizedTestParameters(Lexer, test_peek_pop_token)
 {
     static int indices[INDICES_ARRAY_SIZE] = { 0 };
     size_t nb_params =
@@ -245,19 +234,14 @@ ParameterizedTestParameters(Lexer, Peek_pop_token)
     return cr_make_param_array(int, indices, nb_params);
 }
 
-ParameterizedTest(int *index, Lexer, Peek_pop_token)
+ParameterizedTest(int *index, Lexer, test_peek_pop_token)
 {
-    // int argc = 3;
-    // char *argv[] = { "./42sh", "-c", param->input };
-    // set_conf(argc, argv);
-    // io_setup();
-
     struct token_list_params *param = &token_list_params[*index];
 
     struct config test_conf = { STRING, param->input, 0 };
     io_setup(&test_conf);
     int i = 0;
-    while (i < 32 && param->result[i].type != END_OF_FILE)
+    while (i < RESULT_TOKEN_ARRAY_SIZE && param->result[i].type != END_OF_FILE)
     {
         struct token *token = peek_token(param->policy);
         pop_token();
@@ -310,7 +294,7 @@ static struct token_consistency_params token_consistency_params[] = {
       .disable = { END_OF_FILE, "" } }
 };
 
-ParameterizedTestParameters(Lexer, Token_consistency_enable_enable)
+ParameterizedTestParameters(Lexer, test_token_consistency_enable_enable)
 {
     static int indices[INDICES_ARRAY_SIZE] = { 0 };
     size_t nb_params = sizeof(token_consistency_params)
@@ -324,13 +308,8 @@ ParameterizedTestParameters(Lexer, Token_consistency_enable_enable)
     return cr_make_param_array(int, indices, nb_params);
 }
 
-ParameterizedTest(int *index, Lexer, Token_consistency_enable_enable)
+ParameterizedTest(int *index, Lexer, test_token_consistency_enable_enable)
 {
-    // int argc = 3;
-    // char *argv[] = { "./42sh", "-c", param->input };
-    // set_conf(argc, argv);
-    // io_setup();
-
     struct token_consistency_params *param = &token_consistency_params[*index];
 
     struct config test_conf = { STRING, param->input, 0 };
@@ -361,7 +340,7 @@ ParameterizedTest(int *index, Lexer, Token_consistency_enable_enable)
                          param->name_test, param->enable.data, token->data);
 }
 
-ParameterizedTestParameters(Lexer, Token_consistency_disable_disable)
+ParameterizedTestParameters(Lexer, test_token_consistency_disable_disable)
 {
     static int indices[INDICES_ARRAY_SIZE] = { 0 };
     size_t nb_params = sizeof(token_consistency_params)
@@ -375,13 +354,8 @@ ParameterizedTestParameters(Lexer, Token_consistency_disable_disable)
     return cr_make_param_array(int, indices, nb_params);
 }
 
-ParameterizedTest(int *index, Lexer, Token_consistency_disable_disable)
+ParameterizedTest(int *index, Lexer, test_token_consistency_disable_disable)
 {
-    // int argc = 3;
-    // char *argv[] = { "./42sh", "-c", param->input };
-    // set_conf(argc, argv);
-    // io_setup();
-
     struct token_consistency_params *param = &token_consistency_params[*index];
 
     struct config test_conf = { STRING, param->input, 0 };
@@ -412,7 +386,7 @@ ParameterizedTest(int *index, Lexer, Token_consistency_disable_disable)
                          param->name_test, param->disable.data, token->data);
 }
 
-ParameterizedTestParameters(Lexer, Token_consistency_enable_disable)
+ParameterizedTestParameters(Lexer, test_token_consistency_enable_disable)
 {
     static int indices[INDICES_ARRAY_SIZE] = { 0 };
     size_t nb_params = sizeof(token_consistency_params)
@@ -426,13 +400,8 @@ ParameterizedTestParameters(Lexer, Token_consistency_enable_disable)
     return cr_make_param_array(int, indices, nb_params);
 }
 
-ParameterizedTest(int *index, Lexer, Token_consistency_enable_disable)
+ParameterizedTest(int *index, Lexer, test_token_consistency_enable_disable)
 {
-    // int argc = 3;
-    // char *argv[] = { "./42sh", "-c", param->input };
-    // set_conf(argc, argv);
-    // io_setup();
-
     struct token_consistency_params *param = &token_consistency_params[*index];
 
     struct config test_conf = { STRING, param->input, 0 };
@@ -463,7 +432,7 @@ ParameterizedTest(int *index, Lexer, Token_consistency_enable_disable)
                          param->name_test, param->disable.data, token->data);
 }
 
-ParameterizedTestParameters(Lexer, Token_consistency_disable_enable)
+ParameterizedTestParameters(Lexer, test_token_consistency_disable_enable)
 {
     static int indices[INDICES_ARRAY_SIZE] = { 0 };
     size_t nb_params = sizeof(token_consistency_params)
@@ -477,13 +446,8 @@ ParameterizedTestParameters(Lexer, Token_consistency_disable_enable)
     return cr_make_param_array(int, indices, nb_params);
 }
 
-ParameterizedTest(int *index, Lexer, Token_consistency_disable_enable)
+ParameterizedTest(int *index, Lexer, test_token_consistency_disable_enable)
 {
-    // int argc = 3;
-    // char *argv[] = { "./42sh", "-c", param->input };
-    // set_conf(argc, argv);
-    // io_setup();
-
     struct token_consistency_params *param = &token_consistency_params[*index];
 
     struct config test_conf = { STRING, param->input, 0 };
