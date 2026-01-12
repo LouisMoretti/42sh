@@ -35,6 +35,19 @@ Test(Iobackend, test_setup_file)
     io_close();
 }
 
+Test(Iobackend, test_setup_file_not_existant)
+{
+    struct config conf = { 0 };
+    conf.method = FILEPATH;
+    conf.str_stream = "not_existant.sh";
+
+    int res = io_setup(&conf);
+
+    cr_expect(res == 2);
+
+    io_close();
+}
+
 Test(Iobackend, test_setup_stdin)
 {
     struct config conf = { 0 };
