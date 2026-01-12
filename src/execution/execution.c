@@ -8,6 +8,7 @@
 #include <unistd.h>
 
 #include "execution/builtin.h"
+#include "expansion/expansion.h"
 
 #define BUILTIN_ECHO "echo"
 #define BUILTIN_FALSE "false"
@@ -54,6 +55,11 @@ static int execute_ast_simple_cmd(struct ast *ast)
     assert(ast->type == AST_SIMPLE_CMD);
     struct ast_simple_cmd *ast_simple_cmd = (struct ast_simple_cmd *)ast;
     assert(ast_simple_cmd->word != NULL);
+
+    char *expanded = expand_string(ast_simple_cmd->word);
+    free(ast_simple_cmd->word);
+    ast_simple_cmd->word = expanded;
+
     if (!strcmp(ast_simple_cmd->word, BUILTIN_ECHO))
         return builtin_echo(ast_simple_cmd);
     else if (!strcmp(ast_simple_cmd->word, BUILTIN_FALSE))
