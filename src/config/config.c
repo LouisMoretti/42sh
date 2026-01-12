@@ -26,7 +26,7 @@ int set_conf(int argc, char **argv)
             }
             else if (argv[i][1] == '-')
             {
-                if (strcmp((*argv) + 2, "pretty_print") == 0)
+                if (strcmp(argv[i] + 2, "pretty-print") == 0)
                 {
                     my_conf.pretty_print = 1;
                 }
