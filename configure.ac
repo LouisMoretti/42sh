@@ -1,5 +1,5 @@
 # Init 42sh Project
-AC_INIT([42sh], [1.0]. [arnaud.bellicha@epita.fr])
+AC_INIT([42sh], [1.0], [arnaud.bellicha@epita.fr, clement.bisiaux@epita.fr, louis.moretti@epita.fr, yassine.tlich@epita.fr])
 
 # Setup Automake
 AM_INIT_AUTOMAKE([subdir-objects] [foreign])
