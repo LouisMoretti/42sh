@@ -180,7 +180,7 @@ char *quote_removal(char *string)
     if (!res)
 	return NULL;
 
-    char *copy = strndup(string);
+    char *copy = strndup(string, strlen(string));
     if(!copy)
     {
 	free(res);
@@ -190,9 +190,9 @@ char *quote_removal(char *string)
     size_t beg = 0;
     size_t end = 0;
 
-    while (*(copy + end) != '\0')
+    while (copy[end] != '\0')
     {
-	if (*(copy + end) == '\'')
+	if (copy[end] == '\'')
 	{
 	    res = middle_merge(res, copy, beg, end);
 	    if (!res)
@@ -201,24 +201,30 @@ char *quote_removal(char *string)
 	    end++;
 	    beg = end;
 
-	    while (*(string + end) != '\0' && *(string + end) != '\'')
+	    while (copy[end] != '\0' && copy[end] != '\'')
 	    {
 		end++;
 	    }
 
-	    if (*(string + end) == '\0')
+	    if (copy[end] == '\0')
 	    {
 		free(res);
+		free(copy);
+
 		return NULL;
 	    }
 
-	    middle_merge(res, copy, beg, end);
+	    res = middle_merge(res, copy, beg, end);
+	    if (!res)
+	        return NULL;
+
+	    beg = end + 1;
 	}
+
 	end++;
     }
 
-    char *tmp = strndup(string + beg, end - beg);
-    res = merge(res, tmp);
+    res = middle_merge(res, copy, beg, end);
     if (!res)
 	    return NULL;
 
