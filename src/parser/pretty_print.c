@@ -234,6 +234,7 @@ static void pp_rule_for(struct ast *ast, int prefix)
     prefix += 1;
     pp_compound_list(ast_rule_for->body_compound_list, prefix);
     prefix -= 1;
+    add_tab(prefix);
     printf("} done\n");
 }
 
@@ -244,12 +245,17 @@ static void pp_rule_while(struct ast *ast, int prefix)
     struct ast_rule_while *ast_rule_while = (struct ast_rule_while *)ast;
 
     printf("while {\n");
+    prefix += 1;
     pp_compound_list(ast_rule_while->condition_compound_list, prefix);
+    prefix -= 1;
+    add_tab(prefix);
     printf("}\n");
+    add_tab(prefix);
     printf("do {\n");
     prefix += 1;
     pp_compound_list(ast_rule_while->body_compound_list, prefix);
     prefix -= 1;
+    add_tab(prefix);
     printf("} done\n");
 }
 
@@ -260,12 +266,17 @@ static void pp_rule_until(struct ast *ast, int prefix)
     struct ast_rule_until *ast_rule_until = (struct ast_rule_until *)ast;
 
     printf("until {\n");
+    prefix += 1;
     pp_compound_list(ast_rule_until->condition_compound_list, prefix);
+    prefix -= 1;
+    add_tab(prefix);
     printf("}\n");
+    add_tab(prefix);
     printf("do {\n");
     prefix += 1;
     pp_compound_list(ast_rule_until->body_compound_list, prefix);
     prefix -= 1;
+    add_tab(prefix);
     printf("} done\n");
 }
 
@@ -281,6 +292,7 @@ static void pp_else_clause(struct ast *ast, int prefix)
         prefix += 1;
         pp_compound_list(ast_else_clause->condition_compound_list, prefix);
         prefix -= 1;
+    	add_tab(prefix);
         printf("}\n");
     }
     else
@@ -289,11 +301,14 @@ static void pp_else_clause(struct ast *ast, int prefix)
         prefix += 1;
         pp_compound_list(ast_else_clause->condition_compound_list, prefix);
         prefix -= 1;
+    	add_tab(prefix);
         printf("}\n");
+    	add_tab(prefix);
         printf("then {\n");
         prefix += 1;
         pp_compound_list(ast_else_clause->body_compound_list, prefix);
         prefix -= 1;
+    	add_tab(prefix);
         printf("}\n");
         if (ast_else_clause->else_clause != NULL)
             pp_else_clause(ast_else_clause->else_clause, prefix);
@@ -338,6 +353,7 @@ static void pp_case_clause(struct ast *ast, int prefix)
     assert(ast->type == AST_CLAUSE_CASE);
     struct ast_case_clause *ast_case_clause = (struct ast_case_clause *)ast;
 
+    add_tab(prefix);
     pp_case_item_list(ast_case_clause->case_item_list, prefix);
 }
 
@@ -347,19 +363,23 @@ static void pp_rule_case(struct ast *ast, int prefix)
     assert(ast->type == AST_RULE_CASE);
     struct ast_rule_case *ast_rule_case = (struct ast_rule_case *)ast;
 
+    add_tab(prefix);
     printf("case %s", ast_rule_case->word);
 
     printf("in ");
 
     if (ast_rule_case->case_clause != NULL)
     {
+    	add_tab(prefix);
         printf("{\n");
         prefix += 1;
         pp_case_clause(ast_rule_case->case_clause, prefix);
         prefix -= 1;
+    	add_tab(prefix);
         printf("} ");
     }
 
+    add_tab(prefix);
     printf("esac\n");
 }
 
