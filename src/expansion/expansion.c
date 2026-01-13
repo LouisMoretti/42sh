@@ -173,3 +173,54 @@ char *expand_escape(char *result, char *copy, size_t *beg, size_t *i)
 
     return result;
 }
+
+char *quote_removal(char *string)
+{
+    char *res = calloc(1, sizeof(char));
+    if (!res)
+	return NULL;
+
+    char *copy = strndup(string);
+    if(!copy)
+    {
+	free(res);
+	return NULL;
+    }
+
+    size_t beg = 0;
+    size_t end = 0;
+
+    while (*(copy + end) != '\0')
+    {
+	if (*(copy + end) == '\'')
+	{
+	    res = middle_merge(res, copy, beg, end);
+	    if (!res)
+	        return NULL;
+
+	    end++;
+	    beg = end;
+
+	    while (*(string + end) != '\0' && *(string + end) != '\'')
+	    {
+		end++;
+	    }
+
+	    if (*(string + end) == '\0')
+	    {
+		free(res);
+		return NULL;
+	    }
+
+	    middle_merge(res, copy, beg, end);
+	}
+	end++;
+    }
+
+    char *tmp = strndup(string + beg, end - beg);
+    res = merge(res, tmp);
+    if (!res)
+	    return NULL;
+
+    return res;
+}
