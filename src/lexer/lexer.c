@@ -11,9 +11,10 @@
 
 static int g_has_cur = 0;
 static char buffer[BUFFER_SIZE] = { 0 };
-static enum token_type g_cur_type_before_policy = WORD;
-static struct token g_cur_token = { .type = WORD, .data = buffer };
+static enum token_type g_cur_type_before_policy = END_OF_FILE;
+static struct token g_cur_token = { .type = END_OF_FILE, .data = buffer };
 
+// TODO: Add future keywords here
 static const char *keywords[KEYWORD_COUNT] = { [IF] = "if",
                                                [THEN] = "then",
                                                [ELIF] = "elif",
@@ -22,7 +23,7 @@ static const char *keywords[KEYWORD_COUNT] = { [IF] = "if",
 
 static int is_space(int c)
 {
-    return c == ' ' || c == '\t' || c == '\n';
+    return c == ' ' || c == '\t';
 }
 
 static enum token_type get_token_type(char *str)
