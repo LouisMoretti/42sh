@@ -54,7 +54,8 @@ static int io_setup_string(char *string)
     g_stream_ownership = 1;
     return 0;
 }
-static int io_setup_stdin()
+
+static int io_setup_stdin(void)
 {
     g_stream = stdin;
     g_stream_ownership = 0;

@@ -1,33 +1,35 @@
 #define _POSIX_C_SOURCE 200809L
 #include "lexer.h"
 
+#include <err.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "iobackend/iobackend.h"
 
+// TODO: Use a vector instead of a static array.
 #define BUFFER_SIZE 1024
 
 static int g_has_cur = 0;
 static char buffer[BUFFER_SIZE] = { 0 };
-static struct token g_cur_token = { .type = WORD, .data = buffer };
+static enum token_type g_cur_type_before_policy = END_OF_FILE;
+static struct token g_cur_token = { .type = END_OF_FILE, .data = buffer };
 
-static const char *keywords[KEYWORD_COUNT] = {
-    [IF] = "if",     [THEN] = "then", [ELIF] = "elif",
-    [ELSE] = "else", [FI] = "fi",     [SEMICOLON] = ";"
-};
+// TODO: Add future keywords here.
+static const char *keywords[KEYWORD_COUNT] = { [IF] = "if",
+                                               [THEN] = "then",
+                                               [ELIF] = "elif",
+                                               [ELSE] = "else",
+                                               [FI] = "fi" };
 
 static int is_space(int c)
 {
-    return c == ' ' || c == '\t' || c == '\n';
+    return c == ' ' || c == '\t';
 }
 
-static enum token_type get_token_type(char *str, enum keyword_policy policy)
+static enum token_type get_token_type(char *str)
 {
-    if (policy == DISABLE_KEYWORDS)
-        return WORD;
-
     for (int i = 0; i < KEYWORD_COUNT; i++)
     {
         if (strcmp(str, keywords[i]) == 0)
@@ -37,13 +39,13 @@ static enum token_type get_token_type(char *str, enum keyword_policy policy)
     return WORD;
 }
 
-static int pop_peek_chr()
+static int pop_peek_chr(void)
 {
     pop_chr();
     return peek_chr();
 }
 
-static int fill_buffer()
+static int fill_buffer(void)
 {
     int c = peek_chr();
     int index = 0;
@@ -54,13 +56,11 @@ static int fill_buffer()
 
     while (c != EOF && index < BUFFER_SIZE)
     {
-        // 11 Rules from the SCL
-        // TODO: Add '>' to break loop
+        // TODO: Add '>' to break loop.
 
-        if (!is_quoted && !is_escaped && (is_space(c) || c == ';')) // Rule #8
+        if (!is_quoted && !is_escaped && (is_space(c) || c == '\n' || c == ';'))
             break;
 
-        // Rule #4: Quoting.
         if (!is_escaped && (c == '\"' || c == '\'')
             && (!is_quoted || c == quote_chr))
         {
@@ -68,7 +68,7 @@ static int fill_buffer()
             quote_chr = c;
         }
 
-        if (!is_escaped && c == '\\')
+        if (!is_escaped && c == '\\' && !(is_quoted && quote_chr == '\''))
             is_escaped = 1;
         else
             is_escaped = 0;
@@ -77,17 +77,17 @@ static int fill_buffer()
         c = pop_peek_chr();
     }
 
-    // TODO: Handle token too long error.
-    if (index == sizeof(buffer))
+    // TODO: Remove when using vector.
+    if (index == BUFFER_SIZE)
     {
-        fprintf(stderr, "peek_token(): Token too long\n");
+        warnx("peek_token(): Token too long.");
         return 2;
     }
 
     // TODO: Handle missing quote error.
     if (is_quoted)
     {
-        fprintf(stderr, "peek_token(): Missing quote\n");
+        warnx("peek_token(): Missing quote.");
         return 2;
     }
 
@@ -95,40 +95,64 @@ static int fill_buffer()
     return 0;
 }
 
+static void set_token_type_with_policy(enum keyword_policy policy)
+{
+    if (g_cur_type_before_policy < KEYWORD_COUNT && policy == DISABLE_KEYWORDS)
+        g_cur_token.type = WORD;
+    else
+        g_cur_token.type = g_cur_type_before_policy;
+}
+
+static void skip_whitespace_and_comment(void)
+{
+    int c = peek_chr();
+
+    // Skip whitespace.
+    while (is_space(c))
+        c = pop_peek_chr();
+
+    // Skip comment.
+    if (c == '#')
+    {
+        while (c != EOF && c != '\n')
+            c = pop_peek_chr();
+    }
+}
+
 struct token *peek_token(enum keyword_policy policy)
 {
     if (g_has_cur)
+    {
+        set_token_type_with_policy(policy);
         return &g_cur_token;
+    }
+
+    skip_whitespace_and_comment();
 
     int c = peek_chr();
 
-    // Loop skip whitespace and skip comment.
-    while (is_space(c) || c == '#')
-    {
-        // Skip whitespace.
-        while (is_space(c))
-            c = pop_peek_chr();
-
-        // Skip comment.
-        if (c == '#')
-        {
-            while (c != EOF && c != '\n')
-                c = pop_peek_chr();
-            pop_peek_chr();
-        }
-    }
-
     if (c == EOF)
     {
-        g_cur_token.type = END_OF_FILE;
+        g_cur_type_before_policy = END_OF_FILE;
+        set_token_type_with_policy(policy);
         g_has_cur = 1;
+        return &g_cur_token;
+    }
+
+    if (c == '\n')
+    {
+        g_cur_type_before_policy = NEW_LINE;
+        set_token_type_with_policy(policy);
+        g_has_cur = 1;
+        pop_chr();
         return &g_cur_token;
     }
 
     if (c == ';')
     {
         // TODO: Handle double semicolon token (For step 4).
-        g_cur_token.type = SEMICOLON;
+        g_cur_type_before_policy = SEMICOLON;
+        set_token_type_with_policy(policy);
         g_has_cur = 1;
         pop_chr();
         return &g_cur_token;
@@ -138,7 +162,8 @@ struct token *peek_token(enum keyword_policy policy)
     if (fill_buffer() != 0)
         return NULL;
 
-    g_cur_token.type = get_token_type(buffer, policy);
+    g_cur_type_before_policy = get_token_type(buffer);
+    set_token_type_with_policy(policy);
     g_has_cur = 1;
 
     return &g_cur_token;

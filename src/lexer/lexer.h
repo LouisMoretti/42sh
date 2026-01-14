@@ -8,6 +8,16 @@ enum token_type
     ELIF,
     ELSE,
     FI,
+    // FOR,
+    // DO,
+    // DONE,
+    // WHILE,
+    // UNTIL,
+    // CASE,
+    // IN,
+    // ESAC,
+    KEYWORD_COUNT, // Keep this here, add keywords above only
+    NEW_LINE,
     SEMICOLON,
     // DOUBLE_SEMICOLON,
     // PIPE,
@@ -19,15 +29,6 @@ enum token_type
     // RIGHT_PARANTHESIS,
     // LEFT_BRACKET,
     // RIGHT_BRACKET,
-    // FOR,
-    // DO,
-    // DONE,
-    // WHILE,
-    // UNTIL,
-    // CASE,
-    // IN,
-    // ESAC,
-    KEYWORD_COUNT, // Keep this here, add keywords above only
     WORD,
     END_OF_FILE
 };
