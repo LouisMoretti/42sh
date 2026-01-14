@@ -39,13 +39,13 @@ static enum token_type get_token_type(char *str)
     return WORD;
 }
 
-static int pop_peek_chr()
+static int pop_peek_chr(void)
 {
     pop_chr();
     return peek_chr();
 }
 
-static int fill_buffer()
+static int fill_buffer(void)
 {
     int c = peek_chr();
     int index = 0;
@@ -103,7 +103,7 @@ static void set_token_type_with_policy(enum keyword_policy policy)
         g_cur_token.type = g_cur_type_before_policy;
 }
 
-static void skip_whitespace_and_comment()
+static void skip_whitespace_and_comment(void)
 {
     int c = peek_chr();
 
