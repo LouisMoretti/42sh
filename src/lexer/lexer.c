@@ -16,7 +16,7 @@ static char buffer[BUFFER_SIZE] = { 0 };
 static enum token_type g_cur_type_before_policy = END_OF_FILE;
 static struct token g_cur_token = { .type = END_OF_FILE, .data = buffer };
 
-// TODO: Add future keywords here
+// TODO: Add future keywords here.
 static const char *keywords[KEYWORD_COUNT] = { [IF] = "if",
                                                [THEN] = "then",
                                                [ELIF] = "elif",
@@ -56,7 +56,7 @@ static int fill_buffer()
 
     while (c != EOF && index < BUFFER_SIZE)
     {
-        // TODO: Add '>' to break loop
+        // TODO: Add '>' to break loop.
 
         if (!is_quoted && !is_escaped && (is_space(c) || c == '\n' || c == ';'))
             break;
@@ -159,9 +159,8 @@ struct token *peek_token(enum keyword_policy policy)
     }
 
     // TODO: Handle grammar errors.
-    // if (fill_buffer() != 0)
-    //     return NULL;
-    fill_buffer();
+    if (fill_buffer() != 0)
+        return NULL;
 
     g_cur_type_before_policy = get_token_type(buffer);
     set_token_type_with_policy(policy);

@@ -277,7 +277,8 @@ struct ast *parse_else_clause()
     ((struct ast_else_clause *)else_clause)->body_compound_list =
         parse_compound_list();
 
-    if (is_elif)
+    // TODO: Grammar error check: token can only be ELIF or ELSE or FI.
+    if (is_elif && (peek_token(ENABLE_KEYWORDS)->type != FI))
     {
         if (peek_token(ENABLE_KEYWORDS)->type != ELIF
             && peek_token(ENABLE_KEYWORDS)->type != ELSE)
