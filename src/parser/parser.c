@@ -1,19 +1,30 @@
 #define _POSIX_C_SOURCE 200809L
 #include "parser/parser.h"
 
-#include <assert.h>
+#include <err.h>
 #include <stddef.h>
 #include <string.h>
 
 #include "lexer/lexer.h"
 #include "parser/ast.h"
 
+// static struct token *pop_peek_token(enum keyword_policy policy)
+// {
+//     pop_token();
+//     return peek_token(policy);
+// }
+
 struct ast *parse_input()
 {
     struct ast *ast_input = init_ast(AST_INPUT);
 
-    if (peek_token(ENABLE_KEYWORDS)->type != END_OF_FILE)
+    struct token *tok = peek_token(ENABLE_KEYWORDS);
+    if (tok->type != END_OF_FILE && tok->type != NEW_LINE)
         ((struct ast_input *)ast_input)->list = parse_list();
+
+    // TODO: Return error.
+    if (tok->type != END_OF_FILE && tok->type != NEW_LINE)
+        warnx("parse_input: Wrong token type at end of input.");
 
     return ast_input;
 }
@@ -31,6 +42,9 @@ struct ast *parse_list()
         if (peek_token(ENABLE_KEYWORDS)->type != END_OF_FILE)
             ((struct ast_list *)list)->next = parse_list();
     }
+    // TODO: Add handle token '&'.
+    if (peek_token(ENABLE_KEYWORDS)->type == SEMICOLON)
+        pop_token();
 
     return list;
 }
@@ -88,7 +102,9 @@ struct ast *parse_simple_cmd()
     // TODO: Command with prefix.
 
     struct token *tok = peek_token(ENABLE_KEYWORDS);
-    assert(tok->type == WORD);
+    // TODO: Return error.
+    if (tok->type != WORD)
+        warnx("parse_simple_cmd: Wrong token type.");
     ((struct ast_simple_cmd *)cmd)->word = strdup(tok->data);
     pop_token();
 
@@ -120,9 +136,13 @@ struct ast *parse_shell_cmd()
 {
     struct ast *cmd = init_ast(AST_SHELL_CMD);
 
+    struct token *tok = peek_token(ENABLE_KEYWORDS);
+
     // TODO: Step 2: Add other rules.
-    assert(peek_token(ENABLE_KEYWORDS)->type == IF);
-    if (peek_token(ENABLE_KEYWORDS)->type == IF)
+    if (tok->type != IF)
+        warnx("parse_shell_cmd: Unsupported shell command.");
+
+    if (tok->type == IF)
         ((struct ast_shell_cmd *)cmd)->rule = parse_rule_if();
 
     return cmd;
@@ -132,24 +152,33 @@ struct ast *parse_rule_if()
 {
     struct ast *rule_if = init_ast(AST_RULE_IF);
 
-    assert(peek_token(ENABLE_KEYWORDS)->type == IF);
+    struct token *tok = peek_token(ENABLE_KEYWORDS);
+
+    // TODO: Return error.
+    if (tok->type != IF)
+        warnx("parse_rule_if: Wrong token type.");
+
     pop_token();
 
-    // assert(peek_token(DISABLE_KEYWORDS)->type == WORD);
     ((struct ast_rule_if *)rule_if)->condition_compound_list =
         parse_compound_list();
 
-    assert(peek_token(ENABLE_KEYWORDS)->type == THEN);
+    tok = peek_token(ENABLE_KEYWORDS);
+    // TODO: Return error.
+    if (tok->type != THEN)
+        warnx("parse_rule_if: Wrong token type.");
     pop_token();
 
-    // assert(peek_token(DISABLE_KEYWORDS)->type == WORD);
     ((struct ast_rule_if *)rule_if)->body_compound_list = parse_compound_list();
 
-    if (peek_token(ENABLE_KEYWORDS)->type == ELIF
-        || peek_token(ENABLE_KEYWORDS)->type == ELSE)
+    tok = peek_token(ENABLE_KEYWORDS);
+    if (tok->type == ELIF || tok->type == ELSE)
         ((struct ast_rule_if *)rule_if)->else_clause = parse_else_clause();
 
-    assert(peek_token(ENABLE_KEYWORDS)->type == FI);
+    tok = peek_token(ENABLE_KEYWORDS);
+    // TODO: Return error.
+    if (tok->type != FI)
+        warnx("parse_rule_if: Wrong token type.");
     pop_token();
 
     return rule_if;
@@ -159,24 +188,48 @@ struct ast *parse_compound_list()
 {
     struct ast *compound_list = init_ast(AST_COMPOUND_LIST);
 
-    ((struct ast_compound_list *)compound_list)->ast_and_or = parse_and_or();
-
-    // TODO: Add handle token '&' and '\n'.
-    if (peek_token(ENABLE_KEYWORDS)->type == SEMICOLON)
+    while (peek_token(ENABLE_KEYWORDS)->type == NEW_LINE)
     {
         pop_token();
-        if (peek_token(ENABLE_KEYWORDS)->type > KEYWORD_COUNT)
+    }
+
+    ((struct ast_compound_list *)compound_list)->ast_and_or = parse_and_or();
+
+    // TODO: Add handle token '&'.
+    struct token *tok = peek_token(ENABLE_KEYWORDS);
+    if (tok->type == SEMICOLON || tok->type == NEW_LINE)
+    {
+        pop_token();
+        tok = peek_token(ENABLE_KEYWORDS);
+
+        // TODO: May be unnecessary.
+        while (tok->type == NEW_LINE)
+        {
+            pop_token();
+            tok = peek_token(ENABLE_KEYWORDS);
+        }
+
+        if (tok->type > KEYWORD_COUNT)
             ((struct ast_compound_list *)compound_list)->next =
                 parse_compound_list();
     }
+
+    // TODO: Add handle token '&'.
+    if (peek_token(ENABLE_KEYWORDS)->type == SEMICOLON)
+        pop_token();
+
+    while (peek_token(ENABLE_KEYWORDS)->type == NEW_LINE)
+        pop_token();
 
     return compound_list;
 }
 
 struct ast *parse_else_clause()
 {
-    assert(peek_token(ENABLE_KEYWORDS)->type == ELIF
-           || peek_token(ENABLE_KEYWORDS)->type == ELSE);
+    // TODO: Return error.
+    if (peek_token(ENABLE_KEYWORDS)->type != ELIF
+        && peek_token(ENABLE_KEYWORDS)->type != ELSE)
+        warnx("parse_else_clause: Wrong token type.");
 
     struct ast *else_clause = init_ast(AST_CLAUSE_ELSE);
     int is_elif = 0;
@@ -190,7 +243,8 @@ struct ast *parse_else_clause()
         ((struct ast_else_clause *)else_clause)->condition_compound_list =
             parse_compound_list();
 
-        assert(peek_token(ENABLE_KEYWORDS)->type == THEN);
+        if (peek_token(ENABLE_KEYWORDS)->type != THEN)
+            warnx("parse_else_clause: Wrong token type.");
         pop_token();
     }
 
@@ -199,8 +253,9 @@ struct ast *parse_else_clause()
 
     if (is_elif)
     {
-        assert(peek_token(ENABLE_KEYWORDS)->type == ELIF
-               || peek_token(ENABLE_KEYWORDS)->type == ELSE);
+        if (peek_token(ENABLE_KEYWORDS)->type != ELIF
+            && peek_token(ENABLE_KEYWORDS)->type != ELSE)
+            warnx("parse_else_clause: Wrong token type.");
         ((struct ast_else_clause *)else_clause)->else_clause =
             parse_else_clause();
     }
