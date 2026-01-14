@@ -3,30 +3,30 @@
 
 #include "ast.h"
 
-static struct ast *init_ast_input();
-static struct ast *init_ast_list();
-static struct ast *init_ast_and_or();
-static struct ast *init_ast_pipeline();
-static struct ast *init_ast_cmd();
-static struct ast *init_ast_prefix();
-static struct ast *init_ast_prefix_list();
-static struct ast *init_ast_element();
-static struct ast *init_ast_element_list();
-static struct ast *init_ast_simple_cmd();
-static struct ast *init_ast_shell_cmd();
-static struct ast *init_ast_funcdec();
-// static struct ast *init_ast_redirection();
-static struct ast *init_ast_compound_list();
-static struct ast *init_ast_word_list();
-static struct ast *init_ast_rule_for();
-static struct ast *init_ast_rule_while();
-static struct ast *init_ast_rule_until();
-static struct ast *init_ast_rule_case();
-static struct ast *init_ast_rule_if();
-static struct ast *init_ast_else_clause();
-static struct ast *init_ast_case_item();
-static struct ast *init_ast_case_item_list();
-static struct ast *init_ast_case_clause();
+static struct ast *init_ast_input(void);
+static struct ast *init_ast_list(void);
+static struct ast *init_ast_and_or(void);
+static struct ast *init_ast_pipeline(void);
+static struct ast *init_ast_cmd(void);
+static struct ast *init_ast_prefix(void);
+static struct ast *init_ast_prefix_list(void);
+static struct ast *init_ast_element(void);
+static struct ast *init_ast_element_list(void);
+static struct ast *init_ast_simple_cmd(void);
+static struct ast *init_ast_shell_cmd(void);
+static struct ast *init_ast_funcdec(void);
+// static struct ast *init_ast_redirection(void);
+static struct ast *init_ast_compound_list(void);
+static struct ast *init_ast_word_list(void);
+static struct ast *init_ast_rule_for(void);
+static struct ast *init_ast_rule_while(void);
+static struct ast *init_ast_rule_until(void);
+static struct ast *init_ast_rule_case(void);
+static struct ast *init_ast_rule_if(void);
+static struct ast *init_ast_else_clause(void);
+static struct ast *init_ast_case_item(void);
+static struct ast *init_ast_case_item_list(void);
+static struct ast *init_ast_case_clause(void);
 
 typedef struct ast *(*fptr)();
 
@@ -65,7 +65,7 @@ struct ast *init_ast(enum ast_type type)
 //      AST INPUT
 // ====================
 
-static struct ast *init_ast_input()
+static struct ast *init_ast_input(void)
 {
     struct ast_input *input = malloc(sizeof(struct ast_input));
     assert(input != NULL);
@@ -80,7 +80,7 @@ static struct ast *init_ast_input()
 //      AST LIST
 // ====================
 
-static struct ast *init_ast_list()
+static struct ast *init_ast_list(void)
 {
     struct ast_list *list = malloc(sizeof(struct ast_list));
     assert(list != NULL);
@@ -96,7 +96,7 @@ static struct ast *init_ast_list()
 //      AST AND OR
 // ====================
 
-static struct ast *init_ast_and_or()
+static struct ast *init_ast_and_or(void)
 {
     struct ast_and_or *and_or = malloc(sizeof(struct ast_and_or));
     assert(and_or != NULL);
@@ -113,7 +113,7 @@ static struct ast *init_ast_and_or()
 //      AST PIPELINE
 // ====================
 
-static struct ast *init_ast_pipeline()
+static struct ast *init_ast_pipeline(void)
 {
     struct ast_pipeline *pipeline = malloc(sizeof(struct ast_pipeline));
     assert(pipeline != NULL);
@@ -130,7 +130,7 @@ static struct ast *init_ast_pipeline()
 //      AST CMD
 // ====================
 
-static struct ast *init_ast_cmd()
+static struct ast *init_ast_cmd(void)
 {
     struct ast_cmd *cmd = malloc(sizeof(struct ast_cmd));
     assert(cmd != NULL);
@@ -146,7 +146,7 @@ static struct ast *init_ast_cmd()
 //      AST PREFIX
 // ====================
 
-static struct ast *init_ast_prefix()
+static struct ast *init_ast_prefix(void)
 {
     struct ast_prefix *prefix = malloc(sizeof(struct ast_prefix));
     assert(prefix != NULL);
@@ -162,7 +162,7 @@ static struct ast *init_ast_prefix()
 //     AST PREFIX LIST
 // ====================
 
-static struct ast *init_ast_prefix_list()
+static struct ast *init_ast_prefix_list(void)
 {
     struct ast_prefix_list *list = malloc(sizeof(struct ast_prefix_list));
     assert(list != NULL);
@@ -178,7 +178,7 @@ static struct ast *init_ast_prefix_list()
 //     AST ELEMENT
 // ====================
 
-static struct ast *init_ast_element()
+static struct ast *init_ast_element(void)
 {
     struct ast_element *element = malloc(sizeof(struct ast_element));
     assert(element != NULL);
@@ -194,7 +194,7 @@ static struct ast *init_ast_element()
 //      AST ELEMENT LIST
 // ====================
 
-static struct ast *init_ast_element_list()
+static struct ast *init_ast_element_list(void)
 {
     struct ast_element_list *list = malloc(sizeof(struct ast_element_list));
     assert(list != NULL);
@@ -210,7 +210,7 @@ static struct ast *init_ast_element_list()
 //      AST SIMPLE CMD
 // ====================
 
-static struct ast *init_ast_simple_cmd()
+static struct ast *init_ast_simple_cmd(void)
 {
     struct ast_simple_cmd *cmd = malloc(sizeof(struct ast_simple_cmd));
     assert(cmd != NULL);
@@ -228,7 +228,7 @@ static struct ast *init_ast_simple_cmd()
 //      AST SHELL CMD
 // ====================
 
-static struct ast *init_ast_shell_cmd()
+static struct ast *init_ast_shell_cmd(void)
 {
     struct ast_shell_cmd *shell_cmd = malloc(sizeof(struct ast_shell_cmd));
     assert(shell_cmd != NULL);
@@ -244,7 +244,7 @@ static struct ast *init_ast_shell_cmd()
 //      AST FUNCDEC
 // ====================
 
-static struct ast *init_ast_funcdec()
+static struct ast *init_ast_funcdec(void)
 {
     struct ast_funcdec *funcdec = malloc(sizeof(struct ast_funcdec));
     assert(funcdec != NULL);
@@ -266,7 +266,7 @@ static struct ast *init_ast_funcdec()
 //      AST COMPOUND LIST
 // ====================
 
-static struct ast *init_ast_compound_list()
+static struct ast *init_ast_compound_list(void)
 {
     struct ast_compound_list *compound_list =
         malloc(sizeof(struct ast_compound_list));
@@ -283,7 +283,7 @@ static struct ast *init_ast_compound_list()
 //      AST WORD LIST
 // ====================
 
-static struct ast *init_ast_word_list()
+static struct ast *init_ast_word_list(void)
 {
     struct ast_word_list *list = malloc(sizeof(struct ast_word_list));
     assert(list != NULL);
@@ -299,7 +299,7 @@ static struct ast *init_ast_word_list()
 //      AST RULE FOR
 // ====================
 
-static struct ast *init_ast_rule_for()
+static struct ast *init_ast_rule_for(void)
 {
     struct ast_rule_for *rule_for = malloc(sizeof(struct ast_rule_for));
     assert(rule_for != NULL);
@@ -316,7 +316,7 @@ static struct ast *init_ast_rule_for()
 //     AST RULE WHILE
 // ====================
 
-static struct ast *init_ast_rule_while()
+static struct ast *init_ast_rule_while(void)
 {
     struct ast_rule_while *rule_while = malloc(sizeof(struct ast_rule_while));
     assert(rule_while != NULL);
@@ -332,7 +332,7 @@ static struct ast *init_ast_rule_while()
 //     AST RULE UNTIL
 // ====================
 
-static struct ast *init_ast_rule_until()
+static struct ast *init_ast_rule_until(void)
 {
     struct ast_rule_until *rule_until = malloc(sizeof(struct ast_rule_until));
     assert(rule_until != NULL);
@@ -348,7 +348,7 @@ static struct ast *init_ast_rule_until()
 //     AST RULE CASE
 // ====================
 
-static struct ast *init_ast_rule_case()
+static struct ast *init_ast_rule_case(void)
 {
     struct ast_rule_case *rule_case = malloc(sizeof(struct ast_rule_case));
     assert(rule_case != NULL);
@@ -364,7 +364,7 @@ static struct ast *init_ast_rule_case()
 //      AST RULE IF
 // ====================
 
-static struct ast *init_ast_rule_if()
+static struct ast *init_ast_rule_if(void)
 {
     struct ast_rule_if *rule_if = malloc(sizeof(struct ast_rule_if));
     assert(rule_if != NULL);
@@ -381,7 +381,7 @@ static struct ast *init_ast_rule_if()
 //      AST ELSE CLAUSE
 // ====================
 
-static struct ast *init_ast_else_clause()
+static struct ast *init_ast_else_clause(void)
 {
     struct ast_else_clause *else_clause =
         malloc(sizeof(struct ast_else_clause));
@@ -399,7 +399,7 @@ static struct ast *init_ast_else_clause()
 //      AST CASE ITEM
 // ====================
 
-static struct ast *init_ast_case_item()
+static struct ast *init_ast_case_item(void)
 {
     struct ast_case_item *case_item = malloc(sizeof(struct ast_case_item));
     assert(case_item != NULL);
@@ -416,7 +416,7 @@ static struct ast *init_ast_case_item()
 //      AST CASE ITEM LIST
 // ====================
 
-static struct ast *init_ast_case_item_list()
+static struct ast *init_ast_case_item_list(void)
 {
     struct ast_case_item_list *list = malloc(sizeof(struct ast_case_item_list));
     assert(list != NULL);
@@ -432,7 +432,7 @@ static struct ast *init_ast_case_item_list()
 //      AST CASE CLAUSE
 // ====================
 
-static struct ast *init_ast_case_clause()
+static struct ast *init_ast_case_clause(void)
 {
     struct ast_case_clause *case_clause =
         malloc(sizeof(struct ast_case_clause));
