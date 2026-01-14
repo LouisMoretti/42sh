@@ -33,11 +33,11 @@ static int evaluate_command(char **command)
         {
         case ENOENT:
             warnx("evaluate_command: Command Not Found. Got: '%s'", command[0]);
-            return COMMAND_NOT_FOUND_ERROR;
+            exit(COMMAND_NOT_FOUND_ERROR);
         default:
             warnx("evaluate_command: %s. Got: '%s'", strerror(errno),
                   command[0]);
-            return DEFAULT_ERROR;
+            exit(DEFAULT_ERROR);
         }
     }
     else
@@ -45,7 +45,15 @@ static int evaluate_command(char **command)
         int wstatus;
         wait(&wstatus);
 
-        return WEXITSTATUS(wstatus);
+        // TODO: Check with ACU if handling signals is necessary
+        if (WIFEXITED(wstatus))
+            return WEXITSTATUS(wstatus);
+        else if (WIFSIGNALED(wstatus))
+            return WTERMSIG(wstatus);
+        else if (WIFSTOPPED(wstatus))
+            return WSTOPSIG(wstatus);
+        else
+            return DEFAULT_ERROR;
     }
 }
 
