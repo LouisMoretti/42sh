@@ -13,7 +13,8 @@ struct config
     enum input_method method;
     char *str_stream;
     int pretty_print;
-    char **arguments;
+    int arg_count;
+    char **arg_values;
 };
 
 int set_conf(int argc, char **argv);
