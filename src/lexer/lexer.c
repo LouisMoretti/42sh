@@ -68,7 +68,7 @@ static int fill_buffer()
             quote_chr = c;
         }
 
-        if (!is_escaped && c == '\\')
+        if (!is_escaped && c == '\\' && !(is_quoted && quote_chr == '\''))
             is_escaped = 1;
         else
             is_escaped = 0;
