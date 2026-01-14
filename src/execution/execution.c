@@ -1,6 +1,8 @@
 #include "execution/execution.h"
 
 #include <assert.h>
+#include <err.h>
+#include <errno.h>
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
@@ -12,6 +14,8 @@
 #define BUILTIN_ECHO "echo"
 #define BUILTIN_FALSE "false"
 #define BUILTIN_TRUE "true"
+#define COMMAND_NOT_FOUND_ERROR 127
+#define DEFAULT_ERROR 1
 
 typedef int (*exec)(struct ast *);
 
@@ -24,7 +28,16 @@ static int evaluate_command(char **command)
         return 1;
     if (!pid)
     {
-        exit(execvp(command[0], command));
+        execvp(command[0], command);
+        switch (errno)
+        {
+            case ENOENT:
+                warnx("evaluate_command: Command Not Found. Got: '%s'", command[0]);
+                return COMMAND_NOT_FOUND_ERROR;
+            default:
+                warnx("evaluate_command: %s. Got: '%s'", strerror(errno), command[0]);
+                return DEFAULT_ERROR;
+        }
     }
     else
     {
@@ -163,7 +176,7 @@ static int execute_ast_else_clause(struct ast *ast)
     struct ast_else_clause *ast_else_clause = (struct ast_else_clause *)ast;
     assert(ast_else_clause->body_compound_list != NULL);
     if (!ast_else_clause->else_clause)
-        assert(ast_else_clause->condition_compound_list == NULL);
+        assert(ast_else_clause->condition_compound_list != NULL);
 
     int condition_exit_code =
         execute_ast_compound_list(ast_else_clause->condition_compound_list);
