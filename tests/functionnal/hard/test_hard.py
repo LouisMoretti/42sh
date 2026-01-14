@@ -4,10 +4,8 @@ import subprocess as sp
 import time
 
 def run_ref_command_string(command):
-    command = "'" + command + "'"
     proc = sp.Popen(["bash", "--posix", "-c", command], stdout=sp.PIPE, stderr=sp.STDOUT, bufsize=0)
 
-    time.sleep(0.1)
     return proc
 
 def run_command_string(command):
@@ -17,7 +15,6 @@ def run_command_string(command):
 
     proc = sp.Popen([executable, "-c", command], stdout=sp.PIPE, stderr=sp.STDOUT, bufsize=0)
 
-    time.sleep(0.1)
     return proc
 
 def kill_42sh(proc):
@@ -32,8 +29,8 @@ def test_many_if():
     proc = run_command_string(command_to_run)
     ref_proc = run_ref_command_string(command_to_run)
     try:
-        out, err = proc.communicate(timeout=1)
-        ref_out, ref_err = ref_proc.communicate(timeout=1)
+        out, err = proc.communicate(timeout=0.1)
+        ref_out, ref_err = ref_proc.communicate(timeout=0.1)
         assert out == ref_out
         assert err == ref_err
         assert proc.returncode == ref_proc.returncode
@@ -52,8 +49,8 @@ def test_mixed_demon():
     proc = run_command_string(command_to_run)
     ref_proc = run_ref_command_string(command_to_run)
     try:
-        out, err = proc.communicate(timeout=1)
-        ref_out, ref_err = ref_proc.communicate(timeout=1)
+        out, err = proc.communicate(timeout=0.1)
+        ref_out, ref_err = ref_proc.communicate(timeout=0.1)
         assert out == ref_out
         assert err == ref_err
         assert proc.returncode == ref_proc.returncode
