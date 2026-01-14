@@ -31,12 +31,13 @@ static int evaluate_command(char **command)
         execvp(command[0], command);
         switch (errno)
         {
-            case ENOENT:
-                warnx("evaluate_command: Command Not Found. Got: '%s'", command[0]);
-                return COMMAND_NOT_FOUND_ERROR;
-            default:
-                warnx("evaluate_command: %s. Got: '%s'", strerror(errno), command[0]);
-                return DEFAULT_ERROR;
+        case ENOENT:
+            warnx("evaluate_command: Command Not Found. Got: '%s'", command[0]);
+            return COMMAND_NOT_FOUND_ERROR;
+        default:
+            warnx("evaluate_command: %s. Got: '%s'", strerror(errno),
+                  command[0]);
+            return DEFAULT_ERROR;
         }
     }
     else
