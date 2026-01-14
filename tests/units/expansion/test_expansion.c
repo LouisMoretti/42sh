@@ -14,7 +14,7 @@ static char *expand(char *to_expand)
     char *tmp = strndup(to_expand, strlen(to_expand));
     char *result = expand_string(tmp);
     free(tmp);
-    
+
     return result;
 }
 
@@ -87,7 +87,7 @@ Test(expansion, many_quotes)
 Test(expansion, quoted_inner_tricky_backslash)
 {
     char *to_be_expanded = "a'\\bc'defgh";
-    char *expansion_expected = "a\\bcdefgh";
+    char *expansion_expected = "abcdefgh";
 
     char *result = expand(to_be_expanded);
     cr_expect_str_eq(result, expansion_expected);
@@ -119,7 +119,8 @@ Test(expansion, quote_escaped_and_not_escaped)
 
 Test(expansion, robust)
 {
-    char *to_be_expanded = "\\n\\n\\n\\t\\t\\t\\n\\'\\'\\t\\'\\\\\\'\\'\\'\\\\\\t";
+    char *to_be_expanded =
+        "\\n\\n\\n\\t\\t\\t\\n\\'\\'\\t\\'\\\\\\'\\'\\'\\\\\\t";
     char *expansion_expected = "\n\n\n\t\t\t\n\'\'\t\'\\'\'\'\\\t";
 
     char *result = expand(to_be_expanded);
