@@ -25,7 +25,7 @@ const char *type_name[] = { [IF] = "IF",
                             [WORD] = "WORD",
                             [END_OF_FILE] = "END_OF_FILE" };
 
-struct ast *parse_input()
+struct ast *parse_input(void)
 {
     struct ast *ast_input = init_ast(AST_INPUT);
 
@@ -42,7 +42,7 @@ struct ast *parse_input()
     return ast_input;
 }
 
-struct ast *parse_list()
+struct ast *parse_list(void)
 {
     struct ast *list = init_ast(AST_LIST);
 
@@ -62,7 +62,7 @@ struct ast *parse_list()
     return list;
 }
 
-struct ast *parse_and_or()
+struct ast *parse_and_or(void)
 {
     struct ast *and_or = init_ast(AST_AND_OR);
 
@@ -77,7 +77,7 @@ struct ast *parse_and_or()
     return and_or;
 }
 
-struct ast *parse_pipeline()
+struct ast *parse_pipeline(void)
 {
     struct ast *pipeline = init_ast(AST_PIPELINE);
 
@@ -96,7 +96,7 @@ struct ast *parse_pipeline()
     return pipeline;
 }
 
-struct ast *parse_cmd()
+struct ast *parse_cmd(void)
 {
     struct ast *cmd = init_ast(AST_CMD);
 
@@ -108,7 +108,7 @@ struct ast *parse_cmd()
     return cmd;
 }
 
-struct ast *parse_simple_cmd()
+struct ast *parse_simple_cmd(void)
 {
     struct ast *cmd = init_ast(AST_SIMPLE_CMD);
 
@@ -147,7 +147,7 @@ struct ast *parse_simple_cmd()
     return cmd;
 }
 
-struct ast *parse_shell_cmd()
+struct ast *parse_shell_cmd(void)
 {
     struct ast *cmd = init_ast(AST_SHELL_CMD);
 
@@ -165,7 +165,7 @@ struct ast *parse_shell_cmd()
     return cmd;
 }
 
-struct ast *parse_rule_if()
+struct ast *parse_rule_if(void)
 {
     struct ast *rule_if = init_ast(AST_RULE_IF);
 
@@ -204,7 +204,7 @@ struct ast *parse_rule_if()
     return rule_if;
 }
 
-struct ast *parse_compound_list()
+struct ast *parse_compound_list(void)
 {
     struct ast *compound_list = init_ast(AST_COMPOUND_LIST);
 
@@ -245,7 +245,7 @@ struct ast *parse_compound_list()
     return compound_list;
 }
 
-struct ast *parse_else_clause()
+struct ast *parse_else_clause(void)
 {
     // TODO: Return error.
     if (peek_token(ENABLE_KEYWORDS)->type != ELIF
