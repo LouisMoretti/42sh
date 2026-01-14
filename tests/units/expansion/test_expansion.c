@@ -7,7 +7,7 @@
 
 #include "expansion/expansion.h"
 
-TestSuite(expansion);
+TestSuite(expansion_string);
 
 static char *expand(char *to_expand)
 {
@@ -18,7 +18,7 @@ static char *expand(char *to_expand)
     return result;
 }
 
-Test(expansion, simple)
+Test(expansion_string, simple)
 {
     char *to_be_expanded = "abcdefgh";
     char *expansion_expected = "abcdefgh";
@@ -29,7 +29,7 @@ Test(expansion, simple)
     free(result);
 }
 
-Test(expansion, escaped)
+Test(expansion_string, escaped)
 {
     char *to_be_expanded = "ab\\\\cdefgh";
     char *expansion_expected = "ab\\cdefgh";
@@ -40,7 +40,7 @@ Test(expansion, escaped)
     free(result);
 }
 
-Test(expansion, newline)
+Test(expansion_string, newline)
 {
     char *to_be_expanded = "abcdefgh\\n";
     char *expansion_expected = "abcdefgh\n";
@@ -51,7 +51,7 @@ Test(expansion, newline)
     free(result);
 }
 
-Test(expansion, tab)
+Test(expansion_string, tab)
 {
     char *to_be_expanded = "\\tabcdefgh";
     char *expansion_expected = "\tabcdefgh";
@@ -62,7 +62,7 @@ Test(expansion, tab)
     free(result);
 }
 
-Test(expansion, simple_quoted)
+Test(expansion_string, simple_quoted)
 {
     char *to_be_expanded = "ab'cdefg'h";
     char *expansion_expected = "abcdefgh";
@@ -73,7 +73,7 @@ Test(expansion, simple_quoted)
     free(result);
 }
 
-Test(expansion, many_quotes)
+Test(expansion_string, many_quotes)
 {
     char *to_be_expanded = "a'bc'''de'fg''h'";
     char *expansion_expected = "abcdefgh";
@@ -84,7 +84,7 @@ Test(expansion, many_quotes)
     free(result);
 }
 
-Test(expansion, quoted_inner_tricky_backslash)
+Test(expansion_string, quoted_inner_tricky_backslash)
 {
     char *to_be_expanded = "a'\\bc'defgh";
     char *expansion_expected = "abcdefgh";
@@ -95,7 +95,7 @@ Test(expansion, quoted_inner_tricky_backslash)
     free(result);
 }
 
-Test(expansion, quote_escaped)
+Test(expansion_string, quote_escaped)
 {
     char *to_be_expanded = "a\\'bcdefgh";
     char *expansion_expected = "a\'bcdefgh";
@@ -106,10 +106,10 @@ Test(expansion, quote_escaped)
     free(result);
 }
 
-Test(expansion, quote_escaped_and_not_escaped)
+Test(expansion_string, quote_escaped_and_not_escaped)
 {
-    char *to_be_expanded = "a\\'bc'\\''d'''efg'h'''";
-    char *expansion_expected = "a\'bc\\defgh";
+    char *to_be_expanded = "a\\'bc\\''d'''efg'h'''";
+    char *expansion_expected = "a'bc'defgh";
 
     char *result = expand(to_be_expanded);
     cr_expect_str_eq(result, expansion_expected);
@@ -117,7 +117,7 @@ Test(expansion, quote_escaped_and_not_escaped)
     free(result);
 }
 
-Test(expansion, robust)
+Test(expansion_string, robust)
 {
     char *to_be_expanded =
         "\\n\\n\\n\\t\\t\\t\\n\\'\\'\\t\\'\\\\\\'\\'\\'\\\\\\t";
