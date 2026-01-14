@@ -57,7 +57,7 @@ static int execute_ast_simple_cmd(struct ast *ast)
     assert(ast_simple_cmd->word != NULL);
 
     char *expanded = quote_removal(ast_simple_cmd->word);
-    if (expanded != NULL)
+    if (expanded)
     {
         free(ast_simple_cmd->word);
         ast_simple_cmd->word = expanded;

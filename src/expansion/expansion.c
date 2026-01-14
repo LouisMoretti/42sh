@@ -133,7 +133,17 @@ char *expand_single_quote(char *result, char *copy, size_t *beg, size_t *i)
     }
 
     char *quoted = strndup(copy + *beg, *i - *beg);
-    result = merge(result, quoted);
+    if (!quoted)
+    {
+        free(copy);
+        free(result);
+
+        return NULL;
+    }
+
+    char *res = expand_string(quoted);
+    free(quoted);
+    result = merge(result, res);
     if (!result)
     {
         free(copy);
@@ -178,13 +188,13 @@ char *quote_removal(char *string)
 {
     char *res = calloc(1, sizeof(char));
     if (!res)
-	return NULL;
+        return NULL;
 
     char *copy = strndup(string, strlen(string));
-    if(!copy)
+    if (!copy)
     {
-	free(res);
-	return NULL;
+        free(res);
+        return NULL;
     }
 
     size_t beg = 0;
@@ -192,41 +202,39 @@ char *quote_removal(char *string)
 
     while (copy[end] != '\0')
     {
-	if (copy[end] == '\'')
-	{
-	    res = middle_merge(res, copy, beg, end);
-	    if (!res)
-	        return NULL;
+        if (copy[end] == '\'')
+        {
+            res = middle_merge(res, copy, beg, end);
+            if (!res)
+                return NULL;
 
-	    end++;
-	    beg = end;
+            end++;
+            beg = end;
 
-	    while (copy[end] != '\0' && copy[end] != '\'')
-	    {
-		end++;
-	    }
+            while (copy[end] != '\0' && copy[end] != '\'')
+                end++;
 
-	    if (copy[end] == '\0')
-	    {
-		free(res);
-		free(copy);
+            if (copy[end] == '\0')
+            {
+                free(res);
+                free(copy);
 
-		return NULL;
-	    }
+                return NULL;
+            }
 
-	    res = middle_merge(res, copy, beg, end);
-	    if (!res)
-	        return NULL;
+            res = middle_merge(res, copy, beg, end);
+            if (!res)
+                return NULL;
 
-	    beg = end + 1;
-	}
+            beg = end + 1;
+        }
 
-	end++;
+        end++;
     }
 
     res = middle_merge(res, copy, beg, end);
     if (!res)
-	    return NULL;
+        return NULL;
 
     return res;
 }

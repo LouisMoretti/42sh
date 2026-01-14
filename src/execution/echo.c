@@ -1,10 +1,9 @@
-#include "execution/builtin.h"
-
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "parser/ast.h"
+#include "execution/builtin.h"
 #include "expansion/expansion.h"
+#include "parser/ast.h"
 
 static int update_flags(char *str, int *has_n, int *has_e, int *has_E)
 {
@@ -66,28 +65,28 @@ int builtin_echo(struct ast_simple_cmd *command)
     {
         ast_element = (struct ast_element *)cur->element;
 
-	if (has_e)
-	{
-	    char *expanded = expand_string(ast_element->word);
-	    if (!expanded)
-		return 1;
+        if (has_e)
+        {
+            char *expanded = expand_string(ast_element->word);
+            if (!expanded)
+                return 1;
 
-	    free(ast_element->word);
-	    ast_element->word = expanded;
-	}
-	else
-	{
-	    char *expanded = quote_removal(ast_element->word);
-	    if (!expanded)
-		return 1;
-	    
-	    free(ast_element->word);
-	    ast_element->word = expanded;
-	}
-        
-	str = ast_element->word;
-        
-	if (!has_left_flags)
+            free(ast_element->word);
+            ast_element->word = expanded;
+        }
+        else
+        {
+            char *expanded = quote_removal(ast_element->word);
+            if (!expanded)
+                return 1;
+
+            free(ast_element->word);
+            ast_element->word = expanded;
+        }
+
+        str = ast_element->word;
+
+        if (!has_left_flags)
         {
             if (str[0] != '-' || !update_flags(str, &has_n, &has_e, &has_E))
                 has_left_flags = 1;
