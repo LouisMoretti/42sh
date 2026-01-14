@@ -11,6 +11,7 @@ enum input_method
 struct config
 {
     enum input_method method;
+    // Always initialize all parameters to 0 or NULL
     char *str_stream;
     int pretty_print;
     int arg_count;

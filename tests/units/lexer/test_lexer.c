@@ -200,7 +200,10 @@ ParameterizedTest(int *index, Lexer, test_get_token)
 {
     struct token_list_params *param = &token_list_params[*index];
 
-    struct config test_conf = { STRING, param->input, 0, NULL };
+    struct config test_conf = { 0 };
+    test_conf.method = STRING;
+    test_conf.str_stream = param->input;
+
     io_setup(&test_conf);
     int i = 0;
     while (i < RESULT_TOKEN_ARRAY_SIZE && param->result[i].type != END_OF_FILE)
@@ -238,7 +241,10 @@ ParameterizedTest(int *index, Lexer, test_peek_pop_token)
 {
     struct token_list_params *param = &token_list_params[*index];
 
-    struct config test_conf = { STRING, param->input, 0, NULL };
+    struct config test_conf = { 0 };
+    test_conf.method = STRING;
+    test_conf.str_stream = param->input;
+
     io_setup(&test_conf);
     int i = 0;
     while (i < RESULT_TOKEN_ARRAY_SIZE && param->result[i].type != END_OF_FILE)
@@ -312,7 +318,10 @@ ParameterizedTest(int *index, Lexer, test_token_consistency_enable_enable)
 {
     struct token_consistency_params *param = &token_consistency_params[*index];
 
-    struct config test_conf = { STRING, param->input, 0, NULL };
+    struct config test_conf = { 0 };
+    test_conf.method = STRING;
+    test_conf.str_stream = param->input;
+
     io_setup(&test_conf);
 
     struct token *token = peek_token(ENABLE_KEYWORDS);
@@ -358,7 +367,10 @@ ParameterizedTest(int *index, Lexer, test_token_consistency_disable_disable)
 {
     struct token_consistency_params *param = &token_consistency_params[*index];
 
-    struct config test_conf = { STRING, param->input, 0, NULL };
+    struct config test_conf = { 0 };
+    test_conf.method = STRING;
+    test_conf.str_stream = param->input;
+
     io_setup(&test_conf);
 
     struct token *token = peek_token(DISABLE_KEYWORDS);
@@ -404,7 +416,10 @@ ParameterizedTest(int *index, Lexer, test_token_consistency_enable_disable)
 {
     struct token_consistency_params *param = &token_consistency_params[*index];
 
-    struct config test_conf = { STRING, param->input, 0, NULL };
+    struct config test_conf = { 0 };
+    test_conf.method = STRING;
+    test_conf.str_stream = param->input;
+
     io_setup(&test_conf);
 
     struct token *token = peek_token(ENABLE_KEYWORDS);
@@ -450,7 +465,10 @@ ParameterizedTest(int *index, Lexer, test_token_consistency_disable_enable)
 {
     struct token_consistency_params *param = &token_consistency_params[*index];
 
-    struct config test_conf = { STRING, param->input, 0, NULL };
+    struct config test_conf = { 0 };
+    test_conf.method = STRING;
+    test_conf.str_stream = param->input;
+
     io_setup(&test_conf);
 
     struct token *token = peek_token(DISABLE_KEYWORDS);
