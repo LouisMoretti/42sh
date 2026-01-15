@@ -7,31 +7,40 @@
 #include "config/config.h"
 #include "iobackend/iobackend.h"
 #include "lexer/lexer.h"
+
+#define RESULT_TOKEN_ARRAY_SIZE 32
 #define INDICES_ARRAY_SIZE 42
 
-struct my_params
+struct token_list_params
 {
     char *name_test;
     char *input;
-    struct token result[32];
+    struct token result[RESULT_TOKEN_ARRAY_SIZE];
     enum keyword_policy policy;
 };
 
-const char *type_name[9] = { "IF",         "THEN",      "ELIF",          "ELSE",
-                             "FI",         "SEMICOLON", "KEYWORD_COUNT", "WORD",
-                             "END_OF_FILE" };
-
-TestSuite(Peak_token);
-
-/*Test(Peak_token, simple_word)
+struct token_consistency_params
 {
-    io_setup_string("echo");
-    struct token *token = peek_token(DISABLE_KEYWORDS);
-    cr_expect_eq(token->type, WORD);
-    cr_expect_str_eq(token->data, "echo");
-}*/
+    char *name_test;
+    char *input;
+    struct token enable;
+    struct token disable;
+};
 
-static struct my_params params[] = {
+const char *type_name[] = { [IF] = "IF",
+                            [THEN] = "THEN",
+                            [ELIF] = "ELIF",
+                            [ELSE] = "ELSE",
+                            [FI] = "FI",
+                            // [KEYWORD_COUNT] = "KEYWORD_COUNT",
+                            [NEW_LINE] = "NEW_LINE",
+                            [SEMICOLON] = "SEMICOLON",
+                            [WORD] = "WORD",
+                            [END_OF_FILE] = "END_OF_FILE" };
+
+TestSuite(Lexer, .timeout = 1);
+
+static struct token_list_params token_list_params[] = {
     { .name_test = "simple_word",
       .input = "echo",
       .result = { { WORD, "echo" }, { END_OF_FILE, "" } },
@@ -112,13 +121,16 @@ static struct my_params params[] = {
       .result = { { IF, "" },
                   { WORD, "true" },
                   { SEMICOLON, "" },
+                  { NEW_LINE, "" },
                   { THEN, "" },
                   { WORD, "true" },
                   { SEMICOLON, "" },
+                  { NEW_LINE, "" },
                   { ELSE, "" },
                   { IF, "" },
                   { WORD, "false" },
                   { SEMICOLON, "" },
+                  { NEW_LINE, "" },
                   { THEN, "" },
                   { WORD, "false" },
                   { SEMICOLON, "" },
@@ -152,6 +164,7 @@ static struct my_params params[] = {
       .input = "ls; #aaa\n cd;",
       .result = { { WORD, "ls" },
                   { SEMICOLON, "" },
+                  { NEW_LINE, "" },
                   { WORD, "cd" },
                   { SEMICOLON, "" },
                   { END_OF_FILE, "" } },
@@ -174,10 +187,11 @@ static struct my_params params[] = {
       .policy = ENABLE_KEYWORDS }
 };
 
-ParameterizedTestParameters(Peak_token, SimpleWord)
+ParameterizedTestParameters(Lexer, test_get_token)
 {
     static int indices[INDICES_ARRAY_SIZE] = { 0 };
-    size_t nb_params = sizeof(params) / sizeof(struct my_params);
+    size_t nb_params =
+        sizeof(token_list_params) / sizeof(struct token_list_params);
     cr_assert(nb_params < INDICES_ARRAY_SIZE,
               "Too many parameters for indices array");
 
@@ -187,19 +201,17 @@ ParameterizedTestParameters(Peak_token, SimpleWord)
     return cr_make_param_array(int, indices, nb_params);
 }
 
-ParameterizedTest(int *index, Peak_token, SimpleWord)
+ParameterizedTest(int *index, Lexer, test_get_token)
 {
-    // int argc = 3;
-    // char *argv[] = { "./42sh", "-c", param->input };
-    // set_conf(argc, argv);
-    // io_setup();
+    struct token_list_params *param = &token_list_params[*index];
 
-    struct my_params *param = &params[*index];
+    struct config test_conf = { 0 };
+    test_conf.method = STRING;
+    test_conf.str_stream = param->input;
 
-    struct config test_conf = { STRING, param->input, 0 };
     io_setup(&test_conf);
     int i = 0;
-    while (i < 32 && param->result[i].type != END_OF_FILE)
+    while (i < RESULT_TOKEN_ARRAY_SIZE && param->result[i].type != END_OF_FILE)
     {
         struct token *token = get_token(param->policy);
         cr_expect_eq(
@@ -214,4 +226,281 @@ ParameterizedTest(int *index, Peak_token, SimpleWord)
                 param->name_test, i, param->result[i].data, token->data);
         i++;
     }
+}
+
+ParameterizedTestParameters(Lexer, test_peek_pop_token)
+{
+    static int indices[INDICES_ARRAY_SIZE] = { 0 };
+    size_t nb_params =
+        sizeof(token_list_params) / sizeof(struct token_list_params);
+    cr_assert(nb_params < INDICES_ARRAY_SIZE,
+              "Too many parameters for indices array");
+
+    for (size_t i = 0; i < nb_params; i++)
+        indices[i] = i;
+
+    return cr_make_param_array(int, indices, nb_params);
+}
+
+ParameterizedTest(int *index, Lexer, test_peek_pop_token)
+{
+    struct token_list_params *param = &token_list_params[*index];
+
+    struct config test_conf = { 0 };
+    test_conf.method = STRING;
+    test_conf.str_stream = param->input;
+
+    io_setup(&test_conf);
+    int i = 0;
+    while (i < RESULT_TOKEN_ARRAY_SIZE && param->result[i].type != END_OF_FILE)
+    {
+        struct token *token = peek_token(param->policy);
+        pop_token();
+        cr_expect_eq(
+            token->type, param->result[i].type,
+            "Test %s - Wrong %dnth Token Type - Expected: %s | Got: %s",
+            param->name_test, i, type_name[param->result[i].type],
+            type_name[token->type]);
+        if (param->result[i].type == WORD && token->type == WORD)
+            cr_expect_str_eq(
+                token->data, param->result[i].data,
+                "Test %i - Wrong %dnth Token - Expected: %s | Got: %s",
+                param->name_test, i, param->result[i].data, token->data);
+        i++;
+    }
+}
+
+static struct token_consistency_params token_consistency_params[] = {
+    { .name_test = "consistency_if",
+      .input = "if",
+      .enable = { IF, "" },
+      .disable = { WORD, "if" } },
+    { .name_test = "consistency_then",
+      .input = "then",
+      .enable = { THEN, "" },
+      .disable = { WORD, "then" } },
+    { .name_test = "consistency_elif",
+      .input = "elif",
+      .enable = { ELIF, "" },
+      .disable = { WORD, "elif" } },
+    { .name_test = "consistency_else",
+      .input = "else",
+      .enable = { ELSE, "" },
+      .disable = { WORD, "else" } },
+    { .name_test = "consistency_fi",
+      .input = "fi",
+      .enable = { FI, "" },
+      .disable = { WORD, "fi" } },
+    { .name_test = "consistency_semicolon",
+      .input = ";",
+      .enable = { SEMICOLON, "" },
+      .disable = { SEMICOLON, "" } },
+    { .name_test = "consistency_new_line",
+      .input = "\n",
+      .enable = { NEW_LINE, "" },
+      .disable = { NEW_LINE, "" } },
+    { .name_test = "consistency_word",
+      .input = "42sh",
+      .enable = { WORD, "42sh" },
+      .disable = { WORD, "42sh" } },
+    { .name_test = "consistency_end_of_file",
+      .input = "",
+      .enable = { END_OF_FILE, "" },
+      .disable = { END_OF_FILE, "" } }
+};
+
+ParameterizedTestParameters(Lexer, test_token_consistency_enable_enable)
+{
+    static int indices[INDICES_ARRAY_SIZE] = { 0 };
+    size_t nb_params = sizeof(token_consistency_params)
+        / sizeof(struct token_consistency_params);
+    cr_assert(nb_params < INDICES_ARRAY_SIZE,
+              "Too many parameters for indices array");
+
+    for (size_t i = 0; i < nb_params; i++)
+        indices[i] = i;
+
+    return cr_make_param_array(int, indices, nb_params);
+}
+
+ParameterizedTest(int *index, Lexer, test_token_consistency_enable_enable)
+{
+    struct token_consistency_params *param = &token_consistency_params[*index];
+
+    struct config test_conf = { 0 };
+    test_conf.method = STRING;
+    test_conf.str_stream = param->input;
+
+    io_setup(&test_conf);
+
+    struct token *token = peek_token(ENABLE_KEYWORDS);
+
+    cr_expect_eq(token->type, param->enable.type,
+                 "Test %s - First iteration - Expected: %s | Got: %s",
+                 param->name_test, type_name[param->enable.type],
+                 type_name[token->type]);
+
+    if (token->type == WORD && param->enable.type == WORD)
+        cr_expect_str_eq(token->data, param->enable.data,
+                         "Test %s - First iteration - Expected: %s | Got: %s ",
+                         param->name_test, param->enable.data, token->data);
+
+    token = peek_token(ENABLE_KEYWORDS);
+
+    cr_expect_eq(token->type, param->enable.type,
+                 "Test %s - Second iteration - Expected: %s | Got: %s",
+                 param->name_test, type_name[param->enable.type],
+                 type_name[token->type]);
+
+    if (token->type == WORD && param->enable.type == WORD)
+        cr_expect_str_eq(token->data, param->enable.data,
+                         "Test %s - Second iteration - Expected: %s | Got: %s ",
+                         param->name_test, param->enable.data, token->data);
+}
+
+ParameterizedTestParameters(Lexer, test_token_consistency_disable_disable)
+{
+    static int indices[INDICES_ARRAY_SIZE] = { 0 };
+    size_t nb_params = sizeof(token_consistency_params)
+        / sizeof(struct token_consistency_params);
+    cr_assert(nb_params < INDICES_ARRAY_SIZE,
+              "Too many parameters for indices array");
+
+    for (size_t i = 0; i < nb_params; i++)
+        indices[i] = i;
+
+    return cr_make_param_array(int, indices, nb_params);
+}
+
+ParameterizedTest(int *index, Lexer, test_token_consistency_disable_disable)
+{
+    struct token_consistency_params *param = &token_consistency_params[*index];
+
+    struct config test_conf = { 0 };
+    test_conf.method = STRING;
+    test_conf.str_stream = param->input;
+
+    io_setup(&test_conf);
+
+    struct token *token = peek_token(DISABLE_KEYWORDS);
+
+    cr_expect_eq(token->type, param->disable.type,
+                 "Test %s - First iteration - Expected: %s | Got: %s",
+                 param->name_test, type_name[param->disable.type],
+                 type_name[token->type]);
+
+    if (token->type == WORD && param->disable.type == WORD)
+        cr_expect_str_eq(token->data, param->disable.data,
+                         "Test %s - First iteration - Expected: %s | Got: %s ",
+                         param->name_test, param->disable.data, token->data);
+
+    token = peek_token(DISABLE_KEYWORDS);
+
+    cr_expect_eq(token->type, param->disable.type,
+                 "Test %s - Second iteration - Expected: %s | Got: %s",
+                 param->name_test, type_name[param->disable.type],
+                 type_name[token->type]);
+
+    if (token->type == WORD && param->disable.type == WORD)
+        cr_expect_str_eq(token->data, param->disable.data,
+                         "Test %s - Second iteration - Expected: %s | Got: %s ",
+                         param->name_test, param->disable.data, token->data);
+}
+
+ParameterizedTestParameters(Lexer, test_token_consistency_enable_disable)
+{
+    static int indices[INDICES_ARRAY_SIZE] = { 0 };
+    size_t nb_params = sizeof(token_consistency_params)
+        / sizeof(struct token_consistency_params);
+    cr_assert(nb_params < INDICES_ARRAY_SIZE,
+              "Too many parameters for indices array");
+
+    for (size_t i = 0; i < nb_params; i++)
+        indices[i] = i;
+
+    return cr_make_param_array(int, indices, nb_params);
+}
+
+ParameterizedTest(int *index, Lexer, test_token_consistency_enable_disable)
+{
+    struct token_consistency_params *param = &token_consistency_params[*index];
+
+    struct config test_conf = { 0 };
+    test_conf.method = STRING;
+    test_conf.str_stream = param->input;
+
+    io_setup(&test_conf);
+
+    struct token *token = peek_token(ENABLE_KEYWORDS);
+
+    cr_expect_eq(token->type, param->enable.type,
+                 "Test %s - First iteration - Expected: %s | Got: %s",
+                 param->name_test, type_name[param->enable.type],
+                 type_name[token->type]);
+
+    if (token->type == WORD && param->enable.type == WORD)
+        cr_expect_str_eq(token->data, param->enable.data,
+                         "Test %s - First iteration - Expected: %s | Got: %s",
+                         param->name_test, param->enable.data, token->data);
+
+    token = peek_token(DISABLE_KEYWORDS);
+
+    cr_expect_eq(token->type, param->disable.type,
+                 "Test %s - Second iteration - Expected: %s | Got: %s",
+                 param->name_test, type_name[param->disable.type],
+                 type_name[token->type]);
+
+    if (token->type == WORD && param->disable.type == WORD)
+        cr_expect_str_eq(token->data, param->disable.data,
+                         "Test %s - Second iteration - Expected: %s | Got: %s",
+                         param->name_test, param->disable.data, token->data);
+}
+
+ParameterizedTestParameters(Lexer, test_token_consistency_disable_enable)
+{
+    static int indices[INDICES_ARRAY_SIZE] = { 0 };
+    size_t nb_params = sizeof(token_consistency_params)
+        / sizeof(struct token_consistency_params);
+    cr_assert(nb_params < INDICES_ARRAY_SIZE,
+              "Too many parameters for indices array");
+
+    for (size_t i = 0; i < nb_params; i++)
+        indices[i] = i;
+
+    return cr_make_param_array(int, indices, nb_params);
+}
+
+ParameterizedTest(int *index, Lexer, test_token_consistency_disable_enable)
+{
+    struct token_consistency_params *param = &token_consistency_params[*index];
+
+    struct config test_conf = { 0 };
+    test_conf.method = STRING;
+    test_conf.str_stream = param->input;
+
+    io_setup(&test_conf);
+
+    struct token *token = peek_token(DISABLE_KEYWORDS);
+
+    cr_expect_eq(token->type, param->disable.type,
+                 "Test %s - First iteration - Expected: %s | Got: %s",
+                 param->name_test, type_name[param->disable.type],
+                 type_name[token->type]);
+
+    if (token->type == WORD && param->disable.type == WORD)
+        cr_expect_str_eq(token->data, param->disable.data,
+                         "Test %s - First iteration - Expected: %s | Got: %s",
+                         param->name_test, param->disable.data, token->data);
+
+    token = peek_token(ENABLE_KEYWORDS);
+
+    cr_expect_eq(token->type, param->enable.type,
+                 "Test %s - Second iteration - Expected: %s | Got: %s",
+                 param->name_test, type_name[param->enable.type],
+                 type_name[token->type]);
+
+    if (token->type == WORD && param->enable.type == WORD)
+        cr_expect_str_eq(token->data, param->enable.data,
+                         "Test %s - Second iteration - Expected: %s | Got: %s",
+                         param->name_test, param->enable.data, token->data);
 }

@@ -163,7 +163,7 @@ static int execute_ast_else_clause(struct ast *ast)
     struct ast_else_clause *ast_else_clause = (struct ast_else_clause *)ast;
     assert(ast_else_clause->body_compound_list != NULL);
     if (!ast_else_clause->else_clause)
-        assert(ast_else_clause->condition_compound_list == NULL);
+        assert(ast_else_clause->condition_compound_list != NULL);
 
     int condition_exit_code =
         execute_ast_compound_list(ast_else_clause->condition_compound_list);
