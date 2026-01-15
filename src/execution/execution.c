@@ -191,7 +191,9 @@ static int execute_ast_else_clause(struct ast *ast)
     assert(ast->type == AST_CLAUSE_ELSE);
     struct ast_else_clause *ast_else_clause = (struct ast_else_clause *)ast;
     assert(ast_else_clause->body_compound_list != NULL);
-    if (!ast_else_clause->else_clause)
+    if (!ast_else_clause->condition_compound_list)
+        assert(ast_else_clause->else_clause == NULL);
+    if (ast_else_clause->else_clause)
         assert(ast_else_clause->condition_compound_list != NULL);
 
     int condition_exit_code =

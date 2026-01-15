@@ -155,7 +155,7 @@ def test_loud_condition():
         kill_42sh(ref_proc)
 
 def test_if_else_fi():
-    command_to_run = "if true; then echo Ouch; else HIhaHaHA fi"
+    command_to_run = "if true; then echo Ouch; else echo HIhaHaHA; fi"
     proc = run_command_string(command_to_run)
     ref_proc = run_ref_command_string(command_to_run)
     try:

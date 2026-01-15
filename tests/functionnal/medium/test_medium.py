@@ -71,7 +71,7 @@ def test_if_elif_then_fi():
         kill_42sh(ref_proc)
 
 def test_classic_if_with_inner_newline():
-    command_to_run = "if \\n echo -e hello there !; \\n then \\n echo gg bro; \\n fi"
+    command_to_run = "if \n echo -e hello there !; \n then \n echo gg bro; \n fi"
     proc = run_command_string(command_to_run)
     ref_proc = run_ref_command_string(command_to_run)
     try:
