@@ -28,7 +28,7 @@ int main(int argc, char **argv)
     if (conf->pretty_print)
         pretty_print((struct ast *)input);
     else
-	execute_ast(input);
+        execute_ast(input);
 
     free_ast_input(input);
 

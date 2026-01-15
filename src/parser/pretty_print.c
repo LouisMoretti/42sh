@@ -170,10 +170,10 @@ static void pp_simple_cmd(struct ast *ast, int prefix)
             pp_prefix_list(ast_simple_cmd->prefix_list, prefix);
         printf("%s", ast_simple_cmd->word);
         if (ast_simple_cmd->element_list != NULL)
-	{
-	    printf(" ");
+        {
+            printf(" ");
             pp_element_list(ast_simple_cmd->element_list, prefix);
-	}
+        }
     }
 
     printf(";");
@@ -278,7 +278,7 @@ static void pp_else_clause(struct ast *ast, int prefix)
 
     if (ast_else_clause->body_compound_list != NULL)
     {
-	add_tab(prefix);
+        add_tab(prefix);
         printf("else\n");
         prefix += 1;
         pp_compound_list(ast_else_clause->body_compound_list, prefix);
@@ -289,9 +289,9 @@ static void pp_else_clause(struct ast *ast, int prefix)
         printf("elif ");
         pp_compound_list(ast_else_clause->condition_compound_list, prefix);
         printf("; then\n");
-	prefix++;
+        prefix++;
         pp_compound_list(ast_else_clause->body_compound_list, prefix);
-	prefix--;
+        prefix--;
         printf(";\n");
         if (ast_else_clause->else_clause != NULL)
             pp_else_clause(ast_else_clause->else_clause, prefix);
@@ -375,7 +375,7 @@ static void pp_rule_if(struct ast *ast, int prefix)
 
     if (ast_rule_if->else_clause != NULL)
     {
-	printf("\n");
+        printf("\n");
         pp_else_clause(ast_rule_if->else_clause, prefix);
     }
 
