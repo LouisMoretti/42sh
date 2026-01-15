@@ -276,7 +276,7 @@ static void pp_else_clause(struct ast *ast, int prefix)
     assert(ast->type == AST_CLAUSE_ELSE);
     struct ast_else_clause *ast_else_clause = (struct ast_else_clause *)ast;
 
-    if (ast_else_clause->body_compound_list != NULL)
+    if (ast_else_clause->condition_compound_list == NULL)
     {
         add_tab(prefix);
         printf("else\n");
@@ -288,13 +288,16 @@ static void pp_else_clause(struct ast *ast, int prefix)
     {
         printf("elif ");
         pp_compound_list(ast_else_clause->condition_compound_list, prefix);
-        printf("; then\n");
+        printf(" then\n");
         prefix++;
         pp_compound_list(ast_else_clause->body_compound_list, prefix);
         prefix--;
-        printf(";\n");
         if (ast_else_clause->else_clause != NULL)
+	{
+            add_tab(prefix);
+            printf("\n");
             pp_else_clause(ast_else_clause->else_clause, prefix);
+	}
     }
 }
 
