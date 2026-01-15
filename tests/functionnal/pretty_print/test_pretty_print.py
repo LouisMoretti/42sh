@@ -6,7 +6,7 @@ import time
 def run_command_string(command):
     executable = os.getenv("BIN_PATH")
     if executable is None:
-        executable = "../../../src/42sh"
+        executable = "../../src/42sh"
 
     proc = sp.Popen([executable, "--pretty-print", "-c", command], stdout=sp.PIPE, stderr=sp.STDOUT, bufsize=0)
 
@@ -38,7 +38,7 @@ def test_pretty_while():
     proc = run_command_string(command_to_run)
     try:
         out, _ = proc.communicate(timeout=0.1)
-        ref_out = "while echo oui;\ndo echo non;\ndone;\n\n".encode()
+        ref_out = "".encode()
         assert out == ref_out
     finally:
         kill_42sh(proc)

@@ -293,11 +293,11 @@ static void pp_else_clause(struct ast *ast, int prefix)
         pp_compound_list(ast_else_clause->body_compound_list, prefix);
         prefix--;
         if (ast_else_clause->else_clause != NULL)
-	{
+        {
             add_tab(prefix);
             printf("\n");
             pp_else_clause(ast_else_clause->else_clause, prefix);
-	}
+        }
     }
 }
 
