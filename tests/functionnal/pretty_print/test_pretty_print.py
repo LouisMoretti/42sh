@@ -24,7 +24,21 @@ def test_pretty_if():
     proc = run_command_string(command_to_run)
     try:
         out, _ = proc.communicate(timeout=1)
-        ref_out = "if true; then\n\techo coucou;\nelif false; then\n\techo oui;\nelse\n\techo non;\nfi;"
+        ref_out = "if true; then\n    echo coucou;\nelif false; then\n    echo oui;\nelse\n    echo non;\nfi;\n\n"
+        assert out == ref_out
+    finally:
+        kill_42sh(proc)
+
+# ----------------------
+#         WHILE
+# ----------------------
+
+def test_pretty_while():
+    command_to_run = "while echo oui; do echo non; done"
+    proc = run_command_string(command_to_run)
+    try:
+        out, _ = proc.communicate(timeout=1)
+        ref_out = ""
         assert out == ref_out
     finally:
         kill_42sh(proc)
