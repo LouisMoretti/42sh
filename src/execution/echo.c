@@ -67,16 +67,7 @@ int builtin_echo(struct ast_simple_cmd *command)
 
         if (has_e)
         {
-            char *expanded = expand_string(ast_element->word);
-            if (!expanded)
-                return 1;
-
-            free(ast_element->word);
-            ast_element->word = expanded;
-        }
-        else
-        {
-            char *expanded = quote_removal(ast_element->word);
+            char *expanded = expand_echo(ast_element->word);
             if (!expanded)
                 return 1;
 

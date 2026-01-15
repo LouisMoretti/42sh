@@ -111,7 +111,7 @@ def test_echo_quoted_comment():
         kill_42sh(ref_proc)
 
 def test_echo_quoted_notquoted_comment():
-    command_to_run = "echo \\#escaped \"#\"quoted not#first #commented"
+    command_to_run = "echo \\#escaped \'#\'quoted not#first #commented"
     proc = run_command_string(command_to_run)
     ref_proc = run_ref_command_string(command_to_run)
     try:
