@@ -278,11 +278,11 @@ static void pp_else_clause(struct ast *ast, int prefix)
 
     if (ast_else_clause->body_compound_list != NULL)
     {
+	add_tab(prefix);
         printf("else\n");
         prefix += 1;
-        pp_compound_list(ast_else_clause->condition_compound_list, prefix);
+        pp_compound_list(ast_else_clause->body_compound_list, prefix);
         prefix -= 1;
-        printf("\n");
     }
     else
     {
@@ -379,8 +379,9 @@ static void pp_rule_if(struct ast *ast, int prefix)
         pp_else_clause(ast_rule_if->else_clause, prefix);
     }
 
+    printf("\n");
     add_tab(prefix);
-    printf("fi");
+    printf("fi;");
 }
 
 static void pp_shell_cmd(struct ast *ast, int prefix)
@@ -515,7 +516,7 @@ static void pp_list(struct ast *ast, int prefix)
     while (ast_list != NULL)
     {
         pp_and_or(ast_list->and_or, prefix);
-        printf(";\n");
+        printf("\n");
         ast_list = (struct ast_list *)ast_list->next;
     }
 }
