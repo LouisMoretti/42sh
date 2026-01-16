@@ -7,20 +7,6 @@
 
 static char *merge(char *src1, char *src2)
 {
-    // // Return NULL if one the parameters is NULL.
-    // if (!src1)
-    // {
-    //     if (src2)
-    //         free(src2);
-    //     return NULL;
-    // }
-    // else if (!src2)
-    // {
-    //     if (src1)
-    //         free(src1);
-    //     return NULL;
-    // }
-
     // Return NULL if one the parameters is NULL.
     if (!src1 || !src2)
     {
@@ -43,8 +29,8 @@ static char *merge(char *src1, char *src2)
 
     // Get total length and resize.
     size_t len = strlen(src1) + strlen(src2) + 1;
+
     char *res = realloc(src1, len);
-    // realloc failed
     if (!res)
     {
         free(src1);
@@ -54,6 +40,7 @@ static char *merge(char *src1, char *src2)
 
     // Merge strings
     res = strcat(res, src2);
+
     // Free other string
     free(src2);
     res[len - 1] = 0;
@@ -61,17 +48,18 @@ static char *merge(char *src1, char *src2)
     return res;
 }
 
-static char *middle_merge(char *result, char *copy, size_t beg, size_t i)
+static char *middle_merge(char *result, char *copy, size_t offset, size_t len)
 {
-    char *classic = strndup(copy + beg, i - beg);
-    if (!classic)
+    // Copy original string at original offset to add it after result.
+    char *original = strndup(copy + offset, len);
+    if (!original)
     {
         free(result);
         free(copy);
         return NULL;
     }
 
-    result = merge(result, classic);
+    result = merge(result, original);
     if (!result)
     {
         free(copy);
@@ -81,17 +69,17 @@ static char *middle_merge(char *result, char *copy, size_t beg, size_t i)
     return result;
 }
 
-static char *expand_single_quote(char *result, char *copy, size_t *beg,
+static char *expand_single_quote(char *result, char *copy, size_t *offset,
                                  size_t *i)
 {
-    if (*beg != *i)
-        result = middle_merge(result, copy, *beg, *i);
+    if (*offset != *i)
+        result = middle_merge(result, copy, *offset, *i - *offset);
 
     if (!result)
         return NULL;
 
     (*i)++;
-    *beg = *i;
+    *offset = *i;
     while (copy[*i] && copy[*i] != '\'')
         (*i)++;
 
@@ -102,7 +90,7 @@ static char *expand_single_quote(char *result, char *copy, size_t *beg,
         return NULL;
     }
 
-    char *quoted = strndup(copy + *beg, *i - *beg);
+    char *quoted = strndup(copy + *offset, *i - *offset);
     if (!quoted)
     {
         free(copy);
@@ -117,23 +105,30 @@ static char *expand_single_quote(char *result, char *copy, size_t *beg,
         return NULL;
     }
 
-    *beg = *i + 1;
+    *offset = *i + 1;
 
     return result;
 }
 
-static char *expand_escape(char *result, char *copy, size_t *beg, size_t *i)
+static char *expand_escape(char *result, char *copy, size_t *offset, size_t *i)
 {
-    if (*beg != *i)
-        result = middle_merge(result, copy, *beg, *i);
+    if (*offset != *i)
+        result = middle_merge(result, copy, *offset, *i - *offset);
 
     if (!result)
         return NULL;
 
+    // Go to escaped character.
     (*i)++;
-    char escaped = copy[*i];
 
-    char *tmp = strndup(&escaped, 1);
+    // char escaped = copy[*i];
+    // char *tmp = strndup(&escaped, 1);
+
+    // New string with only the escaped character.
+    char *tmp = calloc(2, sizeof(char));
+    tmp[0] = copy[*i] != '\0' ? copy[*i] : '\\';
+    // tmp[1] is already '\0'.
+
     result = merge(result, tmp);
     if (!result)
     {
@@ -141,17 +136,19 @@ static char *expand_escape(char *result, char *copy, size_t *beg, size_t *i)
         return NULL;
     }
 
-    *beg = *i + 1;
+    *offset = *i + 1;
 
     return result;
 }
 
 char *expand_string(char *string)
 {
+    // Copy original string
     char *copy = strndup(string, strlen(string));
     if (!copy)
         return NULL;
 
+    // Initialize result
     char *result = calloc(1, sizeof(char));
     if (!result)
     {
@@ -160,27 +157,27 @@ char *expand_string(char *string)
     }
 
     size_t i = 0;
-    size_t beg = 0;
+    size_t offset = 0;
 
-    while (copy[i])
+    while (copy[i] != '\0')
     {
         if (copy[i] == '\'')
         {
-            result = expand_single_quote(result, copy, &beg, &i);
+            result = expand_single_quote(result, copy, &offset, &i);
             if (!result)
                 return NULL;
         }
         else if (copy[i] == '\\')
         {
-            result = expand_escape(result, copy, &beg, &i);
+            result = expand_escape(result, copy, &offset, &i);
             if (!result)
                 return NULL;
         }
 
         i++;
     }
-    if (beg != i)
-        result = middle_merge(result, copy, beg, i);
+    if (offset != i)
+        result = middle_merge(result, copy, offset, i - offset);
     if (!result)
         return NULL;
 
@@ -203,14 +200,14 @@ char *expand_echo(char *word)
     }
 
     size_t i = 0;
-    size_t beg = 0;
+    size_t offset = 0;
 
     while (copy[i])
     {
         if (copy[i] == '\\')
         {
-            if (beg != i)
-                result = middle_merge(result, copy, beg, i);
+            if (offset != i)
+                result = middle_merge(result, copy, offset, i - offset);
             if (!result)
                 return NULL;
 
@@ -241,7 +238,7 @@ char *expand_echo(char *word)
                 break;
             }
 
-            beg = i + 1;
+            offset = i + 1;
             result = merge(result, tmp);
             if (!result)
                 return NULL;
@@ -250,8 +247,8 @@ char *expand_echo(char *word)
         i++;
     }
 
-    if (beg != i)
-        result = middle_merge(result, copy, beg, i);
+    if (offset != i)
+        result = middle_merge(result, copy, offset, i - offset);
     if (!result)
         return NULL;
 

@@ -98,6 +98,28 @@ Test(Expansion, test_expansion_string_quote_escaped_and_not_escaped)
     free(result);
 }
 
+Test(Expansion, test_expansion_string_double_escape_end)
+{
+    char *to_be_expanded = "test\\\\";
+    char *expansion_expected = "test\\";
+
+    char *result = expand_ref_execution(to_be_expanded);
+    cr_expect_str_eq(result, expansion_expected);
+
+    free(result);
+}
+
+Test(Expansion, test_expansion_string_escape_end)
+{
+    char *to_be_expanded = "test\\";
+    char *expansion_expected = "test\\";
+
+    char *result = expand_ref_execution(to_be_expanded);
+    cr_expect_str_eq(result, expansion_expected);
+
+    free(result);
+}
+
 // ==================
 //        ECHO
 // ==================
@@ -138,6 +160,28 @@ Test(Expansion, test_expansion_echo_tab)
 {
     char *to_be_expanded = "\\tabcdefgh";
     char *expansion_expected = "\tabcdefgh";
+
+    char *result = expand_ref_echo(to_be_expanded);
+    cr_expect_str_eq(result, expansion_expected);
+
+    free(result);
+}
+
+Test(Expansion, test_expansion_echo_escape_end)
+{
+    char *to_be_expanded = "test\\";
+    char *expansion_expected = "test\\";
+
+    char *result = expand_ref_echo(to_be_expanded);
+    cr_expect_str_eq(result, expansion_expected);
+
+    free(result);
+}
+
+Test(Expansion, test_expansion_echo_double_escape_end)
+{
+    char *to_be_expanded = "test\\\\";
+    char *expansion_expected = "test\\";
 
     char *result = expand_ref_echo(to_be_expanded);
     cr_expect_str_eq(result, expansion_expected);

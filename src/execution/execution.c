@@ -92,7 +92,7 @@ static int execute_ast_simple_cmd(struct ast *ast)
     else
     {
         int size = count_ast_element(ast_simple_cmd->element_list) + 1;
-        char **command = calloc(size + 1, sizeof(char *));
+        char **command = (char **)calloc(size + 1, sizeof(char *));
         if (!command)
             return 1;
 
@@ -113,7 +113,7 @@ static int execute_ast_simple_cmd(struct ast *ast)
         }
 
         int exit_code = evaluate_command(command);
-        free(command);
+        free((void *)command);
 
         return exit_code;
     }
