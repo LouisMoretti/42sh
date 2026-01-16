@@ -17,11 +17,10 @@ static enum token_type g_cur_type_before_policy = END_OF_FILE;
 static struct token g_cur_token = { .type = END_OF_FILE, .data = buffer };
 
 // TODO: Add future keywords here.
-static const char *keywords[KEYWORD_COUNT] = { [IF] = "if",
-                                               [THEN] = "then",
-                                               [ELIF] = "elif",
-                                               [ELSE] = "else",
-                                               [FI] = "fi" };
+static const char *keywords[KEYWORD_COUNT] = {
+    [IF] = "if",     [THEN] = "then", [ELIF] = "elif",
+    [ELSE] = "else", [FI] = "fi",     [NEGATION] = "!"
+};
 
 static int is_space(int c)
 {
@@ -45,6 +44,11 @@ static int pop_peek_chr(void)
     return peek_chr();
 }
 
+static int is_end_of_token(int c)
+{
+    return c == EOF || is_space(c) || c == '\n' || c == ';' || c == '|';
+}
+
 static int fill_buffer(void)
 {
     int c = peek_chr();
@@ -58,7 +62,7 @@ static int fill_buffer(void)
     {
         // TODO: Add '>' to break loop.
 
-        if (!is_quoted && !is_escaped && (is_space(c) || c == '\n' || c == ';'))
+        if (!is_quoted && !is_escaped && is_end_of_token(c))
             break;
 
         if (!is_escaped && (c == '\"' || c == '\'')
@@ -152,6 +156,16 @@ struct token *peek_token(enum keyword_policy policy)
     {
         // TODO: Handle double semicolon token (For step 4).
         g_cur_type_before_policy = SEMICOLON;
+        set_token_type_with_policy(policy);
+        g_has_cur = 1;
+        pop_chr();
+        return &g_cur_token;
+    }
+
+    if (c == '|')
+    {
+        // TODO: Handle double pipe token (For step 4).
+        g_cur_type_before_policy = PIPE;
         set_token_type_with_policy(policy);
         g_has_cur = 1;
         pop_chr();

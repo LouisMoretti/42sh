@@ -32,9 +32,11 @@ const char *type_name[] = { [IF] = "IF",
                             [ELIF] = "ELIF",
                             [ELSE] = "ELSE",
                             [FI] = "FI",
+                            [NEGATION] = "NEGATION",
                             // [KEYWORD_COUNT] = "KEYWORD_COUNT",
                             [NEW_LINE] = "NEW_LINE",
                             [SEMICOLON] = "SEMICOLON",
+                            [PIPE] = "PIPE",
                             [WORD] = "WORD",
                             [END_OF_FILE] = "END_OF_FILE" };
 
@@ -173,7 +175,8 @@ static struct token_list_params token_list_params[] = {
       .input = "a #b",
       .result = { { WORD, "a" }, { END_OF_FILE, "" } },
       .policy = ENABLE_KEYWORDS },
-    { .input = "echo then if else fi then",
+    { .name_test = "echo_if",
+      .input = "echo then if else fi then",
       .result = { { WORD, "echo" },
                   { WORD, "then" },
                   { WORD, "if" },
@@ -182,9 +185,22 @@ static struct token_list_params token_list_params[] = {
                   { WORD, "then" },
                   { END_OF_FILE, "" } },
       .policy = DISABLE_KEYWORDS },
-    { .input = "",
+    { .name_test = "empty_input",
+      .input = "",
       .result = { { END_OF_FILE, "" } },
-      .policy = ENABLE_KEYWORDS }
+      .policy = ENABLE_KEYWORDS },
+    { .name_test = "not_true",
+      .input = "! true",
+      .result = { { NEGATION, "" }, { WORD, "true" }, { END_OF_FILE, "" } },
+      .policy = ENABLE_KEYWORDS },
+    { .name_test = "pipe_two_simple_commands",
+      .input = "echo 42sh | cat",
+      .result = { { WORD, "echo" },
+                  { WORD, "42sh" },
+                  { PIPE, "" },
+                  { WORD, "cat" },
+                  { END_OF_FILE, "" } },
+      .policy = DISABLE_KEYWORDS }
 };
 
 ParameterizedTestParameters(Lexer, test_get_token)
@@ -306,7 +322,15 @@ static struct token_consistency_params token_consistency_params[] = {
     { .name_test = "consistency_end_of_file",
       .input = "",
       .enable = { END_OF_FILE, "" },
-      .disable = { END_OF_FILE, "" } }
+      .disable = { END_OF_FILE, "" } },
+    { .name_test = "consistency_negation",
+      .input = "!",
+      .enable = { NEGATION, "" },
+      .disable = { WORD, "!" } },
+    { .name_test = "consistency_pipe",
+      .input = "|",
+      .enable = { PIPE, "" },
+      .disable = { PIPE, "" } }
 };
 
 ParameterizedTestParameters(Lexer, test_token_consistency_enable_enable)
