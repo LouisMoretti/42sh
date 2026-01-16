@@ -89,11 +89,21 @@ struct ast *parse_pipeline(void)
 
     ((struct ast_pipeline *)pipeline)->cmd = parse_cmd();
 
-    // TODO: Check for SCL for negation in next.
-    if (peek_token(ENABLE_KEYWORDS)->type == PIPE)
+    struct ast_pipeline *cur = (struct ast_pipeline *)pipeline;
+    while (peek_token(ENABLE_KEYWORDS)->type == PIPE)
     {
         pop_token();
-        ((struct ast_pipeline *)pipeline)->next = parse_pipeline();
+
+        // TODO: Return error.
+        if (peek_token(ENABLE_KEYWORDS)->type == NEGATION)
+            warnx("parse_pipeline: Wrong token type. No negation after pipe.");
+
+        while (peek_token(ENABLE_KEYWORDS)->type == NEW_LINE)
+            pop_token();
+
+        cur->next = init_ast(AST_PIPELINE);
+        cur = (struct ast_pipeline *)cur->next;
+        cur->cmd = parse_cmd();
     }
 
     return pipeline;
