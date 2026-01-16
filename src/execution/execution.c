@@ -57,11 +57,11 @@ static int execute_ast_simple_cmd(struct ast *ast)
     assert(ast_simple_cmd->word != NULL);
 
     char *expanded = expand_string(ast_simple_cmd->word);
-    if (expanded)
-    {
-        free(ast_simple_cmd->word);
-        ast_simple_cmd->word = expanded;
-    }
+    if (!expanded)
+        return 1;
+
+    free(ast_simple_cmd->word);
+    ast_simple_cmd->word = expanded;
 
     struct ast_element_list *ast_element_list =
         (struct ast_element_list *)ast_simple_cmd->element_list;

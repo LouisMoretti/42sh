@@ -138,6 +138,7 @@ static char *expand_escape(char *result, char *copy, size_t *offset, size_t *i)
     tmp[0] = copy[*i] != '\0' ? copy[*i] : '\\';
     // tmp[1] is already '\0'.
 
+    // Add the escaped character to result.
     result = merge(result, tmp);
     if (!result)
     {
@@ -168,18 +169,21 @@ char *expand_string(char *string)
     size_t i = 0;
     size_t offset = 0;
 
+    // Loop through the string to find single quotes or escaped characters.
     while (copy[i] != '\0')
     {
         if (copy[i] == '\'')
         {
             result = expand_single_quote(result, copy, &offset, &i);
             if (!result)
+                // result and copy are free inside expand_single_quote.
                 return NULL;
         }
         else if (copy[i] == '\\')
         {
             result = expand_escape(result, copy, &offset, &i);
             if (!result)
+                // result and copy are free inside expand_escape.
                 return NULL;
         }
 
@@ -191,6 +195,7 @@ char *expand_string(char *string)
         result = middle_merge(result, copy, offset, i - offset);
 
     if (!result)
+        // result and copy are free inside middle_merge.
         return NULL;
 
     free(copy);
@@ -216,7 +221,8 @@ char *expand_echo(char *word)
     size_t i = 0;
     size_t offset = 0;
 
-    while (copy[i])
+    // Loop through the string to find single quotes or escaped characters.
+    while (copy[i] != '\0')
     {
         if (copy[i] == '\\')
         {
@@ -267,6 +273,7 @@ char *expand_echo(char *word)
         result = middle_merge(result, copy, offset, i - offset);
 
     if (!result)
+        // result and copy are free inside middle_merge.
         return NULL;
 
     free(copy);
