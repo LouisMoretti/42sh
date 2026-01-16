@@ -10,6 +10,7 @@ configure
 configure~
 depcomp
 install-sh
+install-sh~
 missing
 config.log
 config.status

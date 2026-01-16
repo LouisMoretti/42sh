@@ -25,13 +25,14 @@ int main(int argc, char **argv)
     // Execute AST
     assert(input->type == AST_INPUT);
 
+    int exit_code = 0;
     if (conf->pretty_print)
         pretty_print((struct ast *)input);
-
-    execute_ast(input);
+    else
+        exit_code = execute_ast(input);
 
     free_ast_input(input);
 
     io_close();
-    return 0;
+    return exit_code;
 }
