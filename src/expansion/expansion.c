@@ -73,6 +73,7 @@ static char *middle_merge(char *result, char *copy, size_t offset, size_t len)
 static char *expand_single_quote(char *result, char *copy, size_t *offset,
                                  size_t *i)
 {
+    // Add cached characters to result.
     if (*offset != *i)
         result = middle_merge(result, copy, *offset, *i - *offset);
 
@@ -122,6 +123,7 @@ static char *expand_single_quote(char *result, char *copy, size_t *offset,
 
 static char *expand_escape(char *result, char *copy, size_t *offset, size_t *i)
 {
+    // Add cached characters to result.
     if (*offset != *i)
         result = middle_merge(result, copy, *offset, *i - *offset);
 
@@ -184,6 +186,7 @@ char *expand_string(char *string)
         i++;
     }
 
+    // Add cached characters to result.
     if (offset != i)
         result = middle_merge(result, copy, offset, i - offset);
 
@@ -217,6 +220,7 @@ char *expand_echo(char *word)
     {
         if (copy[i] == '\\')
         {
+            // Add cached characters to result.
             if (offset != i)
                 result = middle_merge(result, copy, offset, i - offset);
 
@@ -258,6 +262,7 @@ char *expand_echo(char *word)
         i++;
     }
 
+    // Add cached characters to result.
     if (offset != i)
         result = middle_merge(result, copy, offset, i - offset);
 
