@@ -81,17 +81,20 @@ struct ast *parse_pipeline(void)
 {
     struct ast *pipeline = init_ast(AST_PIPELINE);
 
-    // TODO: Step 2.
-    // if (peek_token(ENABLE_KEYWORDS)->type == NEGATION)
-    // {
-    // }
+    if (peek_token(ENABLE_KEYWORDS)->type == NEGATION)
+    {
+        pop_token();
+        ((struct ast_pipeline *)pipeline)->negation = 1;
+    }
 
     ((struct ast_pipeline *)pipeline)->cmd = parse_cmd();
 
-    // TODO: Step 2.
-    // if (peek_token(ENABLE_KEYWORDS)->type == PIPE)
-    // {
-    // }
+    // TODO: Check for SCL for negation in next.
+    if (peek_token(ENABLE_KEYWORDS)->type == PIPE)
+    {
+        pop_token();
+        ((struct ast_pipeline *)pipeline)->next = parse_pipeline();
+    }
 
     return pipeline;
 }
