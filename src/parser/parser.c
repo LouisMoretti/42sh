@@ -8,20 +8,44 @@
 #include "lexer/lexer.h"
 #include "parser/ast.h"
 
-// static struct token *pop_peek_token(enum keyword_policy policy)
-// {
-//     pop_token();
-//     return peek_token(policy);
-// }
+static struct ast *parse_list(void);
+static struct ast *parse_and_or(void);
+static struct ast *parse_pipeline(void);
+static struct ast *parse_cmd(void);
+static struct ast *parse_simple_cmd(void);
+static struct ast *parse_shell_cmd(void);
+static struct ast *parse_rule_while(void);
+static struct ast *parse_rule_until(void);
+static struct ast *parse_rule_if(void);
+static struct ast *parse_compound_list(void);
+static struct ast *parse_else_clause(void);
 
 const char *type_name[] = { [IF] = "IF",
                             [THEN] = "THEN",
                             [ELIF] = "ELIF",
                             [ELSE] = "ELSE",
                             [FI] = "FI",
+                            // [FOR] = "FOR",
+                            [DO] = "DO",
+                            [DONE] = "DONE",
+                            [WHILE] = "WHILE",
+                            [UNTIL] = "UNTIL",
+                            // [CASE] = "CASE",
+                            // [IN] = "IN",
+                            // [ESAC] = "ESAC",
+                            [NEGATION] = "NEGATION",
                             // [KEYWORD_COUNT] = "KEYWORD_COUNT",
                             [NEW_LINE] = "NEW_LINE",
                             [SEMICOLON] = "SEMICOLON",
+                            // [DOUBLE_SEMICOLON] = "DOUBLE_SEMICOLON",
+                            [PIPE] = "PIPE",
+                            // [DOUBLE_PIPE] = "DOUBLE_PIPE",
+                            // [AMPERSAND] = "AMPERSAND",
+                            // [DOUBLE_AMPERSAND] = "DOUBLE_AMPERSAND",
+                            // [LEFT_PARANTHESIS] = "LEFT_PARANTHESIS",
+                            // [RIGHT_PARANTHESIS] = "RIGHT_PARANTHESIS",
+                            // [LEFT_BRACKET] = "LEFT_BRACKET",
+                            // [RIGHT_BRACKET] = "RIGHT_BRACKET",
                             [WORD] = "WORD",
                             [END_OF_FILE] = "END_OF_FILE" };
 
@@ -42,7 +66,7 @@ struct ast *parse_input(void)
     return ast_input;
 }
 
-struct ast *parse_list(void)
+static struct ast *parse_list(void)
 {
     struct ast *list = init_ast(AST_LIST);
 
@@ -62,7 +86,7 @@ struct ast *parse_list(void)
     return list;
 }
 
-struct ast *parse_and_or(void)
+static struct ast *parse_and_or(void)
 {
     struct ast *and_or = init_ast(AST_AND_OR);
 
@@ -77,7 +101,7 @@ struct ast *parse_and_or(void)
     return and_or;
 }
 
-struct ast *parse_pipeline(void)
+static struct ast *parse_pipeline(void)
 {
     struct ast *pipeline = init_ast(AST_PIPELINE);
 
@@ -109,7 +133,7 @@ struct ast *parse_pipeline(void)
     return pipeline;
 }
 
-struct ast *parse_cmd(void)
+static struct ast *parse_cmd(void)
 {
     struct ast *cmd = init_ast(AST_CMD);
 
@@ -121,7 +145,7 @@ struct ast *parse_cmd(void)
     return cmd;
 }
 
-struct ast *parse_simple_cmd(void)
+static struct ast *parse_simple_cmd(void)
 {
     struct ast *cmd = init_ast(AST_SIMPLE_CMD);
 
@@ -160,25 +184,97 @@ struct ast *parse_simple_cmd(void)
     return cmd;
 }
 
-struct ast *parse_shell_cmd(void)
+static struct ast *parse_shell_cmd(void)
 {
     struct ast *cmd = init_ast(AST_SHELL_CMD);
 
     struct token *tok = peek_token(ENABLE_KEYWORDS);
 
     // TODO: Step 2: Add other rules.
-    if (tok->type != IF)
-        warnx(
-            "parse_shell_cmd: Unsupported shell command. Expected IF | Got: %s",
-            type_name[tok->type]);
+    if (tok->type != IF && tok->type != WHILE && tok->type != UNTIL)
+        warnx("parse_shell_cmd: Unsupported shell command. Expected IF or "
+              "WHILE or UNTIL | Got: %s",
+              type_name[tok->type]);
 
     if (tok->type == IF)
         ((struct ast_shell_cmd *)cmd)->rule = parse_rule_if();
+    else if (tok->type == WHILE)
+        ((struct ast_shell_cmd *)cmd)->rule = parse_rule_while();
+    else if (tok->type == UNTIL)
+        ((struct ast_shell_cmd *)cmd)->rule = parse_rule_until();
 
     return cmd;
 }
 
-struct ast *parse_rule_if(void)
+static struct ast *parse_rule_while(void)
+{
+    struct ast *rule_while = init_ast(AST_RULE_WHILE);
+
+    struct token *tok = peek_token(ENABLE_KEYWORDS);
+    // TODO: Return error.
+    if (tok->type != WHILE)
+        warnx("parse_rule_while: Wrong token type. Expected WHILE | Got: %s",
+              type_name[tok->type]);
+    pop_token();
+
+    ((struct ast_rule_while *)rule_while)->condition_compound_list =
+        parse_compound_list();
+
+    tok = peek_token(ENABLE_KEYWORDS);
+    // TODO: Return error.
+    if (tok->type != DO)
+        warnx("parse_rule_while: Wrong token type. Expected DO | Got: %s",
+              type_name[tok->type]);
+    pop_token();
+
+    ((struct ast_rule_while *)rule_while)->body_compound_list =
+        parse_compound_list();
+
+    tok = peek_token(ENABLE_KEYWORDS);
+    // TODO: Return error.
+    if (tok->type != DONE)
+        warnx("parse_rule_while: Wrong token type. Expected DONE | Got: %s",
+              type_name[tok->type]);
+    pop_token();
+
+    return rule_while;
+}
+
+static struct ast *parse_rule_until(void)
+{
+    struct ast *rule_until = init_ast(AST_RULE_UNTIL);
+
+    struct token *tok = peek_token(ENABLE_KEYWORDS);
+    // TODO: Return error.
+    if (tok->type != UNTIL)
+        warnx("parse_rule_until: Wrong token type. Expected UNTIL | Got: %s",
+              type_name[tok->type]);
+    pop_token();
+
+    ((struct ast_rule_until *)rule_until)->condition_compound_list =
+        parse_compound_list();
+
+    tok = peek_token(ENABLE_KEYWORDS);
+    // TODO: Return error.
+    if (tok->type != DO)
+        warnx("parse_rule_until: Wrong token type. Expected DO | Got: %s",
+              type_name[tok->type]);
+    pop_token();
+
+    ((struct ast_rule_until *)rule_until)->body_compound_list =
+        parse_compound_list();
+
+    tok = peek_token(ENABLE_KEYWORDS);
+    // TODO: Return error.
+    if (tok->type != DONE)
+        warnx("parse_rule_until: Wrong token type. Expected DONE | Got: %s",
+              type_name[tok->type]);
+    pop_token();
+
+    return rule_until;
+}
+
+static struct ast *parse_rule_if(void)
 {
     struct ast *rule_if = init_ast(AST_RULE_IF);
 
@@ -217,7 +313,7 @@ struct ast *parse_rule_if(void)
     return rule_if;
 }
 
-struct ast *parse_compound_list(void)
+static struct ast *parse_compound_list(void)
 {
     struct ast *compound_list = init_ast(AST_COMPOUND_LIST);
 
@@ -258,7 +354,7 @@ struct ast *parse_compound_list(void)
     return compound_list;
 }
 
-struct ast *parse_else_clause(void)
+static struct ast *parse_else_clause(void)
 {
     // TODO: Return error.
     if (peek_token(ENABLE_KEYWORDS)->type != ELIF
@@ -281,9 +377,9 @@ struct ast *parse_else_clause(void)
             parse_compound_list();
 
         if (peek_token(ENABLE_KEYWORDS)->type != THEN)
-            warnx(
-                "parse_else_clause: Wrong token type. Expected THEN | Got: %s",
-                type_name[peek_token(ENABLE_KEYWORDS)->type]);
+            warnx("parse_else_clause: Wrong token type. Expected THEN | "
+                  "Got: %s",
+                  type_name[peek_token(ENABLE_KEYWORDS)->type]);
         pop_token();
     }
 
@@ -295,7 +391,8 @@ struct ast *parse_else_clause(void)
     {
         if (peek_token(ENABLE_KEYWORDS)->type != ELIF
             && peek_token(ENABLE_KEYWORDS)->type != ELSE)
-            warnx("parse_else_clause: Wrong token type. Expected ELIF or ELSE "
+            warnx("parse_else_clause: Wrong token type. Expected ELIF or "
+                  "ELSE "
                   "| Got: %s",
                   type_name[peek_token(ENABLE_KEYWORDS)->type]);
         ((struct ast_else_clause *)else_clause)->else_clause =
