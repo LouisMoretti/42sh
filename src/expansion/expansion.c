@@ -151,6 +151,38 @@ static char *expand_escape(char *result, char *copy, size_t *offset, size_t *i)
     return result;
 }
 
+static char *expand_var(char *result, char *copy, size_t *offset, size_t *i)
+{
+    
+    if (*offset != *i)
+        result = middle_merge(result, copy, *offset, *i - *offset);
+
+    if (!result)
+        return NULL;
+
+    (*i)++; // Skipping $
+
+    char is_looked = ' ';
+    if(copy[*i] == '{')
+    {
+        is_looked = '}'
+        (*i)++;
+    } 
+    offset = *i;
+
+    while (copy[*i] != is_looked)
+        (*i)++;
+    char *name_var = strndup(copy + *offset, *i - *offset);
+    if(!name_var)
+        return NULL;
+    // hash_map_get -> val_var;
+    free(name_var);
+    result = merge(result, val_var);
+    if(!result)
+        return NULL;
+    return result;
+}
+
 char *expand_string(char *string)
 {
     // Copy original string.
@@ -172,21 +204,30 @@ char *expand_string(char *string)
     // Loop through the string to find single quotes or escaped characters.
     while (copy[i] != '\0')
     {
-        if (copy[i] == '\'')
+        switch(copy[i])
         {
-            result = expand_single_quote(result, copy, &offset, &i);
-            if (!result)
-                // result and copy are free inside expand_single_quote.
-                return NULL;
-        }
-        else if (copy[i] == '\\')
-        {
-            result = expand_escape(result, copy, &offset, &i);
-            if (!result)
-                // result and copy are free inside expand_escape.
-                return NULL;
-        }
+            case '\'':
+                result = expand_single_quote(result, copy, &offset, &i);
+                if (!result)
+                    // result and copy are free inside expand_single_quote.
+                    return NULL;
+                break;
 
+            case '\\':
+                result = expand_escape(result, copy, &offset, &i);
+                if (!result)
+                    // result and copy are free inside expand_escape.
+                    return NULL;
+                break;
+            case '$':
+                result = expand_var(result, copy, &offset, &i);
+                if (!result)
+                    // result and copy are free inside expand_escape.
+                    return NULL;
+                break;
+            default:
+                break;
+        }
         i++;
     }
 
@@ -216,19 +257,19 @@ static char *expand_echo_escape(char *copy, size_t *i)
     (*i)++;
     switch (copy[*i])
     {
-    case 'n':
-        tmp[0] = '\n';
-        break;
-    case 't':
-        tmp[0] = '\t';
-        break;
-    case '\\':
-        tmp[0] = '\\';
-        break;
-    default:
-        tmp[0] = '\\';
-        tmp[1] = copy[*i];
-        break;
+        case 'n':
+            tmp[0] = '\n';
+            break;
+        case 't':
+            tmp[0] = '\t';
+            break;
+        case '\\':
+            tmp[0] = '\\';
+            break;
+        default:
+            tmp[0] = '\\';
+            tmp[1] = copy[*i];
+            break;
     }
 
     return tmp;
@@ -286,3 +327,4 @@ char *expand_echo(char *word)
 
     return result;
 }
+
