@@ -203,6 +203,37 @@ char *expand_string(char *string)
     return result;
 }
 
+static char *expand_echo_escape(char *copy, size_t *i)
+{
+    char *tmp = calloc(3, sizeof(char));
+    if (!tmp)
+    {
+        free(copy);
+
+        return NULL;
+    }
+
+    (*i)++;
+    switch (copy[*i])
+    {
+    case 'n':
+        tmp[0] = '\n';
+        break;
+    case 't':
+        tmp[0] = '\t';
+        break;
+    case '\\':
+        tmp[0] = '\\';
+        break;
+    default:
+        tmp[0] = '\\';
+        tmp[1] = copy[*i];
+        break;
+    }
+
+    return tmp;
+}
+
 char *expand_echo(char *word)
 {
     // Copy original string.
@@ -233,32 +264,7 @@ char *expand_echo(char *word)
             if (!result)
                 return NULL;
 
-            char *tmp = calloc(3, sizeof(char));
-            if (!tmp)
-            {
-                free(copy);
-                free(result);
-                return NULL;
-            }
-
-            i++;
-            switch (copy[i])
-            {
-            case 'n':
-                tmp[0] = '\n';
-                break;
-            case 't':
-                tmp[0] = '\t';
-                break;
-            case '\\':
-                tmp[0] = '\\';
-                break;
-            default:
-                tmp[0] = '\\';
-                tmp[1] = copy[i];
-                break;
-            }
-
+            char *tmp = expand_echo_escape(copy, &i);
             offset = i + 1;
             result = merge(result, tmp);
             if (!result)
