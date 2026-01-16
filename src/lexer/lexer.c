@@ -18,9 +18,9 @@ static struct token g_cur_token = { .type = END_OF_FILE, .data = buffer };
 
 // TODO: Add future keywords here.
 static const char *keywords[KEYWORD_COUNT] = {
-    [IF] = "if",       [THEN] = "then",  [ELIF] = "elif", [ELSE] = "else",
-    [FI] = "fi",       [NEGATION] = "!", [DO] = "do",     [DONE] = "done",
-    [WHILE] = "while", [UNTIL] = "until"
+    [IF] = "if",       [THEN] = "then",   [ELIF] = "elif", [ELSE] = "else",
+    [FI] = "fi",       [NEGATION] = "!",  [DO] = "do",     [DONE] = "done",
+    [WHILE] = "while", [UNTIL] = "until", [FOR] = "for",   [IN] = "in"
 };
 
 static int is_space(int c)
