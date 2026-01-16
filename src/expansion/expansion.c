@@ -7,18 +7,29 @@
 
 static char *merge(char *src1, char *src2)
 {
-    if (!src1)
-    {
-        if (src2)
-            free(src2);
-        return NULL;
-    }
-    else if (!src2)
+    // // Return NULL if one the parameters is NULL.
+    // if (!src1)
+    // {
+    //     if (src2)
+    //         free(src2);
+    //     return NULL;
+    // }
+    // else if (!src2)
+    // {
+    //     if (src1)
+    //         free(src1);
+    //     return NULL;
+    // }
+
+    // Return NULL if one the parameters is NULL.
+    if (!src1 || !src2)
     {
         free(src1);
+        free(src2);
         return NULL;
     }
 
+    // If one string is empty return the other.
     if (src1[0] == 0)
     {
         free(src1);
@@ -30,21 +41,24 @@ static char *merge(char *src1, char *src2)
         return src1;
     }
 
+    // Get total length and resize.
     size_t len = strlen(src1) + strlen(src2) + 1;
-    src1 = realloc(src1, len);
+    char *res = realloc(src1, len);
     // realloc failed
-    if (!src1)
+    if (!res)
     {
+        free(src1);
         free(src2);
         return NULL;
     }
+
     // Merge strings
-    src1 = strcat(src1, src2);
+    res = strcat(res, src2);
     // Free other string
     free(src2);
-    src1[len - 1] = 0;
+    res[len - 1] = 0;
 
-    return src1;
+    return res;
 }
 
 static char *middle_merge(char *result, char *copy, size_t beg, size_t i)
@@ -54,7 +68,6 @@ static char *middle_merge(char *result, char *copy, size_t beg, size_t i)
     {
         free(result);
         free(copy);
-
         return NULL;
     }
 
@@ -62,7 +75,6 @@ static char *middle_merge(char *result, char *copy, size_t beg, size_t i)
     if (!result)
     {
         free(copy);
-
         return NULL;
     }
 
@@ -74,6 +86,7 @@ static char *expand_single_quote(char *result, char *copy, size_t *beg,
 {
     if (*beg != *i)
         result = middle_merge(result, copy, *beg, *i);
+
     if (!result)
         return NULL;
 
@@ -86,7 +99,6 @@ static char *expand_single_quote(char *result, char *copy, size_t *beg,
     {
         free(copy);
         free(result);
-
         return NULL;
     }
 
@@ -95,7 +107,6 @@ static char *expand_single_quote(char *result, char *copy, size_t *beg,
     {
         free(copy);
         free(result);
-
         return NULL;
     }
 
@@ -103,7 +114,6 @@ static char *expand_single_quote(char *result, char *copy, size_t *beg,
     if (!result)
     {
         free(copy);
-
         return NULL;
     }
 
@@ -116,6 +126,7 @@ static char *expand_escape(char *result, char *copy, size_t *beg, size_t *i)
 {
     if (*beg != *i)
         result = middle_merge(result, copy, *beg, *i);
+
     if (!result)
         return NULL;
 
@@ -127,7 +138,6 @@ static char *expand_escape(char *result, char *copy, size_t *beg, size_t *i)
     if (!result)
     {
         free(copy);
-
         return NULL;
     }
 
@@ -146,9 +156,9 @@ char *expand_string(char *string)
     if (!result)
     {
         free(copy);
-
         return NULL;
     }
+
     size_t i = 0;
     size_t beg = 0;
 
@@ -189,9 +199,9 @@ char *expand_echo(char *word)
     if (!result)
     {
         free(copy);
-
         return NULL;
     }
+
     size_t i = 0;
     size_t beg = 0;
 
