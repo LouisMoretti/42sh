@@ -1,6 +1,8 @@
 #include "execution/execution.h"
 
 #include <assert.h>
+#include <err.h>
+#include <errno.h>
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
@@ -8,10 +10,13 @@
 #include <unistd.h>
 
 #include "execution/builtin.h"
+#include "expansion/expansion.h"
 
 #define BUILTIN_ECHO "echo"
 #define BUILTIN_FALSE "false"
 #define BUILTIN_TRUE "true"
+#define COMMAND_NOT_FOUND_ERROR 127
+#define DEFAULT_ERROR 1
 
 typedef int (*exec)(struct ast *);
 
@@ -24,14 +29,32 @@ static int evaluate_command(char **command)
         return 1;
     if (!pid)
     {
-        exit(execvp(command[0], command));
+        execvp(command[0], command);
+        switch (errno)
+        {
+        case ENOENT:
+            warnx("evaluate_command: Command Not Found. Got: '%s'", command[0]);
+            exit(COMMAND_NOT_FOUND_ERROR);
+        default:
+            warnx("evaluate_command: %s. Got: '%s'", strerror(errno),
+                  command[0]);
+            exit(DEFAULT_ERROR);
+        }
     }
     else
     {
         int wstatus;
         wait(&wstatus);
 
-        return WEXITSTATUS(wstatus);
+        // TODO: Check with ACU if handling signals is necessary
+        if (WIFEXITED(wstatus))
+            return WEXITSTATUS(wstatus);
+        else if (WIFSIGNALED(wstatus))
+            return WTERMSIG(wstatus);
+        else if (WIFSTOPPED(wstatus))
+            return WSTOPSIG(wstatus);
+        else
+            return DEFAULT_ERROR;
     }
 }
 
@@ -54,6 +77,34 @@ static int execute_ast_simple_cmd(struct ast *ast)
     assert(ast->type == AST_SIMPLE_CMD);
     struct ast_simple_cmd *ast_simple_cmd = (struct ast_simple_cmd *)ast;
     assert(ast_simple_cmd->word != NULL);
+
+    char *expanded = expand_string(ast_simple_cmd->word);
+    if (!expanded)
+        return 1;
+
+    free(ast_simple_cmd->word);
+    ast_simple_cmd->word = expanded;
+
+    struct ast_element_list *ast_element_list =
+        (struct ast_element_list *)ast_simple_cmd->element_list;
+
+    while (ast_element_list)
+    {
+        struct ast_element *ast_element =
+            (struct ast_element *)ast_element_list->element;
+        if (ast_element->word)
+        {
+            char *expanded = expand_string(ast_element->word);
+            if (!expanded)
+                return 1;
+
+            free(ast_element->word);
+            ast_element->word = expanded;
+        }
+
+        ast_element_list = (struct ast_element_list *)ast_element_list->next;
+    }
+
     if (!strcmp(ast_simple_cmd->word, BUILTIN_ECHO))
         return builtin_echo(ast_simple_cmd);
     else if (!strcmp(ast_simple_cmd->word, BUILTIN_FALSE))
@@ -63,7 +114,7 @@ static int execute_ast_simple_cmd(struct ast *ast)
     else
     {
         int size = count_ast_element(ast_simple_cmd->element_list) + 1;
-        char **command = calloc(size + 1, sizeof(char *));
+        char **command = (char **)calloc(size + 1, sizeof(char *));
         if (!command)
             return 1;
 
@@ -84,7 +135,7 @@ static int execute_ast_simple_cmd(struct ast *ast)
         }
 
         int exit_code = evaluate_command(command);
-        free(command);
+        free((void *)command);
 
         return exit_code;
     }
@@ -162,7 +213,9 @@ static int execute_ast_else_clause(struct ast *ast)
     assert(ast->type == AST_CLAUSE_ELSE);
     struct ast_else_clause *ast_else_clause = (struct ast_else_clause *)ast;
     assert(ast_else_clause->body_compound_list != NULL);
-    if (!ast_else_clause->else_clause)
+    if (!ast_else_clause->condition_compound_list)
+        assert(ast_else_clause->else_clause == NULL);
+    if (ast_else_clause->else_clause)
         assert(ast_else_clause->condition_compound_list != NULL);
 
     int condition_exit_code =

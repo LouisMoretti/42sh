@@ -29,8 +29,8 @@ def test_many_if():
     proc = run_command_string(command_to_run)
     ref_proc = run_ref_command_string(command_to_run)
     try:
-        out, err = proc.communicate(timeout=1)
-        ref_out, ref_err = ref_proc.communicate(timeout=1)
+        out, err = proc.communicate(timeout=0.1)
+        ref_out, ref_err = ref_proc.communicate(timeout=0.1)
         assert out == ref_out
         assert err == ref_err
         assert proc.returncode == ref_proc.returncode
@@ -49,8 +49,8 @@ def test_mixed_demon():
     proc = run_command_string(command_to_run)
     ref_proc = run_ref_command_string(command_to_run)
     try:
-        out, err = proc.communicate(timeout=1)
-        ref_out, ref_err = ref_proc.communicate(timeout=1)
+        out, err = proc.communicate(timeout=0.1)
+        ref_out, ref_err = ref_proc.communicate(timeout=0.1)
         assert out == ref_out
         assert err == ref_err
         assert proc.returncode == ref_proc.returncode

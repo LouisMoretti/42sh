@@ -29,8 +29,8 @@ def test_echo_arg_with_newline():
     proc = run_command_string(command_to_run)
     ref_proc = run_ref_command_string(command_to_run)
     try:
-        out, err = proc.communicate(timeout=1)
-        ref_out, ref_err = ref_proc.communicate(timeout=1)
+        out, err = proc.communicate(timeout=0.1)
+        ref_out, ref_err = ref_proc.communicate(timeout=0.1)
         assert out == ref_out
         assert err == ref_err
         assert proc.returncode == ref_proc.returncode
@@ -43,8 +43,8 @@ def test_echo_arg_with_skip_and_newline():
     proc = run_command_string(command_to_run)
     ref_proc = run_ref_command_string(command_to_run)
     try:
-        out, err = proc.communicate(timeout=1)
-        ref_out, ref_err = ref_proc.communicate(timeout=1)
+        out, err = proc.communicate(timeout=0.1)
+        ref_out, ref_err = ref_proc.communicate(timeout=0.1)
         assert out == ref_out
         assert err == ref_err
         assert proc.returncode == ref_proc.returncode
@@ -61,8 +61,8 @@ def test_if_elif_then_fi():
     proc = run_command_string(command_to_run)
     ref_proc = run_ref_command_string(command_to_run)
     try:
-        out, err = proc.communicate(timeout=1)
-        ref_out, ref_err = ref_proc.communicate(timeout=1)
+        out, err = proc.communicate(timeout=0.1)
+        ref_out, ref_err = ref_proc.communicate(timeout=0.1)
         assert out == ref_out
         assert err == ref_err
         assert proc.returncode == ref_proc.returncode
@@ -71,12 +71,12 @@ def test_if_elif_then_fi():
         kill_42sh(ref_proc)
 
 def test_classic_if_with_inner_newline():
-    command_to_run = "if \\n echo -e hello there !; \\n then \\n echo gg bro; \\n fi"
+    command_to_run = "if \n echo -e hello there !; \n then \n echo gg bro; \n fi"
     proc = run_command_string(command_to_run)
     ref_proc = run_ref_command_string(command_to_run)
     try:
-        out, err = proc.communicate(timeout=1)
-        ref_out, ref_err = ref_proc.communicate(timeout=1)
+        out, err = proc.communicate(timeout=0.1)
+        ref_out, ref_err = ref_proc.communicate(timeout=0.1)
         assert out == ref_out
         assert err == ref_err
         assert proc.returncode == ref_proc.returncode
@@ -101,8 +101,8 @@ def test_echo_quoted_comment():
     proc = run_command_string(command_to_run)
     ref_proc = run_ref_command_string(command_to_run)
     try:
-        out, err = proc.communicate(timeout=1)
-        ref_out, ref_err = ref_proc.communicate(timeout=1)
+        out, err = proc.communicate(timeout=0.1)
+        ref_out, ref_err = ref_proc.communicate(timeout=0.1)
         assert out == ref_out
         assert err == ref_err
         assert proc.returncode == ref_proc.returncode
@@ -111,12 +111,12 @@ def test_echo_quoted_comment():
         kill_42sh(ref_proc)
 
 def test_echo_quoted_notquoted_comment():
-    command_to_run = "echo \\#escaped \"#\"quoted not#first #commented"
+    command_to_run = "echo \\#escaped \'#\'quoted not#first #commented"
     proc = run_command_string(command_to_run)
     ref_proc = run_ref_command_string(command_to_run)
     try:
-        out, err = proc.communicate(timeout=1)
-        ref_out, ref_err = ref_proc.communicate(timeout=1)
+        out, err = proc.communicate(timeout=0.1)
+        ref_out, ref_err = ref_proc.communicate(timeout=0.1)
         assert out == ref_out
         assert err == ref_err
         assert proc.returncode == ref_proc.returncode
@@ -133,8 +133,8 @@ def test_echo_backslash_end_comment():
     proc = run_command_string(command_to_run)
     ref_proc = run_ref_command_string(command_to_run)
     try:
-        out, err = proc.communicate(timeout=1)
-        ref_out, ref_err = ref_proc.communicate(timeout=1)
+        out, err = proc.communicate(timeout=0.1)
+        ref_out, ref_err = ref_proc.communicate(timeout=0.1)
         assert out == ref_out
         assert err == ref_err
         assert proc.returncode == ref_proc.returncode
