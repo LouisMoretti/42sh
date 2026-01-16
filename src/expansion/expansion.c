@@ -50,7 +50,7 @@ static char *merge(char *src1, char *src2)
 
 static char *middle_merge(char *result, char *copy, size_t offset, size_t len)
 {
-    // Copy original string at original offset to add it after result.
+    // Copy original string at the offset.
     char *original = strndup(copy + offset, len);
     if (!original)
     {
@@ -59,6 +59,7 @@ static char *middle_merge(char *result, char *copy, size_t offset, size_t len)
         return NULL;
     }
 
+    // Add it at the end of result.
     result = merge(result, original);
     if (!result)
     {
@@ -78,19 +79,25 @@ static char *expand_single_quote(char *result, char *copy, size_t *offset,
     if (!result)
         return NULL;
 
+    // Skip first quote.
     (*i)++;
     *offset = *i;
-    while (copy[*i] && copy[*i] != '\'')
-        (*i)++;
 
-    if (!copy[*i])
+    // Count quoted characters.
+    size_t length = 0;
+    while (copy[*i + length] && copy[*i + length] != '\'')
+        length++;
+
+    // Check for missing quote error.
+    if (copy[*i + length] == '\0')
     {
         free(copy);
         free(result);
         return NULL;
     }
 
-    char *quoted = strndup(copy + *offset, *i - *offset);
+    // Make the substring of the quoted characters.
+    char *quoted = strndup(copy + *offset, length);
     if (!quoted)
     {
         free(copy);
@@ -98,6 +105,7 @@ static char *expand_single_quote(char *result, char *copy, size_t *offset,
         return NULL;
     }
 
+    // Add the substring to the result.
     result = merge(result, quoted);
     if (!result)
     {
@@ -105,6 +113,8 @@ static char *expand_single_quote(char *result, char *copy, size_t *offset,
         return NULL;
     }
 
+    *i += length;
+    // *offset += length + 1;
     *offset = *i + 1;
 
     return result;
@@ -120,9 +130,6 @@ static char *expand_escape(char *result, char *copy, size_t *offset, size_t *i)
 
     // Go to escaped character.
     (*i)++;
-
-    // char escaped = copy[*i];
-    // char *tmp = strndup(&escaped, 1);
 
     // New string with only the escaped character.
     char *tmp = calloc(2, sizeof(char));
@@ -143,12 +150,12 @@ static char *expand_escape(char *result, char *copy, size_t *offset, size_t *i)
 
 char *expand_string(char *string)
 {
-    // Copy original string
+    // Copy original string.
     char *copy = strndup(string, strlen(string));
     if (!copy)
         return NULL;
 
-    // Initialize result
+    // Initialize result to empty string.
     char *result = calloc(1, sizeof(char));
     if (!result)
     {
@@ -176,8 +183,10 @@ char *expand_string(char *string)
 
         i++;
     }
+
     if (offset != i)
         result = middle_merge(result, copy, offset, i - offset);
+
     if (!result)
         return NULL;
 
@@ -188,10 +197,12 @@ char *expand_string(char *string)
 
 char *expand_echo(char *word)
 {
+    // Copy original string.
     char *copy = strndup(word, strlen(word));
     if (!copy)
         return NULL;
 
+    // Initialize result to empty string.
     char *result = calloc(1, sizeof(char));
     if (!result)
     {
@@ -208,6 +219,7 @@ char *expand_echo(char *word)
         {
             if (offset != i)
                 result = middle_merge(result, copy, offset, i - offset);
+
             if (!result)
                 return NULL;
 
@@ -216,7 +228,6 @@ char *expand_echo(char *word)
             {
                 free(copy);
                 free(result);
-
                 return NULL;
             }
 
@@ -249,6 +260,7 @@ char *expand_echo(char *word)
 
     if (offset != i)
         result = middle_merge(result, copy, offset, i - offset);
+
     if (!result)
         return NULL;
 
