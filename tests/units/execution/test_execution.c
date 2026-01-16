@@ -40,8 +40,11 @@ Test(Execution, test_simple_cmd)
     struct ast *ast = (struct ast *)ast_simple_cmd;
 
     int res = execute_ast(ast);
+
+    free(ast_element->word);
     free(ast_element);
     free(ast_element_list);
+    free(ast_simple_cmd->word);
     free(ast_simple_cmd);
 
     cr_expect(res == 0);
@@ -61,6 +64,8 @@ Test(Execution, test_cmd_builtin_true)
     struct ast *ast = (struct ast *)ast_simple_cmd;
 
     int res = execute_ast(ast);
+
+    free(ast_simple_cmd->word);
     free(ast_simple_cmd);
 
     cr_expect(res == 0);
@@ -80,6 +85,8 @@ Test(Execution, test_cmd_builtin_false)
     struct ast *ast = (struct ast *)ast_simple_cmd;
 
     int res = execute_ast(ast);
+
+    free(ast_simple_cmd->word);
     free(ast_simple_cmd);
 
     cr_expect(res == 1);
