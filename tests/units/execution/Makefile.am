@@ -13,7 +13,8 @@ test_execution_CFLAGS = -std=c99 -Werror -Wall -Wextra -Wvla
 test_execution_LDFLAGS = -lcriterion
 
 test_execution_LDADD = \
-	../../../src/execution/libexecution.a
+	../../../src/execution/libexecution.a \
+	../../../src/expansion/libexpansion.a
 
 check-local:
 	(./$(check_PROGRAMS) || true)
