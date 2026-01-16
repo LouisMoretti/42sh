@@ -149,7 +149,10 @@ params_cmds = [("test_mix_medium","if if if false; then echo Fail\nelif false; t
         ("expansion_before_exec", "var=lol echo $var", []),
         ("expansion_in_cmd", "txt=ho; ec$txt good", []),
         ("multiple_expansion", "a=1; b=2; c=3; d=4; echo $a $b $c $d", []),
-        ("argument_var", "echo $0 $1", ['variable0','variable1']),
+        ("argument_var_expansion", "echo $0 $1", ['variable0','variable1']),
+        ("argument_expansion_twodigits", "echo $11", ['variable0','variable1']),
+        ("expansion_bracket","VAR=cletest; echo ${VAR};", []),
+        ("expansion_not_found", "echo $skibidi", []),
         ("variable_env_to_cmd","PWD=src env | grep PWD", [])]
 
 
