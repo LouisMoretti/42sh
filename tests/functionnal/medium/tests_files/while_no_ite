@@ -1,0 +1,1 @@
+VAR=""; while $VAR; do echo test; VAR=false; done
