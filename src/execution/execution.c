@@ -169,7 +169,11 @@ static int execute_ast_pipeline(struct ast *ast)
     struct ast_pipeline *ast_pipeline = (struct ast_pipeline *)ast;
     assert(ast_pipeline->cmd != NULL);
 
-    return execute_ast_cmd(ast_pipeline->cmd);
+    int result = execute_ast_cmd(ast_pipeline->cmd);
+    if (ast_pipeline->negation)
+        result = !result;
+
+    return result;
 }
 
 static int execute_ast_and_or(struct ast *ast)
