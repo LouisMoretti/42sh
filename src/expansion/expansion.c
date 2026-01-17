@@ -152,33 +152,40 @@ static char *expand_escape(char *result, char *copy, size_t *offset, size_t *i)
 }
 
 static char *expand_var(char *result, char *copy, size_t *offset, size_t *i)
-{
+{   
     if (*offset != *i)
         result = middle_merge(result, copy, *offset, *i - *offset);
 
     if (!result)
         return NULL;
 
+    // maybe take off this line because the $ will already be passed before going in this function
     (*i)++; // Skipping $
-
     char is_looked = ' ';
+    
     if (copy[*i] == '{')
     {
         is_looked = '}';
         (*i)++;
     }
+    
     offset = *i;
 
     while (copy[*i] != is_looked)
         (*i)++;
+    
     char *name_var = strndup(copy + *offset, *i - *offset);
     if (!name_var)
         return NULL;
+    
     // hash_map_get -> val_var;
+    char *val_var = NULL;
+    
     free(name_var);
     result = merge(result, val_var);
     if (!result)
         return NULL;
+
     return result;
 }
 

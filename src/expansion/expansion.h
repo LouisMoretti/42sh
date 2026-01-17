@@ -3,6 +3,7 @@
 
 #include <stddef.h>
 
+// void add_var();
 char *expand_string(char *string);
 char *expand_echo(char *word);
 
