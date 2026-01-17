@@ -12,8 +12,13 @@ test_parser_CFLAGS = -std=c99 -Werror -Wall -Wextra -Wvla
 
 test_parser_LDFLAGS = -lcriterion
 
+if ENABLE_COVERAGE
+test_parser_CFLAGS  +=  --coverage -O0
+test_parser_LDFLAGS +=  --coverage
+endif
+
 test_parser_LDADD =  \
 	   ../../../src/parser/libparser.a
 
 check-local:
-	(./$(check_PROGRAMS) || true)
+	@(./$(check_PROGRAMS) || true)

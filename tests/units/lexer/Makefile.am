@@ -12,10 +12,15 @@ test_lexer_CFLAGS = -std=c99 -Werror -Wall -Wextra -Wvla
 
 test_lexer_LDFLAGS = -lcriterion
 
+if ENABLE_COVERAGE
+test_lexer_CFLAGS  +=  --coverage -O0
+test_lexer_LDFLAGS +=  --coverage
+endif
+
 test_lexer_LDADD =  \
 	   ../../../src/config/libconfig.a \
 	   ../../../src/iobackend/libiobackend.a \
 	   ../../../src/lexer/liblexer.a
 
 check-local:
-	(./$(check_PROGRAMS) || true)
+	@(./$(check_PROGRAMS) || true)

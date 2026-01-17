@@ -14,3 +14,7 @@ libiobackend_a_CFLAGS = -std=c99 -pedantic -Werror -Wall -Wextra -Wvla
 
 # Libraries to not install
 noinst_LIBRARIES = libiobackend.a
+
+if ENABLE_COVERAGE
+libiobackend_a_CFLAGS  +=  --coverage -O0
+endif

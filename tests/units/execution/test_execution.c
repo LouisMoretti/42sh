@@ -12,7 +12,7 @@
 
 TestSuite(Execution, .timeout = 1);
 
-Test(Execution, test_simple_cmd)
+Test(Execution, test_simple_cmd, .init = cr_redirect_stdout)
 {
     struct ast_simple_cmd *ast_simple_cmd =
         malloc(sizeof(struct ast_simple_cmd));
