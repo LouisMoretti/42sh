@@ -125,6 +125,53 @@ def test_echo_quoted_notquoted_comment():
         kill_42sh(ref_proc)
 
 # ----------------------
+#         PIPE
+# ----------------------
+
+def test_simple_echo_pipe():
+    command_to_run = "echo a | echo b"
+    proc = run_command_string(command_to_run)
+    ref_proc = run_ref_command_string(command_to_run)
+    try:
+        out, err = proc.communicate(timeout=0.1)
+        ref_out, ref_err = ref_proc.communicate(timeout=0.1)
+        assert out == ref_out
+        assert err == ref_err
+        assert proc.returncode == ref_proc.returncode
+    finally:
+        kill_42sh(proc)
+        kill_42sh(ref_proc)
+
+def test_simple_echo_and_many_cat():
+    command_to_run = "echo SUCCEED | cat | cat | cat | cat | cat | cat | cat"
+    proc = run_command_string(command_to_run)
+    ref_proc = run_ref_command_string(command_to_run)
+    try:
+        out, err = proc.communicate(timeout=0.1)
+        ref_out, ref_err = ref_proc.communicate(timeout=0.1)
+        assert out == ref_out
+        assert err == ref_err
+        assert proc.returncode == ref_proc.returncode
+    finally:
+        kill_42sh(proc)
+        kill_42sh(ref_proc)
+
+def test_simple_several_commands_and_pipes():
+    command_to_run = "echo Hey | cat | cat; echo my | cat | cat; echo little | cat | cat; echo poney | cat | cat | cat"
+    proc = run_command_string(command_to_run)
+    ref_proc = run_ref_command_string(command_to_run)
+    try:
+        out, err = proc.communicate(timeout=0.1)
+        ref_out, ref_err = ref_proc.communicate(timeout=0.1)
+        assert out == ref_out
+        assert err == ref_err
+        assert proc.returncode == ref_proc.returncode
+    finally:
+        kill_42sh(proc)
+        kill_42sh(ref_proc)
+
+
+# ----------------------
 #         MIXED
 # ----------------------
 
@@ -142,3 +189,16 @@ def test_echo_backslash_end_comment():
         kill_42sh(proc)
         kill_42sh(ref_proc)
 
+def test_simple_several_commands_and_ands_pipes():
+    command_to_run = "echo Hey | cat | cat && echo my | cat | cat && false || echo little | cat | cat && echo poney | cat | cat | cat"
+    proc = run_command_string(command_to_run)
+    ref_proc = run_ref_command_string(command_to_run)
+    try:
+        out, err = proc.communicate(timeout=0.1)
+        ref_out, ref_err = ref_proc.communicate(timeout=0.1)
+        assert out == ref_out
+        assert err == ref_err
+        assert proc.returncode == ref_proc.returncode
+    finally:
+        kill_42sh(proc)
+        kill_42sh(ref_proc)

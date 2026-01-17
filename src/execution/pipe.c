@@ -59,20 +59,7 @@ int execute_pipe(struct ast *ast)
         return 1;
 
     int wstatus;
-    if (!ast_pipeline->next)
-    {
-        return execute_ast(ast_pipeline->cmd);
-        /*pid_t left_pid =
-            execute_pipe_command((struct ast *)ast_pipeline, LEFT, fds);
-
-        close(fds[0]);
-        close(fds[1]);
-        if (left_pid == -1)
-            return 1;
-
-        waitpid(left_pid, &wstatus, 0);*/
-    }
-    else
+    if (ast_pipeline->next)
     {
         pid_t left_pid =
             execute_pipe_command((struct ast *)ast_pipeline, LEFT, fds);
@@ -88,6 +75,8 @@ int execute_pipe(struct ast *ast)
         waitpid(left_pid, &wstatus, 0);
         waitpid(right_pid, &wstatus, 0);
     }
+    else
+        return execute_ast(ast_pipeline->cmd);
 
     return WEXITSTATUS(wstatus);
 }
