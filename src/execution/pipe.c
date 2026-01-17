@@ -35,7 +35,6 @@ static pid_t execute_pipe_command(struct ast *ast, enum pipe_type type,
     close(fds[1]);
 
     struct ast_pipeline *ast_pipeline = (struct ast_pipeline *)ast;
-    assert(ast_pipeline->next != NULL);
     int result;
     // Execute current command
     if (type == LEFT)
@@ -56,13 +55,14 @@ int execute_pipe(struct ast *ast)
     struct ast_pipeline *ast_pipeline = (struct ast_pipeline *)ast;
 
     int fds[2];
-    if (pipe(fds) != -1)
+    if (pipe(fds) == -1)
         return 1;
 
     int wstatus;
     if (!ast_pipeline->next)
     {
-        pid_t left_pid =
+        return execute_ast(ast_pipeline->cmd);
+        /*pid_t left_pid =
             execute_pipe_command((struct ast *)ast_pipeline, LEFT, fds);
 
         close(fds[0]);
@@ -70,7 +70,7 @@ int execute_pipe(struct ast *ast)
         if (left_pid == -1)
             return 1;
 
-        waitpid(left_pid, &wstatus, 0);
+        waitpid(left_pid, &wstatus, 0);*/
     }
     else
     {
