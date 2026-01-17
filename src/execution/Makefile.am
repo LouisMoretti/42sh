@@ -6,6 +6,8 @@ libexecution_a_SOURCES = \
 						 echo.c \
 						 boolean.c \
 						 builtin.h \
+						 pipe.c \
+						 pipe.h \
 						 execution.c \
 						 execution.h
 
