@@ -10,6 +10,7 @@
 #include <unistd.h>
 
 #include "execution/builtin.h"
+#include "expansion/expansion.h"
 
 #define BUILTIN_ECHO "echo"
 #define BUILTIN_FALSE "false"
@@ -76,6 +77,34 @@ static int execute_ast_simple_cmd(struct ast *ast)
     assert(ast->type == AST_SIMPLE_CMD);
     struct ast_simple_cmd *ast_simple_cmd = (struct ast_simple_cmd *)ast;
     assert(ast_simple_cmd->word != NULL);
+
+    char *expanded = expand_string(ast_simple_cmd->word);
+    if (!expanded)
+        return 1;
+
+    free(ast_simple_cmd->word);
+    ast_simple_cmd->word = expanded;
+
+    struct ast_element_list *ast_element_list =
+        (struct ast_element_list *)ast_simple_cmd->element_list;
+
+    while (ast_element_list)
+    {
+        struct ast_element *ast_element =
+            (struct ast_element *)ast_element_list->element;
+        if (ast_element->word)
+        {
+            char *expanded = expand_string(ast_element->word);
+            if (!expanded)
+                return 1;
+
+            free(ast_element->word);
+            ast_element->word = expanded;
+        }
+
+        ast_element_list = (struct ast_element_list *)ast_element_list->next;
+    }
+
     if (!strcmp(ast_simple_cmd->word, BUILTIN_ECHO))
         return builtin_echo(ast_simple_cmd);
     else if (!strcmp(ast_simple_cmd->word, BUILTIN_FALSE))
@@ -85,7 +114,7 @@ static int execute_ast_simple_cmd(struct ast *ast)
     else
     {
         int size = count_ast_element(ast_simple_cmd->element_list) + 1;
-        char **command = calloc(size + 1, sizeof(char *));
+        char **command = (char **)calloc(size + 1, sizeof(char *));
         if (!command)
             return 1;
 
@@ -106,7 +135,7 @@ static int execute_ast_simple_cmd(struct ast *ast)
         }
 
         int exit_code = evaluate_command(command);
-        free(command);
+        free((void *)command);
 
         return exit_code;
     }
@@ -140,7 +169,11 @@ static int execute_ast_pipeline(struct ast *ast)
     struct ast_pipeline *ast_pipeline = (struct ast_pipeline *)ast;
     assert(ast_pipeline->cmd != NULL);
 
-    return execute_ast_cmd(ast_pipeline->cmd);
+    int result = execute_ast_cmd(ast_pipeline->cmd);
+    if (ast_pipeline->negation)
+        result = !result;
+
+    return result;
 }
 
 static int execute_ast_and_or(struct ast *ast)
@@ -184,7 +217,9 @@ static int execute_ast_else_clause(struct ast *ast)
     assert(ast->type == AST_CLAUSE_ELSE);
     struct ast_else_clause *ast_else_clause = (struct ast_else_clause *)ast;
     assert(ast_else_clause->body_compound_list != NULL);
-    if (!ast_else_clause->else_clause)
+    if (!ast_else_clause->condition_compound_list)
+        assert(ast_else_clause->else_clause == NULL);
+    if (ast_else_clause->else_clause)
         assert(ast_else_clause->condition_compound_list != NULL);
 
     int condition_exit_code =
@@ -213,6 +248,38 @@ static int execute_ast_rule_if(struct ast *ast)
         return execute_ast_else_clause(ast_rule_if->else_clause);
 }
 
+static int execute_ast_while(struct ast *ast)
+{
+    if (!ast)
+        return 0;
+
+    struct ast_rule_while *ast_rule_while = (struct ast_rule_while *)ast;
+    assert(ast_rule_while->condition_compound_list != NULL);
+    assert(ast_rule_while->body_compound_list != NULL);
+
+    int result = 0;
+    while (!execute_ast_compound_list(ast_rule_while->condition_compound_list))
+        result = execute_ast_compound_list(ast_rule_while->body_compound_list);
+
+    return result;
+}
+
+static int execute_ast_until(struct ast *ast)
+{
+    if (!ast)
+        return 0;
+
+    struct ast_rule_until *ast_rule_until = (struct ast_rule_until *)ast;
+    assert(ast_rule_until->condition_compound_list != NULL);
+    assert(ast_rule_until->body_compound_list != NULL);
+
+    int result = 0;
+    while (execute_ast_compound_list(ast_rule_until->condition_compound_list))
+        result = execute_ast_compound_list(ast_rule_until->body_compound_list);
+
+    return result;
+}
+
 static int execute_ast_shell_cmd(struct ast *ast)
 {
     if (!ast)
@@ -222,7 +289,17 @@ static int execute_ast_shell_cmd(struct ast *ast)
     struct ast_shell_cmd *ast_shell_cmd = (struct ast_shell_cmd *)ast;
     assert(ast_shell_cmd->rule != NULL);
 
-    return execute_ast_rule_if(ast_shell_cmd->rule);
+    switch (ast_shell_cmd->rule->type)
+    {
+    case AST_RULE_IF:
+        return execute_ast_rule_if(ast_shell_cmd->rule);
+    case AST_RULE_WHILE:
+        return execute_ast_while(ast_shell_cmd->rule);
+    case AST_RULE_UNTIL:
+        return execute_ast_until(ast_shell_cmd->rule);
+    default:
+        return 0;
+    }
 }
 
 static int execute_ast_list(struct ast *ast)
@@ -266,7 +343,9 @@ static exec execute_functions[] = { [AST_INPUT] = &execute_ast_input,
                                         &execute_ast_compound_list,
                                     [AST_RULE_IF] = &execute_ast_rule_if,
                                     [AST_CLAUSE_ELSE] =
-                                        &execute_ast_else_clause };
+                                        &execute_ast_else_clause,
+                                    [AST_RULE_WHILE] = &execute_ast_while,
+                                    [AST_RULE_UNTIL] = &execute_ast_until };
 
 int execute_ast(struct ast *ast)
 {
