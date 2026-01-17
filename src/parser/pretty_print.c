@@ -157,12 +157,14 @@ static void pp_simple_cmd(struct ast *ast, int prefix)
     assert(ast->type == AST_SIMPLE_CMD);
     struct ast_simple_cmd *ast_simple_cmd = (struct ast_simple_cmd *)ast;
 
-    if (ast_simple_cmd->prefix != NULL)
+    if (ast_simple_cmd->word == NULL)
     {
-        pp_prefix(ast_simple_cmd->prefix, prefix);
-        printf(" ");
-        if (ast_simple_cmd->prefix_list != NULL)
-            pp_prefix_list(ast_simple_cmd->prefix_list, prefix);
+        // pp_prefix(ast_simple_cmd->prefix, prefix);
+        // printf(" ");
+        // if (ast_simple_cmd->prefix_list != NULL)
+        //     pp_prefix_list(ast_simple_cmd->prefix_list, prefix);
+        assert(ast_simple_cmd->prefix_list != NULL);
+        pp_prefix_list(ast_simple_cmd->prefix_list, prefix);
     }
     else
     {

@@ -216,7 +216,7 @@ static struct ast *init_ast_simple_cmd(void)
     assert(cmd != NULL);
 
     cmd->base.type = AST_SIMPLE_CMD;
-    cmd->prefix = NULL;
+    // cmd->prefix = NULL;
     cmd->prefix_list = NULL;
     cmd->word = NULL;
     cmd->element_list = NULL;
