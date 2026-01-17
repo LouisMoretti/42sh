@@ -3,10 +3,10 @@
 #include "expansion/expansion.h"
 
 #include <ctype.h>
+#include <err.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
-#include <err.h>
 
 #include "config/config.h"
 #include "utils/hash_map/hash_map.h"
@@ -558,8 +558,7 @@ char **expand_for(char *string)
             {
                 // call this function to add in the final_res all the arguments
                 // given in the list
-                char **final_res =
-                    expand_list_args(&result, final_res, &len_res);
+                final_res = expand_list_args(&result, final_res, &len_res);
                 if (!final_res)
                     return NULL;
                 i++;

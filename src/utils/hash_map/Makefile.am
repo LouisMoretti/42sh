@@ -4,6 +4,7 @@ lib_LIBRARIES = libhashmap.a
 # Source Files
 libhashmap_a_SOURCES = \
 				   hash_map.c \
+				   hash.c \
 				   hash_map.h
 
 # Preprocessing Flags
