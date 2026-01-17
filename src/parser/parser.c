@@ -683,7 +683,6 @@ static struct ast *parse_compound_list(int *status_code)
             tok = peek_token(ENABLE_KEYWORDS);
         }
 
-        // TODO: Verify condition.
         if (tok->type > KEYWORD_COUNT)
         {
             ((struct ast_compound_list *)compound_list)->next =
