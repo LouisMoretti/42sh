@@ -19,7 +19,7 @@ Test(Execution, test_simple_cmd)
 
     ast_simple_cmd->base.type = AST_SIMPLE_CMD;
     ast_simple_cmd->prefix_list = NULL;
-    ast_simple_cmd->prefix = NULL;
+    // ast_simple_cmd->prefix = NULL;
     ast_simple_cmd->word = strdup("echo");
 
     struct ast_element_list *ast_element_list =
@@ -57,7 +57,7 @@ Test(Execution, test_cmd_builtin_true)
 
     ast_simple_cmd->base.type = AST_SIMPLE_CMD;
     ast_simple_cmd->prefix_list = NULL;
-    ast_simple_cmd->prefix = NULL;
+    // ast_simple_cmd->prefix = NULL;
     ast_simple_cmd->word = strdup("true");
     ast_simple_cmd->element_list = NULL;
 
@@ -78,7 +78,7 @@ Test(Execution, test_cmd_builtin_false)
 
     ast_simple_cmd->base.type = AST_SIMPLE_CMD;
     ast_simple_cmd->prefix_list = NULL;
-    ast_simple_cmd->prefix = NULL;
+    // ast_simple_cmd->prefix = NULL;
     ast_simple_cmd->word = strdup("false");
     ast_simple_cmd->element_list = NULL;
 
