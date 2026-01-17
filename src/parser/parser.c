@@ -174,8 +174,6 @@ static struct ast *parse_element_list(void)
 {
     struct ast *element_list = init_ast(AST_ELEMENT_LIST);
 
-    ((struct ast_element_list *)element_list)->element = init_ast(AST_ELEMENT);
-
     struct token *tok = peek_token(DISABLE_KEYWORDS);
 
     // TODO: Return error.
