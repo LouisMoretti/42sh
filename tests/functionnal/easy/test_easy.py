@@ -300,7 +300,7 @@ def test_string(name, command_to_run):
 @pytest.mark.parametrize("name,command_to_run", params_cmds)
 def test_stdin(name, command_to_run):
     executable = os.getenv("BIN_PATH")
-    if executable is None:
+    if executable is None or len(executable) == 0:
         executable = "../../src/42sh"
 
     proc = sp.Popen([executable], stdin=sp.PIPE, stdout=sp.PIPE, stderr=sp.STDOUT, text=True, bufsize=0)
@@ -319,7 +319,7 @@ def test_stdin(name, command_to_run):
 @pytest.mark.parametrize("name,filepath", param_filepaths)
 def test_file(name, filepath):
     executable = os.getenv("BIN_PATH")
-    if executable is None:
+    if executable is None or len(executable) == 0:
         executable = "../../src/42sh"
 
     proc = sp.Popen([executable, filepath], stdout=sp.PIPE, stderr=sp.STDOUT, bufsize=0)

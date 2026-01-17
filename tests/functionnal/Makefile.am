@@ -1,5 +1,5 @@
 check-local:
-	@pytest -r || true
+	@pytest || true
 	@if [ "${OUTPUT_FILE}" != "" ]; then python win_rate.py; fi
 
 generate-test-report:
