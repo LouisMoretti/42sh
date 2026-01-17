@@ -180,14 +180,6 @@ struct token *peek_token(enum keyword_policy policy)
 
     int c = peek_chr();
 
-    // if (c == EOF)
-    // {
-    //     g_cur_type_before_policy = END_OF_FILE;
-    //     set_token_type_with_policy(policy);
-    //     g_has_cur = 1;
-    //     return &g_cur_token;
-    // }
-
     if (c == '\n' || c == EOF)
     {
         g_cur_type_before_policy = c == '\n' ? NEW_LINE : END_OF_FILE;
