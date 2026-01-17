@@ -10,6 +10,7 @@
 #include <unistd.h>
 
 #include "execution/builtin.h"
+#include "execution/pipe.h"
 #include "expansion/expansion.h"
 
 #define BUILTIN_ECHO "echo"
@@ -169,7 +170,7 @@ static int execute_ast_pipeline(struct ast *ast)
     struct ast_pipeline *ast_pipeline = (struct ast_pipeline *)ast;
     assert(ast_pipeline->cmd != NULL);
 
-    int result = execute_ast_cmd(ast_pipeline->cmd);
+    int result = execute_pipe((struct ast *)ast_pipeline);
     if (ast_pipeline->negation)
         result = !result;
 
