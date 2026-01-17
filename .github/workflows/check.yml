@@ -1,10 +1,10 @@
 name: Makefile CI
 
 on:
-  #push:
-  #  branches: [ "master" ]
-  #pull_request:
-  #  branches: [ "master" ]
+  push:
+   branches: [ "master" ]
+  pull_request:
+   branches: [ "master" ]
 
 jobs:
   build:
@@ -13,6 +13,12 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+
+    - name: Autotools
+      run: autoreconf -vif
+
+    - name: Configure
+      run: ./configure
 
     - name: Generate exec
       run: make
