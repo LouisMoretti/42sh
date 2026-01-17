@@ -74,15 +74,16 @@ static struct ast *parse_list(void)
 
     ((struct ast_list *)list)->and_or = parse_and_or();
 
-    // TODO: Add handle token '&'.
-    if (peek_token(ENABLE_KEYWORDS)->type == SEMICOLON)
+    if (peek_token(ENABLE_KEYWORDS)->type == SEMICOLON
+        || peek_token(ENABLE_KEYWORDS)->type == AMPERSAND)
     {
         pop_token();
         if (peek_token(ENABLE_KEYWORDS)->type != END_OF_FILE)
             ((struct ast_list *)list)->next = parse_list();
     }
-    // TODO: Add handle token '&'.
-    if (peek_token(ENABLE_KEYWORDS)->type == SEMICOLON)
+
+    if (peek_token(ENABLE_KEYWORDS)->type == SEMICOLON
+        || peek_token(ENABLE_KEYWORDS)->type == AMPERSAND)
         pop_token();
 
     return list;
@@ -414,9 +415,9 @@ static struct ast *parse_compound_list(void)
 
     ((struct ast_compound_list *)compound_list)->ast_and_or = parse_and_or();
 
-    // TODO: Add handle token '&'.
     struct token *tok = peek_token(ENABLE_KEYWORDS);
-    if (tok->type == SEMICOLON || tok->type == NEW_LINE)
+    if (tok->type == SEMICOLON || tok->type == NEW_LINE
+        || tok->type == AMPERSAND)
     {
         pop_token();
         tok = peek_token(ENABLE_KEYWORDS);
@@ -435,7 +436,8 @@ static struct ast *parse_compound_list(void)
     }
 
     // TODO: Add handle token '&'.
-    if (peek_token(ENABLE_KEYWORDS)->type == SEMICOLON)
+    if (peek_token(ENABLE_KEYWORDS)->type == SEMICOLON
+        || peek_token(ENABLE_KEYWORDS)->type == AMPERSAND)
         pop_token();
 
     while (peek_token(ENABLE_KEYWORDS)->type == NEW_LINE)
