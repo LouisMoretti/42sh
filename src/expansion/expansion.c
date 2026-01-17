@@ -412,7 +412,158 @@ char *expand_echo(char *word)
     return result;
 }
 
+static char **free_list_args(char **final_res)
+{
+    if (final_res)
+    {
+        size_t i = 0;
+
+        while(final_res[i])
+        {
+            free(final_res[i]);
+            i++;
+        }
+
+        free(final_res);
+    }
+
+    return NULL;
+}
+
+static char **expand_list_args(char **result, char **final_res, size_t *len_res)
+{
+    struct config *my_conf = get_conf();
+    int i = 0;
+
+    // go threw all the arguments to add them one by one (but not the last one !)
+    while (i < my_conf->arg_count - 1)
+    {
+        // copy the config argument in case an error occurs in the merge
+        char *tmp = strdup(my_conf->arg_values[i]);
+        // add the argument at the end of the result
+        *result = merge(*result, tmp);
+        if (!result)
+            return free_list_args(final_res);
+
+        // realloc the final_res to be able to add one result inside
+        final_res = realloc(final_res, (*len_res + 1) * sizeof(char *));
+        if (!final_res)
+        {
+            free(*result);
+            return NULL;
+        }
+
+        // add the result at the end of the final_res list
+        final_res[*len_res - 1] = *result;
+        final_res[*len_res] = NULL;
+        (*len_res)++;
+
+        // create a new result variable
+        *result = calloc(1, sizeof(char));
+        if (!*result)
+        {
+            return free_list_args(final_res);
+        }
+        i++;
+    }
+
+    // add the last argument in the result variable to be able to keep it for the end of the given string in expand_for
+    char *tmp = strdup(my_conf->arg_values[i]);
+    *result = merge(*result, tmp);
+    if (!result)
+        return free_list_args(final_res);
+
+    return final_res;
+}
+
 char **expand_for(char *string)
 {
-    return NULL;
+    // Copy original string.
+    char *copy = strndup(string, strlen(string));
+    if (!copy)
+        return NULL;
+
+    // Initialize result to empty string. (used to put the string in the final_res)
+    char *result = calloc(1, sizeof(char));
+    if (!result)
+    {
+        free(copy);
+        return NULL;
+    }
+
+    // initialize the result of the function of length 1
+    size_t len_res = 1;
+    char **final_res = calloc(1, sizeof(char *));
+    if (!final_res)
+    {
+        free(copy);
+        free(result);
+        return NULL;
+    }
+
+    size_t i = 0;
+    size_t offset = 0;
+
+    // Loop through the string to find single quotes or escaped characters.
+    while (copy[i] != '\0')
+    {
+        switch (copy[i])
+        {
+        case '\'':
+            result = expand_single_quote(result, copy, &offset, &i);
+            if (!result)
+                // result and copy are free inside expand_single_quote.
+                return NULL;
+            break;
+        case '\\':
+            result = expand_escape(result, copy, &offset, &i);
+            if (!result)
+                // result and copy are free inside expand_escape.
+                return NULL;
+            break;
+        case '$':
+            if (copy[i + 1] == '@')
+            {
+                // call this function to add in the final_res all the arguments given in the list
+                char **final_res = expand_list_args(&result, final_res, &len_res);
+                if (!final_res)
+                    return NULL;
+                i++;
+            }
+            else
+            {
+                result = expand_var(result, copy, &offset, &i);
+                if (!result)
+                    // result and copy are free inside expand_escape.
+                    return NULL;
+            }
+            break;
+        default:
+            break;
+        }
+        i++;
+    }
+
+    // Add cached characters to result.
+    if (offset != i)
+        result = middle_merge(result, copy, offset, i - offset);
+
+    if (!result)
+        // result and copy are free inside middle_merge.
+        return NULL;
+
+    free(copy);
+
+    // Add the last result in the final_result list
+    final_res = realloc(final_res, (len_res + 1) * sizeof(char *));
+    if (!final_res)
+    {
+        free(result);
+        return NULL;
+    }
+
+    final_res[len_res - 1] = result;
+    final_res[len_res] = NULL;
+
+    return final_res;
 }
