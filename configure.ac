@@ -28,6 +28,7 @@ AC_CONFIG_FILES([
                  src/expansion/Makefile
                  src/iobackend/Makefile
                  src/config/Makefile
+                 src/utils/hash_map/Makefile
                  tests/Makefile
                  tests/functionnal/Makefile
                  tests/units/Makefile
