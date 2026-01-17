@@ -4,6 +4,8 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
+#include "config/config.h"
 
 static char *merge(char *src1, char *src2)
 {
@@ -151,6 +153,21 @@ static char *expand_escape(char *result, char *copy, size_t *offset, size_t *i)
     return result;
 }
 
+static char *get_special(char *name_var, char is_looked)
+{
+    if(is_digit(name_var[0]))
+    {
+        struct config* my_conf = get_conf(); 
+        int index;
+        if(is_looked != '}')
+        {
+            index = name_var[0] - '0';
+        }
+        else
+            index = atoi(name_var);
+    }
+}
+
 static char *expand_var(char *result, char *copy, size_t *offset, size_t *i)
 {   
     if (*offset != *i)
@@ -159,7 +176,6 @@ static char *expand_var(char *result, char *copy, size_t *offset, size_t *i)
     if (!result)
         return NULL;
 
-    // maybe take off this line because the $ will already be passed before going in this function
     (*i)++; // Skipping $
     char is_looked = ' ';
     
@@ -180,6 +196,10 @@ static char *expand_var(char *result, char *copy, size_t *offset, size_t *i)
     
     // hash_map_get -> val_var;
     char *val_var = NULL;
+    if(!val_var)
+    {
+          
+    }
     
     free(name_var);
     result = merge(result, val_var);
