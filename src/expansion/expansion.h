@@ -3,8 +3,8 @@
 
 #include <stddef.h>
 
-// void add_var();
 char *expand_string(char *string);
 char *expand_echo(char *word);
+char **expand_for(char *string);
 
 #endif // ! EXPANSION_H

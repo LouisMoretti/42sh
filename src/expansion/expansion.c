@@ -155,21 +155,71 @@ static char *expand_escape(char *result, char *copy, size_t *offset, size_t *i)
 
 static char *get_special(char *name_var, char is_looked)
 {
-    if(is_digit(name_var[0]))
+    char *res = calloc(1, sizeof(char));
+    struct config* my_conf = get_conf(); 
+
+    if(isdigit(name_var[0]))
     {
-        struct config* my_conf = get_conf(); 
         int index;
-        if(is_looked != '}')
+
+        // loop to take the number after the $
+        size_t i = 0;
+        while (name_var[i] != '\0' && isdigit(name_var[i]))
         {
-            index = name_var[0] - '0';
+            i++;
         }
-        else
-            index = atoi(name_var);
+
+        if (name_var[i] != '\0')
+            return NULL;
+
+        index = atoi(name_var);
+
+        // loop to take all the arguments that we want
+        i = 0;
+        while (i < index)
+        {
+            res = merge(res, my_conf->arg_values[index]);
+
+            i++;
+        }
     }
+    else if (name_var[i] == '@')
+    {
+        size_t i = 0;
+        if (my_conf->arg_count >= 1)
+        {
+            res = merge(res, my_conf->arg_values[i]);
+            if (!res)
+                return NULL;
+
+            i++;
+        }
+
+        while (i < my_conf->arg_count)
+        {
+            char *space = strdup(" ");
+            res = merge(res, space);
+            if (!res)
+                return NULL;
+
+            res = merge(res, my_conf->arg_values[i]);
+            if (!res)
+                return NULL;
+
+            i++;
+        }
+    }
+    else if (name_var[i] == '*')
+    {
+
+    }
+
+    return res;
 }
 
 static char *expand_var(char *result, char *copy, size_t *offset, size_t *i)
 {   
+    // Add cached characters to result.
     if (*offset != *i)
         result = middle_merge(result, copy, *offset, *i - *offset);
 
@@ -185,7 +235,7 @@ static char *expand_var(char *result, char *copy, size_t *offset, size_t *i)
         (*i)++;
     }
     
-    offset = *i;
+    *offset = *i;
 
     while (copy[*i] != is_looked)
         (*i)++;
@@ -194,13 +244,22 @@ static char *expand_var(char *result, char *copy, size_t *offset, size_t *i)
     if (!name_var)
         return NULL;
     
-    // hash_map_get -> val_var;
-    char *val_var = NULL;
-    if(!val_var)
-    {
-          
-    }
+    char *special = get_special(name_var, is_looked);
     
+    char *val_var;
+    if (special)
+    {
+        val_var = special;
+    }
+    else
+    {
+        // hash_map_get -> val_var;
+        if(!val_var)
+        {
+          
+        }
+    }
+
     free(name_var);
     result = merge(result, val_var);
     if (!result)
@@ -351,4 +410,9 @@ char *expand_echo(char *word)
     free(copy);
 
     return result;
+}
+
+char **expand_for(char *string)
+{
+    return NULL;
 }
