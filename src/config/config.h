@@ -1,6 +1,7 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+#include "utils/hash_map/hash_map.h"
 enum input_method
 {
     STRING,
@@ -16,6 +17,7 @@ struct config
     int pretty_print;
     int arg_count;
     char **arg_values;
+    struct hash_map* hash_map_variables;
 };
 
 int set_conf(int argc, char **argv);

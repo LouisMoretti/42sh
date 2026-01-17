@@ -2,10 +2,14 @@
 
 #include "expansion/expansion.h"
 
+#include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
+#include <stdio.h>
+#include <err.h>
+
 #include "config/config.h"
+#include "utils/hash_map/hash_map.h"
 
 static char *merge(char *src1, char *src2)
 {
@@ -153,39 +157,39 @@ static char *expand_escape(char *result, char *copy, size_t *offset, size_t *i)
     return result;
 }
 
-static char *get_special(char *name_var, char is_looked)
+static char *get_special(char *name_var, int *code)
 {
     char *res = calloc(1, sizeof(char));
-    struct config* my_conf = get_conf(); 
+    struct config *my_conf = get_conf();
 
-    if(isdigit(name_var[0]))
+    if (isdigit(name_var[0]))
     {
         int index;
-
-        // loop to take the number after the $
+        // loop to look if the variable is valid
         size_t i = 0;
         while (name_var[i] != '\0' && isdigit(name_var[i]))
         {
             i++;
         }
-
         if (name_var[i] != '\0')
             return NULL;
-
         index = atoi(name_var);
-
-        // loop to take all the arguments that we want
-        i = 0;
-        while (i < index)
-        {
-            res = merge(res, my_conf->arg_values[index]);
-
-            i++;
-        }
+        res = merge(res, my_conf->arg_values[index]);
     }
-    else if (name_var[i] == '@')
+    else if (name_var[0] == '?')
+        res = merge(res, strdup("0")); // TODO
+    else if (name_var[0] == '$')
+        res = merge(res, strdup("$"));
+    else if (name_var[0] == '#')
     {
-        size_t i = 0;
+        struct config *my_conf = get_conf();
+        char *count_text = calloc(2, sizeof(char));
+        sprintf(count_text, "%i", my_conf->arg_count);
+    }
+
+    else if (name_var[0] == '@')
+    {
+        int i = 0;
         if (my_conf->arg_count >= 1)
         {
             res = merge(res, my_conf->arg_values[i]);
@@ -209,16 +213,21 @@ static char *get_special(char *name_var, char is_looked)
             i++;
         }
     }
-    else if (name_var[i] == '*')
+    else if (name_var[0] == '*')
     {
-
+        // TODO
+    }
+    else
+    {
+        *(code) = 1;
+        return NULL;
     }
 
     return res;
 }
 
 static char *expand_var(char *result, char *copy, size_t *offset, size_t *i)
-{   
+{
     // Add cached characters to result.
     if (*offset != *i)
         result = middle_merge(result, copy, *offset, *i - *offset);
@@ -227,37 +236,57 @@ static char *expand_var(char *result, char *copy, size_t *offset, size_t *i)
         return NULL;
 
     (*i)++; // Skipping $
-    char is_looked = ' ';
-    
+    char is_looked;
+
     if (copy[*i] == '{')
     {
         is_looked = '}';
         (*i)++;
     }
-    
+    else if (isalpha(copy[*i]))
+        is_looked = '\0'; // Special case we need to go until last nonalpha char
+    else if (isdigit(copy[*i]))
+        is_looked = copy[*i + 1];
+    else
+        return NULL;
+
     *offset = *i;
 
-    while (copy[*i] != is_looked)
-        (*i)++;
-    
+    if (is_looked != '\0')
+    {
+        while (copy[*i] != is_looked)
+            (*i)++;
+    }
+    else
+    {
+        while (isalnum(copy[*i]) || copy[*i] == '_')
+            (*i)++;
+    }
+
     char *name_var = strndup(copy + *offset, *i - *offset);
     if (!name_var)
         return NULL;
-    
-    char *special = get_special(name_var, is_looked);
-    
-    char *val_var;
+
+    int code = 0;
+    char *special = get_special(name_var, &code);
+    if (code != 0)
+    {
+        warnx("Bad Expansion");
+        return NULL;
+    }
+
+    char *val_var = NULL;
     if (special)
     {
         val_var = special;
     }
     else
     {
-        // hash_map_get -> val_var;
-        if(!val_var)
-        {
-          
-        }
+        struct config *my_conf = get_conf();
+        struct hash_map *my_variables = my_conf->hash_map_variables;
+        val_var = hash_map_get(my_variables, name_var);
+        if (!val_var)
+            return strdup("");
     }
 
     free(name_var);
@@ -418,7 +447,7 @@ static char **free_list_args(char **final_res)
     {
         size_t i = 0;
 
-        while(final_res[i])
+        while (final_res[i])
         {
             free(final_res[i]);
             i++;
@@ -435,7 +464,8 @@ static char **expand_list_args(char **result, char **final_res, size_t *len_res)
     struct config *my_conf = get_conf();
     int i = 0;
 
-    // go threw all the arguments to add them one by one (but not the last one !)
+    // go threw all the arguments to add them one by one (but not the last one
+    // !)
     while (i < my_conf->arg_count - 1)
     {
         // copy the config argument in case an error occurs in the merge
@@ -467,7 +497,8 @@ static char **expand_list_args(char **result, char **final_res, size_t *len_res)
         i++;
     }
 
-    // add the last argument in the result variable to be able to keep it for the end of the given string in expand_for
+    // add the last argument in the result variable to be able to keep it for
+    // the end of the given string in expand_for
     char *tmp = strdup(my_conf->arg_values[i]);
     *result = merge(*result, tmp);
     if (!result)
@@ -483,7 +514,8 @@ char **expand_for(char *string)
     if (!copy)
         return NULL;
 
-    // Initialize result to empty string. (used to put the string in the final_res)
+    // Initialize result to empty string. (used to put the string in the
+    // final_res)
     char *result = calloc(1, sizeof(char));
     if (!result)
     {
@@ -524,8 +556,10 @@ char **expand_for(char *string)
         case '$':
             if (copy[i + 1] == '@')
             {
-                // call this function to add in the final_res all the arguments given in the list
-                char **final_res = expand_list_args(&result, final_res, &len_res);
+                // call this function to add in the final_res all the arguments
+                // given in the list
+                char **final_res =
+                    expand_list_args(&result, final_res, &len_res);
                 if (!final_res)
                     return NULL;
                 i++;
