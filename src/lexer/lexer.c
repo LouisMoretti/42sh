@@ -126,6 +126,48 @@ static void skip_whitespace_and_comment(void)
     }
 }
 
+static struct token *semicolon_or_double_semicolon(enum keyword_policy policy)
+{
+    // TODO: Handle double semicolon token (For step 4).
+    g_cur_type_before_policy = SEMICOLON;
+    set_token_type_with_policy(policy);
+    g_has_cur = 1;
+    pop_chr();
+    return &g_cur_token;
+}
+
+static struct token *pipe_or_double_pipe(enum keyword_policy policy)
+{
+    pop_chr();
+    if (peek_chr() == '|')
+    {
+        g_cur_type_before_policy = DOUBLE_PIPE;
+        pop_chr();
+    }
+    else
+        g_cur_type_before_policy = PIPE;
+
+    set_token_type_with_policy(policy);
+    g_has_cur = 1;
+    return &g_cur_token;
+}
+
+static struct token *ampersand_or_double_ampersand(enum keyword_policy policy)
+{
+    pop_chr();
+    if (peek_chr() == '&')
+    {
+        g_cur_type_before_policy = DOUBLE_AMPERSAND;
+        pop_chr();
+    }
+    else
+        g_cur_type_before_policy = AMPERSAND;
+
+    set_token_type_with_policy(policy);
+    g_has_cur = 1;
+    return &g_cur_token;
+}
+
 struct token *peek_token(enum keyword_policy policy)
 {
     if (g_has_cur)
@@ -138,17 +180,18 @@ struct token *peek_token(enum keyword_policy policy)
 
     int c = peek_chr();
 
-    if (c == EOF)
-    {
-        g_cur_type_before_policy = END_OF_FILE;
-        set_token_type_with_policy(policy);
-        g_has_cur = 1;
-        return &g_cur_token;
-    }
+    // if (c == EOF)
+    // {
+    //     g_cur_type_before_policy = END_OF_FILE;
+    //     set_token_type_with_policy(policy);
+    //     g_has_cur = 1;
+    //     return &g_cur_token;
+    // }
 
-    if (c == '\n')
+    if (c == '\n' || c == EOF)
     {
-        g_cur_type_before_policy = NEW_LINE;
+        g_cur_type_before_policy = c == '\n' ? NEW_LINE : END_OF_FILE;
+
         set_token_type_with_policy(policy);
         g_has_cur = 1;
         pop_chr();
@@ -156,46 +199,13 @@ struct token *peek_token(enum keyword_policy policy)
     }
 
     if (c == ';')
-    {
-        // TODO: Handle double semicolon token (For step 4).
-        g_cur_type_before_policy = SEMICOLON;
-        set_token_type_with_policy(policy);
-        g_has_cur = 1;
-        pop_chr();
-        return &g_cur_token;
-    }
+        return semicolon_or_double_semicolon(policy);
 
     if (c == '|')
-    {
-        pop_chr();
-        if (peek_chr() == '|')
-        {
-            g_cur_type_before_policy = DOUBLE_PIPE;
-            pop_chr();
-        }
-        else
-            g_cur_type_before_policy = PIPE;
-
-        set_token_type_with_policy(policy);
-        g_has_cur = 1;
-        return &g_cur_token;
-    }
+        return pipe_or_double_pipe(policy);
 
     if (c == '&')
-    {
-        pop_chr();
-        if (peek_chr() == '&')
-        {
-            g_cur_type_before_policy = DOUBLE_AMPERSAND;
-            pop_chr();
-        }
-        else
-            g_cur_type_before_policy = AMPERSAND;
-
-        set_token_type_with_policy(policy);
-        g_has_cur = 1;
-        return &g_cur_token;
-    }
+        return ampersand_or_double_ampersand(policy);
 
     // TODO: Handle grammar errors.
     if (fill_buffer() != 0)
