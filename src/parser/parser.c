@@ -95,11 +95,18 @@ static struct ast *parse_and_or(void)
 
     ((struct ast_and_or *)and_or)->pipeline = parse_pipeline();
 
-    // TODO: Step 2.
-    // if (peek_token(ENABLE_KEYWORDS)->type == DOUBLE_PIPE
-    //     || peek_token(ENABLE_KEYWORDS)->type == DOUBLE_AMPERSAND)
-    // {
-    // }
+    if (peek_token(ENABLE_KEYWORDS)->type == DOUBLE_PIPE
+        || peek_token(ENABLE_KEYWORDS)->type == DOUBLE_AMPERSAND)
+    {
+        ((struct ast_and_or *)and_or)->operand =
+            peek_token(ENABLE_KEYWORDS)->type == DOUBLE_AMPERSAND ? AND : OR;
+        pop_token();
+
+        while (peek_token(ENABLE_KEYWORDS)->type == NEW_LINE)
+            pop_token();
+
+        ((struct ast_and_or *)and_or)->next = parse_and_or();
+    }
 
     return and_or;
 }
@@ -435,7 +442,6 @@ static struct ast *parse_compound_list(void)
                 parse_compound_list();
     }
 
-    // TODO: Add handle token '&'.
     if (peek_token(ENABLE_KEYWORDS)->type == SEMICOLON
         || peek_token(ENABLE_KEYWORDS)->type == AMPERSAND)
         pop_token();
