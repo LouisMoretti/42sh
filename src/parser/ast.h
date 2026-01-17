@@ -64,7 +64,7 @@ struct ast_and_or
 struct ast_pipeline
 {
     struct ast base;
-    int negation; // TODO: Use bool or enum.
+    int negation;
     struct ast *cmd; // NOT NULL
     struct ast *next; // NULL if last element of list
 };

@@ -45,9 +45,11 @@ static int pop_peek_chr(void)
     return peek_chr();
 }
 
+// TODO: Add chars that ends a token.
 static int is_end_of_token(int c)
 {
-    return c == EOF || is_space(c) || c == '\n' || c == ';' || c == '|';
+    return c == EOF || is_space(c) || c == '\n' || c == ';' || c == '|'
+        || c == '&';
 }
 
 static int fill_buffer(void)
@@ -165,11 +167,33 @@ struct token *peek_token(enum keyword_policy policy)
 
     if (c == '|')
     {
-        // TODO: Handle double pipe token (For step 4).
-        g_cur_type_before_policy = PIPE;
+        pop_chr();
+        if (peek_chr() == '|')
+        {
+            g_cur_type_before_policy = DOUBLE_PIPE;
+            pop_chr();
+        }
+        else
+            g_cur_type_before_policy = PIPE;
+
         set_token_type_with_policy(policy);
         g_has_cur = 1;
+        return &g_cur_token;
+    }
+
+    if (c == '&')
+    {
         pop_chr();
+        if (peek_chr() == '&')
+        {
+            g_cur_type_before_policy = DOUBLE_AMPERSAND;
+            pop_chr();
+        }
+        else
+            g_cur_type_before_policy = AMPERSAND;
+
+        set_token_type_with_policy(policy);
+        g_has_cur = 1;
         return &g_cur_token;
     }
 
