@@ -155,11 +155,135 @@ static struct ast *parse_cmd(void)
     return cmd;
 }
 
+static struct ast *parse_element(void)
+{
+    struct ast *element = init_ast(AST_ELEMENT);
+
+    struct token *tok = peek_token(DISABLE_KEYWORDS);
+    if (tok->type != WORD) // TODO: && tok->type != REDIRECTION
+        warnx("parse_element: Wrong token type. Expected WORD | Got: %s",
+              type_name[tok->type]);
+
+    ((struct ast_element *)element)->word = strdup(tok->data);
+    pop_token();
+
+    return element;
+}
+
+static struct ast *parse_element_list(void)
+{
+    struct ast *element_list = init_ast(AST_ELEMENT_LIST);
+
+    ((struct ast_element_list *)element_list)->element = init_ast(AST_ELEMENT);
+
+    struct token *tok = peek_token(DISABLE_KEYWORDS);
+
+    // TODO: Return error.
+    if (tok->type != WORD) // TODO: && tok->type != REDIRECTION
+        warnx("parse_element_list: Wrong token type. Expected WORD | Got: %s",
+              type_name[tok->type]);
+
+    ((struct ast_element_list *)element_list)->element = parse_element();
+
+    tok = peek_token(DISABLE_KEYWORDS);
+    if (tok->type == WORD) // TODO: || tok->type == REDIRECTION
+        ((struct ast_element_list *)element_list)->next = parse_element_list();
+
+    return element_list;
+}
+
+static int check_prefix(void)
+{
+    struct token *tok = peek_token(DISABLE_KEYWORDS);
+
+    // TODO: Add redirections.
+
+    if (tok->type != WORD)
+        return 0;
+
+    char *str = tok->data;
+    size_t len = strlen(str);
+
+    // First char [A-Za-z_]
+    if ((str[0] < 'A' || (str[0] > 'Z' && str[0] < 'a') || (str[0] > 'z'))
+        && str[0] != '_')
+        return 0;
+
+    // Other char until '=' [A-Za-z0-9_]
+    size_t i = 1;
+    for (; i < len; i++)
+    {
+        if (str[i] == '=')
+            break;
+        if ((str[i] < '0' || (str[i] > '9' && str[i] < 'A')
+             || (str[i] > 'Z' && str[i] < 'a') || (str[i] > 'z'))
+            && str[i] != '_')
+            return 0;
+    }
+
+    // i == len <=> str[i] != '='
+    // We check both to be sure.
+    if (i == len || str[i] != '=')
+        return 0;
+
+    // Skip '='
+    i++;
+
+    // Anything is allowed after '=' ?!
+
+    return 1;
+}
+
+static struct ast *parse_prefix(void)
+{
+    // TODO: Return error.
+    if (check_prefix() == 0)
+        warnx("parse_prefix: Not a prefix!");
+
+    struct ast *prefix = init_ast(AST_PREFIX);
+
+    struct token *tok = peek_token(DISABLE_KEYWORDS);
+    ((struct ast_prefix *)prefix)->assignment_word = strdup(tok->data);
+    pop_token();
+
+    return prefix;
+}
+
+static struct ast *parse_prefix_list(void)
+{
+    // TODO: Return error.
+    if (check_prefix() == 0)
+        warnx("parse_prefix_list: Not a prefix!");
+
+    struct ast *prefix_list = init_ast(AST_PREFIX_LIST);
+
+    ((struct ast_prefix_list *)prefix_list)->prefix = parse_prefix();
+
+    if (check_prefix())
+        ((struct ast_prefix_list *)prefix_list)->next = parse_prefix_list();
+
+    return prefix_list;
+}
+
 static struct ast *parse_simple_cmd(void)
 {
     struct ast *cmd = init_ast(AST_SIMPLE_CMD);
 
-    // TODO: Command with prefix.
+    // TODO: Return error.
+    if (peek_token(ENABLE_KEYWORDS)->type
+        != WORD) // && peek_token(DISABLE_KEYWORDS)->type != REDIRECTION
+        warnx("parse_simple_cmd: Wrong token type. Expected WORD | Got: %s",
+              type_name[peek_token(ENABLE_KEYWORDS)->type]);
+
+    if (check_prefix())
+    {
+        ((struct ast_simple_cmd *)cmd)->prefix_list = parse_prefix_list();
+
+        // TODO: Check logic.
+        if (peek_token(ENABLE_KEYWORDS)->type
+            != WORD) // && peek_token(DISABLE_KEYWORDS)->type != REDIRECTION
+            return cmd;
+    }
 
     struct token *tok = peek_token(ENABLE_KEYWORDS);
     // TODO: Return error.
@@ -169,27 +293,10 @@ static struct ast *parse_simple_cmd(void)
     ((struct ast_simple_cmd *)cmd)->word = strdup(tok->data);
     pop_token();
 
-    // TODO: Refaco AST_ELEMENT_LIST, call sub function
-    struct ast *element_list = NULL;
     tok = peek_token(DISABLE_KEYWORDS);
-    // TODO: Can a token be null?
-    while (tok != NULL && tok->type == WORD)
-    {
-        struct ast *tmp_element_list = init_ast(AST_ELEMENT_LIST);
-        if (!element_list)
-            ((struct ast_simple_cmd *)cmd)->element_list = tmp_element_list;
-        else
-            ((struct ast_element_list *)element_list)->next = tmp_element_list;
-        element_list = tmp_element_list;
 
-        struct ast *tmp_element = init_ast(AST_ELEMENT);
-        ((struct ast_element *)tmp_element)->word = strdup(tok->data);
-
-        ((struct ast_element_list *)element_list)->element = tmp_element;
-
-        pop_token();
-        tok = peek_token(DISABLE_KEYWORDS);
-    }
+    if (tok->type == WORD) // TODO: || tok->type == REDIRECTION
+        ((struct ast_simple_cmd *)cmd)->element_list = parse_element_list();
 
     return cmd;
 }
