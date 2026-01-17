@@ -4,6 +4,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <err.h>
 
 static char *merge(char *src1, char *src2)
 {
@@ -151,7 +152,7 @@ static char *expand_escape(char *result, char *copy, size_t *offset, size_t *i)
     return result;
 }
 
-char * expand_double_quote(char *result, char *copy, size_t *offset, size_t *i)
+char *expand_double_quote(char *result, char *copy, size_t *offset, size_t *i)
 {
     // Add cached characters to result.
     if (*offset != *i)
@@ -163,7 +164,6 @@ char * expand_double_quote(char *result, char *copy, size_t *offset, size_t *i)
     // Skip first double quote.
     (*i)++;
     *offset = *i;
-    (*i)++;
 
     // go threw all the copy until we find a double quote
     while (copy[*i] && copy[*i] != '"')
@@ -180,7 +180,7 @@ char * expand_double_quote(char *result, char *copy, size_t *offset, size_t *i)
         else*/
         if (copy[*i] == '\\')
         {
-            result = expand_escape(result, copy, &offset, &i);
+            result = expand_escape(result, copy, offset, i);
             if (!result)
                 // result and copy are free inside expand_single_quote.
                 return NULL;
@@ -199,15 +199,16 @@ char * expand_double_quote(char *result, char *copy, size_t *offset, size_t *i)
     }
 
     // Check for missing quote error.
-    if (copy[*i + length] == '\0')
+    if (copy[*i] == '\0')
     {
         free(copy);
         free(result);
+        warnx("Error during expansion of double string\n");
         return NULL;
     }
 
     // Make the substring of the quoted characters.
-    char *quoted = strndup(copy + *offset, length);
+    char *quoted = strndup(copy + *offset, *i - *offset);
     if (!quoted)
     {
         free(copy);
@@ -223,9 +224,8 @@ char * expand_double_quote(char *result, char *copy, size_t *offset, size_t *i)
         return NULL;
     }
 
-    *i += length;
-    // *offset += length + 1;
-    *offset = *i + 1;
+    (*i)++;
+    *offset = *i;
 
     return result;
 }
