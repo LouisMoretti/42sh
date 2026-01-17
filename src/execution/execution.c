@@ -185,7 +185,31 @@ static int execute_ast_and_or(struct ast *ast)
     struct ast_and_or *ast_and_or = (struct ast_and_or *)ast;
     assert(ast_and_or->pipeline != NULL);
 
-    return execute_ast_pipeline(ast_and_or->pipeline);
+    int result = 0;
+    while (!result && ast_and_or)
+    {
+        result = execute_ast_pipeline(ast_and_or->pipeline);
+        // Absorbing Elements
+        if (result)
+        {
+            while (ast_and_or && ast_and_or->operand == AND)
+                ast_and_or = (struct ast_and_or *)ast_and_or->next;
+            if (ast_and_or)
+                result = 0;
+        }
+        else if (!result)
+        {
+            while (ast_and_or && ast_and_or->operand == OR)
+                ast_and_or = (struct ast_and_or *)ast_and_or->next;
+            if (ast_and_or)
+                result = 0;
+        }
+
+        if (ast_and_or)
+            ast_and_or = (struct ast_and_or *)ast_and_or->next;
+    }
+
+    return result;
 }
 
 static int execute_ast_compound_list(struct ast *ast)
