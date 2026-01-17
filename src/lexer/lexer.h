@@ -17,6 +17,8 @@ enum token_type
     IN,
     // ESAC,
     NEGATION,
+    // LEFT_BRACKET,
+    // RIGHT_BRACKET,
     KEYWORD_COUNT, // Keep this here, add keywords above only
     NEW_LINE,
     SEMICOLON,
@@ -27,8 +29,6 @@ enum token_type
     DOUBLE_AMPERSAND,
     // LEFT_PARANTHESIS,
     // RIGHT_PARANTHESIS,
-    // LEFT_BRACKET,
-    // RIGHT_BRACKET,
     WORD,
     END_OF_FILE
 };
