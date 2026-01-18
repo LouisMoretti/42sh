@@ -45,7 +45,7 @@ static int evaluate_command(char **command)
     else
     {
         int wstatus;
-        wait(&wstatus);
+        waitpid(pid, &wstatus, 0);
 
         // TODO: Check with ACU if handling signals is necessary
         if (WIFEXITED(wstatus))
