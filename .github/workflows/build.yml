@@ -1,0 +1,42 @@
+name: Testsuite & report
+
+on:
+  push:
+   branches: [ "master", "dev" ]
+  pull_request:
+   branches: [ "master", "dev" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install deps
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y autoconf automake autoconf-archive python3-pytest libcriterion-dev
+
+    - name: Autotools
+      run: autoreconf -vif
+
+    - name: Configure
+      run: ./configure
+
+    - name: Build
+      run: make
+
+    - name: Run testsuite
+      run: COVERAGE="yes" make check
+
+    - name: Generate test report
+      run: make generate-test-report
+
+    - name: Upload test report
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-report
+        path: output/results.xml
