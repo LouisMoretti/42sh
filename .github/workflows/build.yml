@@ -9,7 +9,7 @@ on:
 
 jobs:
   build:
-    if: !github.event.pull_request.draft
+    if: ! github.event.pull_request.draft
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/louismoretti/42sh/42sh-ci:latest
