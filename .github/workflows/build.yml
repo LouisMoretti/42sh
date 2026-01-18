@@ -11,19 +11,21 @@ jobs:
   build:
     if: !github.event.pull_request.draft
     runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/louismoretti/42sh/42sh-ci:latest
 
     steps:
     - uses: actions/checkout@v4
 
-    - name: Install deps
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y \
-            autoconf \
-            automake \
-            autoconf-archive \
-            python3-pytest \
-            libcriterion-dev
+    # - name: Install deps
+    #   run: |
+    #     sudo apt-get update
+    #     sudo apt-get install -y \
+    #         autoconf \
+    #         automake \
+    #         autoconf-archive \
+    #         python3-pytest \
+    #         libcriterion-dev
 
     - name: Autotools
       run: autoreconf -vif

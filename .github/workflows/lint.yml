@@ -11,14 +11,16 @@ jobs:
   clang-format:
 
     runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/louismoretti/42sh/42sh-ci:latest
 
     steps:
     - uses: actions/checkout@v4
 
-    - name: Install clang-format
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y clang-format
+    # - name: Install clang-format
+    #   run: |
+    #     sudo apt-get update
+    #     sudo apt-get install -y clang-format
 
     - name: Run clang-format
       run: git ls-files 'src/*.[ch]' 'tests/*.[ch]' | xargs clang-format --dry-run --Werror -style=file
