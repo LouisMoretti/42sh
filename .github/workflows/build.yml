@@ -18,7 +18,12 @@ jobs:
     - name: Install deps
       run: |
         sudo apt-get update
-        sudo apt-get install -y autoconf automake autoconf-archive python3-pytest libcriterion-dev
+        sudo apt-get install -y \
+            autoconf \
+            automake \
+            autoconf-archive \
+            python3-pytest \
+            libcriterion-dev
 
     - name: Autotools
       run: autoreconf -vif
