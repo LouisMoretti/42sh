@@ -7,6 +7,8 @@ COVERAGEFILE  =  coverage
 
 export MAKEFLAGS BIN_PATH OUTPUT_FILE COVERAGE TESTSRESULTS 
 
+check: check-recursive
+
 generate-test-report: all
 	@make -C tests/functionnal generate-test-report $(MAKEFLAGS)
 
