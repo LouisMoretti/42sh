@@ -185,15 +185,6 @@ char *expand_double_quote(char *result, char *copy, size_t *offset, size_t *i)
                 // result and copy are free inside expand_single_quote.
                 return NULL;
         }
-        /*
-        else if (copy[*i] == '`')
-        {
-            // TODO: expand backquote by executing the command in the two
-        backquote in a subshell result = expand_backquote(result, copy, &offset,
-        &i); if (!result)
-                // result and copy are free inside expand_single_quote.
-                return NULL;
-        }*/
 
         (*i)++;
     }

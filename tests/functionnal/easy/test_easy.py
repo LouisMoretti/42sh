@@ -284,7 +284,8 @@ param_filepaths = [(open(f"{folder}/{file}", 'r').name, f"{folder}/{file}") for 
 params_cmds = [("test_escape","echo -e '\\n'"),
                ('simple_negation_false', "! false"),
                ('simple_negation_true', "! true"),
-               ('simple_negation_echo', "! echo a b c")
+               ('simple_negation_echo', "! echo a b c"),
+               ('simple_double_quotes', "echo \"caca\n \\q \$\t\"\n")
                ]
 
 @pytest.mark.parametrize("name,command_to_run", params_cmds)
