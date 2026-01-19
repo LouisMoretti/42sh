@@ -305,6 +305,28 @@ static int execute_ast_until(struct ast *ast)
     return result;
 }
 
+static int execute_ast_for(struct ast *ast)
+{
+    if (!ast)
+        return 0;
+
+    struct ast_rule_for *ast_rule_for = (struct ast_rule_for *)ast;
+    assert(ast_rule_for->condition_word != NULL);
+    assert(ast_rule_for->body_compound_list != NULL);
+
+    int result = 0;
+    struct ast_word_list *ast_word_list =
+        (struct ast_word_list *)ast_rule_for->in_word_list;
+    while (ast_word_list)
+    {
+        assert(ast_word_list->word != NULL);
+        result = execute_ast_compound_list(ast_rule_for->body_compound_list);
+        ast_word_list = (struct ast_word_list *)ast_word_list->next;
+    }
+
+    return result;
+}
+
 static int execute_ast_shell_cmd(struct ast *ast)
 {
     if (!ast)
@@ -322,6 +344,8 @@ static int execute_ast_shell_cmd(struct ast *ast)
         return execute_ast_while(ast_shell_cmd->rule);
     case AST_RULE_UNTIL:
         return execute_ast_until(ast_shell_cmd->rule);
+    case AST_RULE_FOR:
+        return execute_ast_for(ast_shell_cmd->rule);
     default:
         return 0;
     }
@@ -370,7 +394,8 @@ static exec execute_functions[] = { [AST_INPUT] = &execute_ast_input,
                                     [AST_CLAUSE_ELSE] =
                                         &execute_ast_else_clause,
                                     [AST_RULE_WHILE] = &execute_ast_while,
-                                    [AST_RULE_UNTIL] = &execute_ast_until };
+                                    [AST_RULE_UNTIL] = &execute_ast_until,
+                                    [AST_RULE_FOR] = &execute_ast_for };
 
 int execute_ast(struct ast *ast)
 {
