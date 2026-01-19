@@ -486,7 +486,32 @@ static int expand_list_args(char **result, struct ast_word_list **word)
     return 0;
 }
 
-struct ast_word_list *expand_for(struct ast_word_list *word)
+static char *res_merge_for(char **result, char **copy, size_t *offset,
+                           size_t *i)
+{
+    // Add cached characters to result.
+    if (*offset != *i)
+        *result = middle_merge(*result, *copy, *offset, *i - *offset);
+
+    if (!(*result))
+        // result and copy are free inside middle_merge.
+        return NULL;
+
+    free(*copy);
+    return *result;
+}
+
+static void switch_word(struct ast_word_list **word, char **result,
+                        struct ast **next)
+{
+    if ((*word)->word)
+        free((*word)->word);
+
+    (*word)->word = *result;
+    (*word)->next = *next;
+}
+
+struct ast_word_list *expand_word_for(struct ast_word_list *word)
 {
     struct ast_word_list *res = word;
     struct ast *next = word->next;
@@ -511,21 +536,22 @@ struct ast_word_list *expand_for(struct ast_word_list *word)
     // Loop through the string to find single quotes or escaped characters.
     while (copy[i] != '\0')
     {
-        switch (copy[i])
+        if (copy[i] == '\'')
         {
-        case '\'':
             result = expand_single_quote(result, copy, &offset, &i);
             if (!result)
                 // result and copy are free inside expand_single_quote.
                 return NULL;
-            break;
-        case '\\':
+        }
+        else if (copy[i] == '\\')
+        {
             result = expand_escape(result, copy, &offset, &i);
             if (!result)
                 // result and copy are free inside expand_escape.
                 return NULL;
-            break;
-        case '$':
+        }
+        else if (copy[i] == '$')
+        {
             if (copy[i + 1] == '@')
             {
                 // call this function to add in the word list all the arguments
@@ -548,28 +574,32 @@ struct ast_word_list *expand_for(struct ast_word_list *word)
                     // result and copy are free inside expand_escape.
                     return NULL;
             }
-            break;
-        default:
-            break;
         }
+
         i++;
     }
 
-    // Add cached characters to result.
-    if (offset != i)
-        result = middle_merge(result, copy, offset, i - offset);
-
-    if (!result)
-        // result and copy are free inside middle_merge.
+    if (!res_merge_for(&result, &copy, &offset, &i))
         return NULL;
 
-    free(copy);
+    switch_word(&word, &result, &next);
 
-    if (word->word)
-        free(word->word);
+    return res;
+}
 
-    word->word = result;
-    word->next = next;
+struct ast_word_list *expand_for(struct ast_word_list *word)
+{
+    struct ast_word_list *res = word;
+    struct ast_word_list *act = word;
+
+    while (act)
+    {
+        struct ast_word_list *next = (struct ast_word_list *)act->next;
+        if (!expand_word_for(act))
+            return NULL;
+
+        act = next;
+    }
 
     return res;
 }
