@@ -281,7 +281,11 @@ def test_simple_comment():
 
 folder = "easy/tests_files"
 param_filepaths = [(open(f"{folder}/{file}", 'r').name, f"{folder}/{file}") for file in os.listdir(folder)]
-params_cmds = [("test_escape","echo -e '\\n'")]
+params_cmds = [("test_escape","echo -e '\\n'"),
+               ('simple_negation_false', "! false"),
+               ('simple_negation_true', "! true"),
+               ('simple_negation_echo', "! echo a b c")
+               ]
 
 @pytest.mark.parametrize("name,command_to_run", params_cmds)
 def test_string(name, command_to_run):
