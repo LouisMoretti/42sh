@@ -13,9 +13,9 @@ test_expansion_CFLAGS = -std=c99 -Werror -Wall -Wextra -Wvla
 test_expansion_LDFLAGS = -lcriterion
 
 test_expansion_LDADD =  \
-	   ../../../src/utils/hash_map/libhashmap.a \
+	   ../../../src/expansion/libexpansion.a \
 	   ../../../src/config/libconfig.a \
-	   ../../../src/expansion/libexpansion.a 
+	   ../../../src/utils/hash_map/libhashmap.a
 
 check-local:
 	(./$(check_PROGRAMS) || true)
