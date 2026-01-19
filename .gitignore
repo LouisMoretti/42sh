@@ -19,6 +19,7 @@ config.status
 **/Makefile.in
 
 # Testsuite
+output/
 **/__pycache__
 **/.pytest_cache
 **/.deps
@@ -27,6 +28,10 @@ tests/units/expansion/test_expansion
 tests/units/iobackend/test_iobackend
 tests/units/lexer/test_lexer
 tests/units/parser/test_parser
+
+# Coverage
+**/*.gcno
+**/*.gcda
 
 compile_commands.json
 42sh

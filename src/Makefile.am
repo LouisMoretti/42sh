@@ -25,3 +25,8 @@ bin_PROGRAMS = 42sh
 	   execution/libexecution.a \
 	   expansion/libexpansion.a \
 	   iobackend/libiobackend.a
+
+if ENABLE_COVERAGE
+42sh_CFLAGS  +=  --coverage -g -O0
+42sh_LDFLAGS  =  --coverage
+endif

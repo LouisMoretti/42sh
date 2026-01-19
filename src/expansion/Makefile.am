@@ -14,3 +14,7 @@ libexpansion_a_CFLAGS = -std=c99 -pedantic -Werror -Wall -Wextra -Wvla
 
 # Libraries to not install
 noinst_LIBRARIES = libexpansion.a
+
+if ENABLE_COVERAGE
+libexpansion_a_CFLAGS  +=  --coverage -O0
+endif

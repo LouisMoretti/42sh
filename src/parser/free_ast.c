@@ -265,11 +265,11 @@ static void free_ast_simple_cmd(struct ast *ast)
 
     struct ast_simple_cmd *cmd = (struct ast_simple_cmd *)ast;
 
-    if (cmd->prefix != NULL)
-    {
-        assert(cmd->prefix->type == AST_PREFIX);
-        free_ast_prefix(cmd->prefix);
-    }
+    // if (cmd->prefix != NULL)
+    // {
+    //     assert(cmd->prefix->type == AST_PREFIX);
+    //     free_ast_prefix(cmd->prefix);
+    // }
 
     if (cmd->prefix_list != NULL)
     {

@@ -18,6 +18,17 @@ AC_PROG_CC
 
 AX_COMPILER_FLAGS([], [], [], [-std=c99 -pedantic -Werror -Wall -Wextra -Wvla])
 
+AC_ARG_ENABLE([coverage],
+  AS_HELP_STRING([--enable-coverage],
+                 [enable code coverage])
+)
+AS_IF([test "$enable_coverage" = yes], [
+       AC_DEFINE([ENABLE_COVERAGE], [1], [Set 'ENABLE_COVERAGE' variable to enable coverage])
+       ])
+
+AM_CONDITIONAL([ENABLE_COVERAGE], [test "$enable_coverage" = yes])
+AM_EXTRA_RECURSIVE_TARGETS([clean-coverage distclean-coverage])
+
 # List Makefiles in subdirectories
 AC_CONFIG_FILES([
                  Makefile
