@@ -14,6 +14,7 @@ test_expansion_LDFLAGS = -lcriterion
 
 test_expansion_LDADD =  \
 	   ../../../src/expansion/libexpansion.a \
+	   ../../../src/parser/libparser.a \
 	   ../../../src/config/libconfig.a \
 	   ../../../src/utils/hash_map/libhashmap.a
 

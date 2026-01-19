@@ -9,6 +9,7 @@
 #include <string.h>
 
 #include "config/config.h"
+#include "parser/ast.h"
 #include "utils/hash_map/hash_map.h"
 
 static char *merge(char *src1, char *src2)
@@ -441,25 +442,7 @@ char *expand_echo(char *word)
     return result;
 }
 
-static char **free_list_args(char **final_res)
-{
-    if (final_res)
-    {
-        size_t i = 0;
-
-        while (final_res[i])
-        {
-            free(final_res[i]);
-            i++;
-        }
-
-        free(final_res);
-    }
-
-    return NULL;
-}
-
-static char **expand_list_args(char **result, char **final_res, size_t *len_res)
+static int expand_list_args(char **result, struct ast_word_list **word)
 {
     struct config *my_conf = get_conf();
     int i = 0;
@@ -473,27 +456,23 @@ static char **expand_list_args(char **result, char **final_res, size_t *len_res)
         // add the argument at the end of the result
         *result = merge(*result, tmp);
         if (!result)
-            return free_list_args(final_res);
+            return -1;
 
-        // realloc the final_res to be able to add one result inside
-        final_res = realloc(final_res, (*len_res + 1) * sizeof(char *));
-        if (!final_res)
-        {
-            free(*result);
-            return NULL;
-        }
+        // malloc the word list to add an element
+        struct ast_word_list *new_word =
+            (struct ast_word_list *)init_ast(AST_WORD_LIST);
+        if (!new_word)
+            return -1;
 
-        // add the result at the end of the final_res list
-        final_res[*len_res - 1] = *result;
-        final_res[*len_res] = NULL;
-        (*len_res)++;
+        new_word->word = *result;
+        (*word)->next = (struct ast *)new_word;
+        *word = new_word;
 
         // create a new result variable
         *result = calloc(1, sizeof(char));
         if (!*result)
-        {
-            return free_list_args(final_res);
-        }
+            return -1;
+
         i++;
     }
 
@@ -502,15 +481,18 @@ static char **expand_list_args(char **result, char **final_res, size_t *len_res)
     char *tmp = strdup(my_conf->arg_values[i]);
     *result = merge(*result, tmp);
     if (!result)
-        return free_list_args(final_res);
+        return -1;
 
-    return final_res;
+    return 0;
 }
 
-char **expand_for(char *string)
+struct ast_word_list *expand_for(struct ast_word_list *word)
 {
+    struct ast_word_list *res = word;
+    struct ast *next = word->next;
+
     // Copy original string.
-    char *copy = strndup(string, strlen(string));
+    char *copy = strndup(word->word, strlen(word->word));
     if (!copy)
         return NULL;
 
@@ -520,16 +502,6 @@ char **expand_for(char *string)
     if (!result)
     {
         free(copy);
-        return NULL;
-    }
-
-    // initialize the result of the function of length 1
-    size_t len_res = 1;
-    char **final_res = calloc(1, sizeof(char *));
-    if (!final_res)
-    {
-        free(copy);
-        free(result);
         return NULL;
     }
 
@@ -556,11 +528,17 @@ char **expand_for(char *string)
         case '$':
             if (copy[i + 1] == '@')
             {
-                // call this function to add in the final_res all the arguments
+                // call this function to add in the word list all the arguments
                 // given in the list
-                final_res = expand_list_args(&result, final_res, &len_res);
-                if (!final_res)
+
+                if (expand_list_args(&result, &word) == -1)
+                {
+                    // put the next element of the word to be able to free
+                    // everything
+                    word->next = next;
                     return NULL;
+                }
+
                 i++;
             }
             else
@@ -587,16 +565,11 @@ char **expand_for(char *string)
 
     free(copy);
 
-    // Add the last result in the final_result list
-    final_res = realloc(final_res, (len_res + 1) * sizeof(char *));
-    if (!final_res)
-    {
-        free(result);
-        return NULL;
-    }
+    if (word->word)
+        free(word->word);
 
-    final_res[len_res - 1] = result;
-    final_res[len_res] = NULL;
+    word->word = result;
+    word->next = next;
 
-    return final_res;
+    return res;
 }

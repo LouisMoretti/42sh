@@ -5,6 +5,6 @@
 
 char *expand_string(char *string);
 char *expand_echo(char *word);
-char **expand_for(char *string);
+struct ast_word_list *expand_for(struct ast_word_list *word);
 
 #endif // ! EXPANSION_H
