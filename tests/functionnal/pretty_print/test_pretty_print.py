@@ -38,7 +38,39 @@ def test_pretty_while():
     proc = run_command_string(command_to_run)
     try:
         out, _ = proc.communicate(timeout=0.1)
-        ref_out = "".encode()
+        ref_out = "while echo oui; do\n    echo non;\ndone\n\n\n".encode()
         assert out == ref_out
     finally:
         kill_42sh(proc)
+
+
+# ----------------------
+#          FOR
+# ----------------------
+
+def test_pretty_for():
+    command_to_run = "for i in hello there; do echo $i; done"
+    proc = run_command_string(command_to_run)
+    try:
+        out, _ = proc.communicate(timeout=0.1)
+        ref_out = "for i in hello there; do\n    echo $i;\ndone\n\n\n".encode()
+        assert out == ref_out
+    finally:
+        kill_42sh(proc)
+
+
+# ----------------------
+#        UNTIL
+# ----------------------
+
+def test_pretty_until():
+    command_to_run = "until true; do echo hi; done;"
+    proc = run_command_string(command_to_run)
+    try:
+        out, _ = proc.communicate(timeout=0.1)
+        ref_out = "until true; do\n    echo hi;\ndone\n\n\n".encode()
+        assert out == ref_out
+    finally:
+        kill_42sh(proc)
+
+
