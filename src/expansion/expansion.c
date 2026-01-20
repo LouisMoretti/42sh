@@ -305,7 +305,8 @@ static char *expand_var(char *result, char *copy, size_t *offset, size_t *i)
     return result;
 }
 
-char *expand_double_quote(char *result, char *copy, size_t *offset, size_t *i)
+static char *expand_double_quote(char *result, char *copy, size_t *offset,
+                                 size_t *i)
 {
     // Add cached characters to result.
     if (*offset != *i)
