@@ -85,3 +85,8 @@ dkms.conf
 
 # debug information files
 *.dwo
+
+# coverage
+output/
+**/**/*.gcda
+**/**/*.gcno
