@@ -165,7 +165,6 @@ static char *get_special(char *name_var, int *code)
 
     if (isdigit(name_var[0]))
     {
-        int index;
         // loop to look if the variable is valid
         size_t i = 0;
         while (name_var[i] != '\0' && isdigit(name_var[i]))
@@ -174,8 +173,10 @@ static char *get_special(char *name_var, int *code)
         }
         if (name_var[i] != '\0')
             return NULL;
-        index = atoi(name_var);
-        res = merge(res, my_conf->arg_values[index]);
+        int index = atoi(name_var);
+
+        if (index < my_conf->arg_count)
+            res = merge(res, strdup(my_conf->arg_values[index]));
     }
     else if (name_var[0] == '?')
         res = merge(res, strdup("0")); // TODO
@@ -227,6 +228,24 @@ static char *get_special(char *name_var, int *code)
     return res;
 }
 
+static char *get_value_var(char *special, char *name_var)
+{
+    if (special)
+    {
+        return special;
+    }
+    else
+    {
+        struct config *my_conf = get_conf();
+        struct hash_map *my_variables = my_conf->hash_map_variables;
+        char *val_var = hash_map_get(my_variables, name_var);
+        if (!val_var)
+            return strdup("");
+
+        return val_var;
+    }
+}
+
 static char *expand_var(char *result, char *copy, size_t *offset, size_t *i)
 {
     // Add cached characters to result.
@@ -237,7 +256,7 @@ static char *expand_var(char *result, char *copy, size_t *offset, size_t *i)
         return NULL;
 
     (*i)++; // Skipping $
-    char is_looked;
+    char is_looked = '\0';
 
     if (copy[*i] == '{')
     {
@@ -247,8 +266,10 @@ static char *expand_var(char *result, char *copy, size_t *offset, size_t *i)
     else if (isalpha(copy[*i]))
         is_looked = '\0'; // Special case we need to go until last nonalpha char
     else if (isdigit(copy[*i]))
-        is_looked = copy[*i + 1];
-    else
+        is_looked = copy[*i];
+    else if (copy[*i] != '$' && copy[*i] != '*' && copy[*i] != '#'
+             && copy[*i] != '?' && copy[*i] != '-' && copy[*i] != '@'
+             && copy[*i] != '!')
         return NULL;
 
     *offset = *i;
@@ -276,19 +297,7 @@ static char *expand_var(char *result, char *copy, size_t *offset, size_t *i)
         return NULL;
     }
 
-    char *val_var = NULL;
-    if (special)
-    {
-        val_var = special;
-    }
-    else
-    {
-        struct config *my_conf = get_conf();
-        struct hash_map *my_variables = my_conf->hash_map_variables;
-        val_var = hash_map_get(my_variables, name_var);
-        if (!val_var)
-            return strdup("");
-    }
+    char *val_var = get_value_var(special, name_var);
 
     free(name_var);
     result = merge(result, val_var);
@@ -511,7 +520,7 @@ static void switch_word(struct ast_word_list **word, char **result,
     (*word)->next = *next;
 }
 
-struct ast_word_list *expand_word_for(struct ast_word_list *word)
+static struct ast_word_list *expand_word_for(struct ast_word_list *word)
 {
     struct ast_word_list *res = word;
     struct ast *next = word->next;
