@@ -1,6 +1,8 @@
 **/*.swp
 **/.*~
 
+tests/functionnal/file.txt
+
 # Autotools
 ar-lib
 aclocal.m4
