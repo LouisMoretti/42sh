@@ -191,8 +191,8 @@ static char *get_special(char *name_var, int *code)
 
     else if (name_var[0] == '@')
     {
-        int i = 0;
-        if (my_conf->arg_count >= 1)
+        int i = 1;
+        if (my_conf->arg_count >= 2)
         {
             res = merge(res, my_conf->arg_values[i]);
             if (!res)
@@ -454,11 +454,11 @@ char *expand_echo(char *word)
 static int expand_list_args(char **result, struct ast_word_list **word)
 {
     struct config *my_conf = get_conf();
-    int i = 0;
+    int i = 1;
 
     // go threw all the arguments to add them one by one (but not the last one
     // !)
-    while (i < my_conf->arg_count - 1)
+    while (i < my_conf->arg_count)
     {
         // copy the config argument in case an error occurs in the merge
         char *tmp = strdup(my_conf->arg_values[i]);
