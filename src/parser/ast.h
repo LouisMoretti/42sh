@@ -130,13 +130,25 @@ struct ast_funcdec
     struct ast *shell_cmd; // NOT NULL
 };
 
-// struct ast_redirection
-// {
-//     struct ast base;
-//     int io_number;
-//     enum redirection_type;
-//     char *word;
-// };
+enum redirection_type
+{
+    REDIRECT_OUT, // > (default io number: 1)
+    REDIRECT_IN, // < (default io number: 0)
+    REDIRECT_OUT_APPEND, // >> (default io number: 1)
+    REDIRECT_IN_APPEND, // << (default io number: 0)
+    REDIRECT_OUT_DUP, // >&
+    REDIRECT_IN_DUP, // <&
+    REDIRECT_OUT_FORCE, // >| (noclobber) (default io number: 1)
+    REDIRECT_IN_OUT // <>
+};
+
+struct ast_redirection
+{
+    struct ast base;
+    int io_number; // -1 if no io number.
+    enum redirection_type;
+    char *word; // NOT NULL
+};
 
 // struct and_or_list
 // {
