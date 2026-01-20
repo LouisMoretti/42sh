@@ -17,6 +17,9 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    - name: GIT Setup
+      run: git config --global --add safe.directory '*'
+
     - name: Check for trash files
       run: |
         ALLOWED="(Makefile\.am|^src/.+\.[ch]|^tests/.+(\.([ch]|py|sh)|tests_files/.+|Dockerfile)|^\.gitignore|^README(\.md)?|^.clang-(format|tidy)|^\.github/workflows/.+\.yml|^configure.ac)$"
