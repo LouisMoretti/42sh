@@ -9,7 +9,6 @@
 #include <string.h>
 
 #include "config/config.h"
-#include "parser/ast.h"
 #include "utils/hash_map/hash_map.h"
 
 static char *merge(char *src1, char *src2)
@@ -186,9 +185,8 @@ static char *get_special(char *name_var, int *code)
     {
         struct config *my_conf = get_conf();
         char *count_text = calloc(2, sizeof(char));
-        sprintf(count_text, "%i", my_conf->arg_count);
+        sprintf(count_text, "%i", my_conf->arg_count); // > 127 arg = error
     }
-
     else if (name_var[0] == '@')
     {
         int i = 1;
@@ -455,6 +453,7 @@ static int expand_list_args(char **result, struct ast_word_list **word)
 {
     struct config *my_conf = get_conf();
     int i = 1;
+    struct ast_word_list *act = *word;
 
     // go threw all the arguments to add them one by one (but not the last one
     // !)
@@ -474,8 +473,8 @@ static int expand_list_args(char **result, struct ast_word_list **word)
             return -1;
 
         new_word->word = *result;
-        (*word)->next = (struct ast *)new_word;
-        *word = new_word;
+        act->next = (struct ast *)new_word;
+        act = new_word;
 
         // create a new result variable
         *result = calloc(1, sizeof(char));

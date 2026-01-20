@@ -9,11 +9,12 @@
 
 struct hash_map *hash_map_init(size_t size)
 {
-    struct hash_map *h;
-    if ((h = malloc(sizeof(struct hash_map))) == NULL)
+    struct hash_map *h = malloc(sizeof(struct hash_map));
+    if (!h)
         return NULL;
 
-    if ((h->data = calloc(size, sizeof(struct pair_list *))) == NULL)
+    h->data = calloc(size, sizeof(struct pair_list *));
+    if (!h->data)
     {
         free(h);
         return NULL;
@@ -44,8 +45,8 @@ bool hash_map_insert(struct hash_map *hash_map, const char *key, char *value,
         p = p->next;
     }
 
-    struct pair_list *v;
-    if ((v = malloc(sizeof(struct pair_list))) == NULL)
+    struct pair_list *v = malloc(sizeof(struct pair_list));
+    if (!v)
         return false;
 
     if (updated != NULL)
@@ -81,30 +82,6 @@ void hash_map_free(struct hash_map *hash_map)
     free(hash_map);
 }
 
-void hash_map_dump(struct hash_map *hash_map)
-{
-    if (hash_map == NULL)
-        return;
-
-    for (size_t i = 0; i < hash_map->size; i++)
-    {
-        struct pair_list *v = hash_map->data[i];
-        if (v == NULL)
-            continue;
-
-        printf("%s: %s", v->key, v->value);
-        v = v->next;
-
-        while (v != NULL)
-        {
-            printf(", %s: %s", v->key, v->value);
-            v = v->next;
-        }
-
-        printf("\n");
-    }
-}
-
 char *hash_map_get(const struct hash_map *hash_map, const char *key)
 {
     if (hash_map == NULL || hash_map->size == 0 || key == NULL)
@@ -136,6 +113,8 @@ bool hash_map_remove(struct hash_map *hash_map, const char *key)
     if (strcmp(p->key, key) == 0)
     {
         hash_map->data[place] = p->next;
+        if (p->value)
+            free(p->value);
         free(p);
         return true;
     }
@@ -146,6 +125,10 @@ bool hash_map_remove(struct hash_map *hash_map, const char *key)
         {
             struct pair_list *t = p->next;
             p->next = t->next;
+
+            if (t->value)
+                free(t->value);
+
             free(t);
             return true;
         }
