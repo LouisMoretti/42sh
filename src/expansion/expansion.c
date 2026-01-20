@@ -134,9 +134,17 @@ static char *expand_escape(char *result, char *copy, size_t *offset, size_t *i)
     // Go to escaped character.
     (*i)++;
 
-    // New string with only the escaped character.
+    // New string with only the escaped character if it's a $, `, \ or ".
     char *tmp = calloc(2, sizeof(char));
-    tmp[0] = copy[*i] != '\0' ? copy[*i] : '\\';
+    if (copy[*i] == '$' || copy[*i] == '`' || copy[*i] == '\\'
+        || copy[*i] == '"')
+        tmp[0] = copy[*i];
+    else
+    {
+        // keeps the original string
+        tmp[0] = '\\';
+        (*i)--;
+    }
     // tmp[1] is already '\0'.
 
     // Add the escaped character to result.
