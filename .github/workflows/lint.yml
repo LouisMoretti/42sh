@@ -21,6 +21,7 @@ jobs:
       run: git config --global --add safe.directory '*'
 
     - name: Check for trash files
+      shell: bash
       run: |
         ALLOWED="(Makefile\.am|^src/.+\.[ch]|^tests/.+(\.([ch]|py|sh)|tests_files/.+|Dockerfile)|^\.gitignore|^README(\.md)?|^.clang-(format|tidy)|^\.github/workflows/.+\.yml|^configure.ac)$"
         EXIT_CODE=0
