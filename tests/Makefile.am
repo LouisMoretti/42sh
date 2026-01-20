@@ -1,8 +1,10 @@
-SUBDIRS=functionnal units
+SUBDIRS=
 
 check-local:
+	@make -C functionnal/ check $(MAKEFLAGS)
+	@if [ "${COVERAGE}" = "yes" ]; then \
+		make -C units/ check $(MAKEFLAGS); \
+	fi
 
-check-cov: CFLAGS=-std=c99 -Werror -Wall -Wextra -Wvla --coverage -fPIC
-check-cov: LDLIBS=-lcriterion -lgcov
-check-cov: LDFLAGS=--coverage
-check-cov:
+clean-local:
+	@make -C units/ clean $(MAKEFLAGS)

@@ -12,6 +12,11 @@ test_execution_CFLAGS = -std=c99 -Werror -Wall -Wextra -Wvla
 
 test_execution_LDFLAGS = -lcriterion
 
+if ENABLE_COVERAGE
+test_execution_CFLAGS  +=  --coverage -O0
+test_execution_LDFLAGS +=  --coverage
+endif
+
 test_execution_LDADD = \
 	../../../src/execution/libexecution.a \
 	../../../src/expansion/libexpansion.a \
@@ -20,4 +25,4 @@ test_execution_LDADD = \
 	../../../src/utils/hash_map/libhashmap.a
 
 check-local:
-	(./$(check_PROGRAMS) || true)
+	@(./$(check_PROGRAMS) || true)

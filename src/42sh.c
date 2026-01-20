@@ -20,7 +20,13 @@ int main(int argc, char **argv)
         return 2;
 
     // Call parser for AST
-    struct ast *input = parse_input();
+    int status_code = 0;
+    struct ast *input = parse_input(&status_code);
+    if (status_code)
+    {
+        free_ast_input(input);
+        return status_code;
+    }
 
     // Execute AST
     assert(input->type == AST_INPUT);

@@ -19,3 +19,7 @@ libparser_a_CFLAGS = -std=c99 -pedantic -Werror -Wall -Wextra -Wvla
 
 # Libraries to not install
 noinst_LIBRARIES = libparser.a
+
+if ENABLE_COVERAGE
+libparser_a_CFLAGS  +=  --coverage -O0
+endif

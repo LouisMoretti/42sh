@@ -12,6 +12,11 @@ test_expansion_CFLAGS = -std=c99 -Werror -Wall -Wextra -Wvla
 
 test_expansion_LDFLAGS = -lcriterion
 
+if ENABLE_COVERAGE
+test_expansion_CFLAGS  +=  --coverage -O0
+test_expansion_LDFLAGS +=  --coverage
+endif
+
 test_expansion_LDADD =  \
 	   ../../../src/expansion/libexpansion.a \
 	   ../../../src/parser/libparser.a \
@@ -19,4 +24,4 @@ test_expansion_LDADD =  \
 	   ../../../src/utils/hash_map/libhashmap.a
 
 check-local:
-	(./$(check_PROGRAMS) || true)
+	@(./$(check_PROGRAMS) || true)

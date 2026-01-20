@@ -27,3 +27,8 @@ bin_PROGRAMS = 42sh
 	   expansion/libexpansion.a \
 	   iobackend/libiobackend.a \
 	   utils/hash_map/libhashmap.a
+
+if ENABLE_COVERAGE
+42sh_CFLAGS  +=  --coverage -g -O0
+42sh_LDFLAGS  =  --coverage
+endif

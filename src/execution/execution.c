@@ -10,6 +10,7 @@
 #include <unistd.h>
 
 #include "execution/builtin.h"
+#include "execution/pipe.h"
 #include "expansion/expansion.h"
 
 #define BUILTIN_ECHO "echo"
@@ -44,7 +45,7 @@ static int evaluate_command(char **command)
     else
     {
         int wstatus;
-        wait(&wstatus);
+        waitpid(pid, &wstatus, 0);
 
         // TODO: Check with ACU if handling signals is necessary
         if (WIFEXITED(wstatus))
@@ -169,7 +170,11 @@ static int execute_ast_pipeline(struct ast *ast)
     struct ast_pipeline *ast_pipeline = (struct ast_pipeline *)ast;
     assert(ast_pipeline->cmd != NULL);
 
-    return execute_ast_cmd(ast_pipeline->cmd);
+    int result = execute_pipe((struct ast *)ast_pipeline);
+    if (ast_pipeline->negation)
+        result = !result;
+
+    return result;
 }
 
 static int execute_ast_and_or(struct ast *ast)
@@ -181,7 +186,31 @@ static int execute_ast_and_or(struct ast *ast)
     struct ast_and_or *ast_and_or = (struct ast_and_or *)ast;
     assert(ast_and_or->pipeline != NULL);
 
-    return execute_ast_pipeline(ast_and_or->pipeline);
+    int result = 0;
+    while (!result && ast_and_or)
+    {
+        result = execute_ast_pipeline(ast_and_or->pipeline);
+        // Absorbing Elements
+        if (result)
+        {
+            while (ast_and_or && ast_and_or->operand == AND)
+                ast_and_or = (struct ast_and_or *)ast_and_or->next;
+            if (ast_and_or)
+                result = 0;
+        }
+        else if (!result)
+        {
+            while (ast_and_or && ast_and_or->operand == OR)
+                ast_and_or = (struct ast_and_or *)ast_and_or->next;
+            if (ast_and_or)
+                result = 0;
+        }
+
+        if (ast_and_or)
+            ast_and_or = (struct ast_and_or *)ast_and_or->next;
+    }
+
+    return result;
 }
 
 static int execute_ast_compound_list(struct ast *ast)
@@ -244,6 +273,38 @@ static int execute_ast_rule_if(struct ast *ast)
         return execute_ast_else_clause(ast_rule_if->else_clause);
 }
 
+static int execute_ast_while(struct ast *ast)
+{
+    if (!ast)
+        return 0;
+
+    struct ast_rule_while *ast_rule_while = (struct ast_rule_while *)ast;
+    assert(ast_rule_while->condition_compound_list != NULL);
+    assert(ast_rule_while->body_compound_list != NULL);
+
+    int result = 0;
+    while (!execute_ast_compound_list(ast_rule_while->condition_compound_list))
+        result = execute_ast_compound_list(ast_rule_while->body_compound_list);
+
+    return result;
+}
+
+static int execute_ast_until(struct ast *ast)
+{
+    if (!ast)
+        return 0;
+
+    struct ast_rule_until *ast_rule_until = (struct ast_rule_until *)ast;
+    assert(ast_rule_until->condition_compound_list != NULL);
+    assert(ast_rule_until->body_compound_list != NULL);
+
+    int result = 0;
+    while (execute_ast_compound_list(ast_rule_until->condition_compound_list))
+        result = execute_ast_compound_list(ast_rule_until->body_compound_list);
+
+    return result;
+}
+
 static int execute_ast_shell_cmd(struct ast *ast)
 {
     if (!ast)
@@ -253,7 +314,17 @@ static int execute_ast_shell_cmd(struct ast *ast)
     struct ast_shell_cmd *ast_shell_cmd = (struct ast_shell_cmd *)ast;
     assert(ast_shell_cmd->rule != NULL);
 
-    return execute_ast_rule_if(ast_shell_cmd->rule);
+    switch (ast_shell_cmd->rule->type)
+    {
+    case AST_RULE_IF:
+        return execute_ast_rule_if(ast_shell_cmd->rule);
+    case AST_RULE_WHILE:
+        return execute_ast_while(ast_shell_cmd->rule);
+    case AST_RULE_UNTIL:
+        return execute_ast_until(ast_shell_cmd->rule);
+    default:
+        return 0;
+    }
 }
 
 static int execute_ast_list(struct ast *ast)
@@ -297,7 +368,9 @@ static exec execute_functions[] = { [AST_INPUT] = &execute_ast_input,
                                         &execute_ast_compound_list,
                                     [AST_RULE_IF] = &execute_ast_rule_if,
                                     [AST_CLAUSE_ELSE] =
-                                        &execute_ast_else_clause };
+                                        &execute_ast_else_clause,
+                                    [AST_RULE_WHILE] = &execute_ast_while,
+                                    [AST_RULE_UNTIL] = &execute_ast_until };
 
 int execute_ast(struct ast *ast)
 {

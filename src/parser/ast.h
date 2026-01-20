@@ -64,7 +64,7 @@ struct ast_and_or
 struct ast_pipeline
 {
     struct ast base;
-    int negation; // TODO: Use bool or enum.
+    int negation;
     struct ast *cmd; // NOT NULL
     struct ast *next; // NULL if last element of list
 };
@@ -109,10 +109,9 @@ struct ast_element_list
 struct ast_simple_cmd
 {
     struct ast base;
-    // Must be either prefix or word
-    struct ast *prefix;
-    struct ast *prefix_list; // Can be NULL
-    char *word;
+    // struct ast *prefix;
+    struct ast *prefix_list; // Can be NULL if word isn't.
+    char *word; // If word is NULL so is element_list.
     struct ast *element_list; // Can be NULL
 };
 

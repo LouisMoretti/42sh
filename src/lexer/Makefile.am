@@ -14,3 +14,7 @@ liblexer_a_CFLAGS = -std=c99 -pedantic -Werror -Wall -Wextra -Wvla
 
 # Libraries to not install
 noinst_LIBRARIES = liblexer.a
+
+if ENABLE_COVERAGE
+liblexer_a_CFLAGS  +=  --coverage -O0
+endif

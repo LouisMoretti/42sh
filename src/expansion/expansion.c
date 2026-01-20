@@ -305,6 +305,84 @@ static char *expand_var(char *result, char *copy, size_t *offset, size_t *i)
     return result;
 }
 
+char *expand_double_quote(char *result, char *copy, size_t *offset, size_t *i)
+{
+    // Add cached characters to result.
+    if (*offset != *i)
+        result = middle_merge(result, copy, *offset, *i - *offset);
+
+    if (!result)
+        return NULL;
+
+    // Skip first double quote.
+    (*i)++;
+    *offset = *i;
+
+    // go threw all the copy until we find a double quote
+    while (copy[*i] && copy[*i] != '"')
+    {
+        /*
+        if (copy[*i] == '$')
+        {
+            // TODO: expand variable function
+            result = expand_var(result, copy, &offset, &i);
+            if (!result)
+                // result and copy are free inside expand_single_quote.
+                return NULL;
+        }
+        else*/
+        if (copy[*i] == '\\')
+        {
+            result = expand_escape(result, copy, offset, i);
+            if (!result)
+                // result and copy are free inside expand_single_quote.
+                return NULL;
+        }
+        /*
+        else if (copy[*i] == '`')
+        {
+            // TODO: expand backquote by executing the command in the two
+        backquote in a subshell result = expand_backquote(result, copy, &offset,
+        &i); if (!result)
+                // result and copy are free inside expand_single_quote.
+                return NULL;
+        }*/
+
+        (*i)++;
+    }
+
+    // Check for missing quote error.
+    if (copy[*i] == '\0')
+    {
+        free(copy);
+        free(result);
+        warnx("Expand_double_quote: Error during expansion of double quotes\n");
+        return NULL;
+    }
+
+    // Make the substring of the quoted characters.
+    char *quoted = strndup(copy + *offset, *i - *offset);
+    if (!quoted)
+    {
+        free(copy);
+        free(result);
+        return NULL;
+    }
+
+    // Add the substring to the result.
+    result = merge(result, quoted);
+    if (!result)
+    {
+        free(copy);
+        return NULL;
+    }
+
+    (*i)++;
+    *offset = *i;
+
+    return result;
+}
+
 char *expand_string(char *string)
 {
     // Copy original string.
@@ -326,28 +404,33 @@ char *expand_string(char *string)
     // Loop through the string to find single quotes or escaped characters.
     while (copy[i] != '\0')
     {
-        switch (copy[i])
+        if (copy[i] == '"')
         {
-        case '\'':
+            result = expand_double_quote(result, copy, &offset, &i);
+            if (!result)
+                // result and copy are free inside expand_single_quote.
+                return NULL;
+        }
+        else if (copy[i] == '\'')
+        {
             result = expand_single_quote(result, copy, &offset, &i);
             if (!result)
                 // result and copy are free inside expand_single_quote.
                 return NULL;
-            break;
-        case '\\':
+        }
+        else if (copy[i] == '\\')
+        {
             result = expand_escape(result, copy, &offset, &i);
             if (!result)
                 // result and copy are free inside expand_escape.
                 return NULL;
-            break;
-        case '$':
+        }
+        else if (copy[i] == '$')
+        {
             result = expand_var(result, copy, &offset, &i);
             if (!result)
                 // result and copy are free inside expand_escape.
                 return NULL;
-            break;
-        default:
-            break;
         }
         i++;
     }
