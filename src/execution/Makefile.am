@@ -5,6 +5,7 @@ lib_LIBRARIES = libexecution.a
 libexecution_a_SOURCES = \
 						 echo.c \
 						 boolean.c \
+						 cd.c \
 						 builtin.h \
 						 pipe.c \
 						 pipe.h \
