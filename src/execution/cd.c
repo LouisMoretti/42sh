@@ -45,12 +45,9 @@ char *give_begin(char *path)
 static int is_back(char *path)
 {
     size_t len = strlen(path);
-    if (len >= 2 && path[0] == '.' && path[1] == '.')
+    if (len == 2 && path[0] == '.' && path[1] == '.')
     {
-        if (path[2] == '\0')
-            return 1;
-        else if (len >= 3 && path[2] == '/')
-            return 1;
+        return 1;
     }
 
     return 0;
@@ -124,6 +121,18 @@ static char *merge(char *src1, char *src2)
     return res;
 }
 
+static int is_here(char *path)
+{
+    size_t i = strlen(path);
+
+    if (i == 1 && path[0] == '.')
+    {
+        return 1;
+    }
+
+    return 0;
+}
+
 static int go_to_dir(char *path)
 {
     if (path[0] == '/')
@@ -156,7 +165,7 @@ static int go_to_dir(char *path)
             new_path = go_back(&new_path);
             free(next);
         }
-        else
+        else if (!is_here(next))
         {
             new_path = merge(new_path, next);
         }
@@ -168,7 +177,7 @@ static int go_to_dir(char *path)
         }
 
         char *next = give_begin(path + len);
-        len += strlen(next);
+        len += strlen(next) + 1;
     }
     free(next);
 
@@ -251,7 +260,11 @@ int builtin_cd(struct ast_simple_cmd *command)
 
     if (!element_list)
     {
-        return go_to_root("~/");
+        char *home = getenv("HOME");
+        if (!home || strcmp(home, ""))
+            return 0;
+
+        return go_to_root(home);
     }
 
     if (element_list->next)
