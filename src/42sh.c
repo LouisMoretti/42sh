@@ -3,9 +3,29 @@
 
 #include "config/config.h"
 #include "execution/execution.h"
+#include "expansion/expansion.h"
 #include "iobackend/iobackend.h"
 #include "parser/parser.h"
 #include "parser/pretty_print.h"
+
+int init_modules(struct config *conf)
+{
+    // Setup IO from config
+    if (io_setup(conf) != 0)
+        return 2;
+
+    // Init hash table
+    if (init_expansion() != 0)
+        return 2;
+
+    return 0;
+}
+
+void reset_modules(void)
+{
+    io_close();
+    reset_expansion();
+}
 
 int main(int argc, char **argv)
 {
@@ -15,8 +35,7 @@ int main(int argc, char **argv)
 
     struct config *conf = get_conf();
 
-    // Setup IO from config
-    if (io_setup(conf) != 0)
+    if (init_modules(conf) != 0)
         return 2;
 
     // Call parser for AST
@@ -39,6 +58,6 @@ int main(int argc, char **argv)
 
     free_ast_input(input);
 
-    io_close();
+    reset_modules();
     return exit_code;
 }

@@ -7,7 +7,6 @@ static struct config my_conf;
 
 int set_conf(int argc, char **argv)
 {
-    my_conf.hash_map_variables = hash_map_init(8);
     // IO part
     my_conf.method = STDIN; // Default method is stdin
     my_conf.str_stream = NULL; // Default

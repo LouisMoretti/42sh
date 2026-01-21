@@ -11,6 +11,30 @@
 #include "config/config.h"
 #include "utils/hash_map/hash_map.h"
 
+#define HASH_MAP_SIZE 16
+
+static struct hash_map *variables_hash_map = NULL;
+
+int init_expansion(void)
+{
+    if (variables_hash_map != NULL)
+    {
+        warnx("init_expansion: Try to initialize an already initialised module "
+              "!!!");
+        return 1;
+    }
+
+    variables_hash_map = hash_map_init(HASH_MAP_SIZE);
+
+    return 0;
+}
+
+void reset_expansion(void)
+{
+    hash_map_free(variables_hash_map);
+    variables_hash_map = NULL;
+}
+
 static char *merge(char *src1, char *src2)
 {
     // Return NULL if one the parameters is NULL.
@@ -234,9 +258,13 @@ static char *get_value_var(char *special, char *name_var)
     }
     else
     {
-        struct config *my_conf = get_conf();
-        struct hash_map *my_variables = my_conf->hash_map_variables;
-        char *val_var = hash_map_get(my_variables, name_var);
+        if (!variables_hash_map)
+        {
+            warnx("get_value_var: Try to use an un-initialised variable !!!");
+            return strdup("");
+        }
+
+        char *val_var = hash_map_get(variables_hash_map, name_var);
         if (!val_var)
             return strdup("");
 
