@@ -25,7 +25,7 @@ struct hash_map *hash_map_init(size_t size)
     return h;
 }
 
-bool hash_map_insert(struct hash_map *hash_map, const char *key, char *value,
+bool hash_map_insert(struct hash_map *hash_map, char *key, char *value,
                      bool *updated)
 {
     if (hash_map == NULL || hash_map->size == 0 || key == NULL)

@@ -17,6 +17,7 @@ struct config
     int pretty_print;
     int arg_count;
     char **arg_values;
+    int previous_code;
 };
 
 int set_conf(int argc, char **argv);

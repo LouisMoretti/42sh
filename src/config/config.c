@@ -16,6 +16,7 @@ int set_conf(int argc, char **argv)
 
     // Arguments part
     my_conf.arg_count = 0; // Default
+    my_conf.previous_code = 0; // Default
     my_conf.arg_values = NULL; // Default
 
     if (argc == 1)

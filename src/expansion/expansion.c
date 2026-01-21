@@ -15,6 +15,11 @@
 
 static struct hash_map *variables_hash_map = NULL;
 
+struct hash_map *get_hm(void)
+{
+    return variables_hash_map;
+}
+
 int init_expansion(void)
 {
     if (variables_hash_map != NULL)
@@ -181,11 +186,15 @@ static char *expand_escape(char *result, char *copy, size_t *offset, size_t *i)
     return result;
 }
 
+/*static char* get_arg_n(char *name_var, int code, struct config* my_conf)
+{
+
+}*/
+
 static char *get_special(char *name_var, int *code)
 {
     char *res = calloc(1, sizeof(char));
     struct config *my_conf = get_conf();
-
     if (isdigit(name_var[0]))
     {
         // loop to look if the variable is valid
@@ -195,23 +204,32 @@ static char *get_special(char *name_var, int *code)
             i++;
         }
         if (name_var[i] != '\0')
+        {
+            free(res);
+            *code = 1;
             return NULL;
+        }
         int index = atoi(name_var);
 
         if (index < my_conf->arg_count)
-            res = merge(res, strdup(my_conf->arg_values[index]));
+            res = merge(res,
+                        strdup(my_conf->arg_values[index])); // TODO Check Merge
     }
     else if (name_var[0] == '?')
-        res = merge(res, strdup("0")); // TODO
+    {
+        res = merge(res, strdup("0"));
+    }
     else if (name_var[0] == '$')
-        res = merge(res, strdup("$"));
+        res = merge(res, strdup("$")); // TODO Get_pid
     else if (name_var[0] == '#')
     {
         struct config *my_conf = get_conf();
         char *count_text = calloc(2, sizeof(char));
         sprintf(count_text, "%i", my_conf->arg_count); // > 127 arg = error
+        free(res);
+        return count_text;
     }
-    else if (name_var[0] == '@')
+    else if (name_var[0] == '@' || name_var[0] == '*')
     {
         int i = 1;
         if (my_conf->arg_count >= 2)
@@ -219,34 +237,27 @@ static char *get_special(char *name_var, int *code)
             res = merge(res, my_conf->arg_values[i]);
             if (!res)
                 return NULL;
-
             i++;
         }
-
         while (i < my_conf->arg_count)
         {
             char *space = strdup(" ");
             res = merge(res, space);
             if (!res)
                 return NULL;
-
             res = merge(res, my_conf->arg_values[i]);
             if (!res)
                 return NULL;
-
             i++;
         }
     }
-    else if (name_var[0] == '*')
-    {
-        // TODO
-    }
+    else if (name_var[0] == '\0')
+        res = merge(res, strdup("$"));
     else
     {
-        *(code) = 1;
+        free(res);
         return NULL;
     }
-
     return res;
 }
 
@@ -268,7 +279,8 @@ static char *get_value_var(char *special, char *name_var)
         if (!val_var)
             return strdup("");
 
-        return val_var;
+        char *res_val = strdup(val_var);
+        return res_val;
     }
 }
 
@@ -282,7 +294,7 @@ static char *expand_var(char *result, char *copy, size_t *offset, size_t *i)
         return NULL;
 
     (*i)++; // Skipping $
-    char is_looked = '\0';
+    char is_looked = copy[*i];
 
     if (copy[*i] == '{')
     {
@@ -291,42 +303,53 @@ static char *expand_var(char *result, char *copy, size_t *offset, size_t *i)
     }
     else if (isalpha(copy[*i]))
         is_looked = '\0'; // Special case we need to go until last nonalpha char
-    else if (isdigit(copy[*i]))
-        is_looked = copy[*i];
-    else if (copy[*i] != '$' && copy[*i] != '*' && copy[*i] != '#'
-             && copy[*i] != '?' && copy[*i] != '-' && copy[*i] != '@'
-             && copy[*i] != '!')
-        return NULL;
 
     *offset = *i;
 
-    if (is_looked != '\0')
+    if (is_looked == '}')
     {
-        while (copy[*i] != is_looked)
+        while (copy[*i] && copy[*i] != is_looked)
             (*i)++;
+        if (!copy[*i])
+        {
+            warnx("Expected '}'");
+            free(copy);
+            free(result);
+            return NULL;
+        }
     }
-    else
+    else if (is_looked == '\0')
     {
         while (isalnum(copy[*i]) || copy[*i] == '_')
             (*i)++;
     }
+    else
+    {
+        (*i)++;
+    }
 
     char *name_var = strndup(copy + *offset, *i - *offset);
     if (!name_var)
-        return NULL;
+        return NULL; // TODO free
 
+    if (is_looked == '}')
+        (*i) += 1;
+    *offset = *i; // Skipping closing bracket if present
     int code = 0;
     char *special = get_special(name_var, &code);
     if (code != 0)
     {
+        free(special);
+        free(copy);
+        free(result);
         warnx("Bad Expansion");
         return NULL;
     }
 
     char *val_var = get_value_var(special, name_var);
-
     free(name_var);
     result = merge(result, val_var);
+
     if (!result)
         return NULL;
 
@@ -356,7 +379,7 @@ static char *expand_double_quote(char *result, char *copy, size_t *offset,
             // TODO: expand variable function
             result = expand_var(result, copy, &offset, &i);
             if (!result)
-                // result and copy are free inside expand_single_quote.
+                / result and copy are free inside expand_single_quote.
                 return NULL;
         }
         else*/
@@ -460,6 +483,7 @@ char *expand_string(char *string)
             if (!result)
                 // result and copy are free inside expand_escape.
                 return NULL;
+            i--;
         }
         i++;
     }

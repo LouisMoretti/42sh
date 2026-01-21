@@ -1,6 +1,8 @@
 #define _POSIX_C_SOURCE 200809L
+#define INDICES_ARRAY_SIZE 42
 
 #include <criterion/criterion.h>
+#include <criterion/parameterized.h>
 #include <criterion/redirect.h>
 #include <stdlib.h>
 #include <string.h>
@@ -188,3 +190,31 @@ Test(Expansion, test_expansion_echo_double_escape_end)
 
     free(result);
 }
+
+/*struct token_list_params
+{
+    char *name_test;
+    char *input;
+    char* expected;
+};
+
+ParameterizedTestParameters(Expansion, test_expansion_var)
+{
+    static int indices[INDICES_ARRAY_SIZE] = { 0 };
+    size_t nb_params =
+        sizeof(token_list_params) / sizeof(struct token_list_params);
+    cr_assert(nb_params < INDICES_ARRAY_SIZE,
+              "Too many parameters for indices array");
+
+    for (size_t i = 0; i < nb_params; i++)
+        indices[i] = i;
+
+    return cr_make_param_array(int, indices, nb_params);
+}
+
+ParameterizedTest(int *index, Expansion, test_get_token)
+{
+    struct token_list_params *param = &token_list_params[*index];
+    char* output = expand_ref_execution(param->input);
+    cr_expect_str_eq(output,param->expected);
+}*/
