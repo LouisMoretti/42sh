@@ -13,6 +13,15 @@
 #include "execution/builtin.h"
 #include "execution/execution.h"
 
+static char *give_without_last(char *path)
+{
+    size_t i = strlen(path) - 1;
+    while (path[i] != '\0' && path[i] != '/')
+        i--;
+
+    return strndup(path, i);
+}
+
 static char *merge(char *src1, char *src2)
 {
     // Return NULL if one the parameters is NULL.
@@ -140,6 +149,9 @@ Test(Execution, test_cmd_builtin_false)
 
 Test(Execution, test_cmd_builtin_cd_no_arg)
 {
+    char *old_path = getenv("PWD");
+    char *path = getenv("HOME");
+
     struct ast_simple_cmd *ast_simple_cmd =
         malloc(sizeof(struct ast_simple_cmd));
 
@@ -156,206 +168,320 @@ Test(Execution, test_cmd_builtin_cd_no_arg)
     free(ast_simple_cmd->word);
     free(ast_simple_cmd);
 
+    char *new_path = getenv("PWD");
+    char *new_old_path = getenv("OLDPWD");
+
     cr_expect_eq(res, 0);
-}
-
-Test(Execution, test_cmd_builtin_cd_classic_arg)
-{
-    char *old_path = getenv("PWD");
-    int pid = fork();
-    if (!pid)
-    {
-        char *argv[] = { "env", "-i", NULL };
-        execvp("env", argv);
-    }
-    else
-    {
-        int wstatus;
-        waitpid(pid, &wstatus, 0);
-
-        struct ast_simple_cmd *ast_simple_cmd =
-            malloc(sizeof(struct ast_simple_cmd));
-
-        ast_simple_cmd->base.type = AST_SIMPLE_CMD;
-        ast_simple_cmd->prefix_list = NULL;
-        // ast_simple_cmd->prefix = NULL;
-        ast_simple_cmd->word = strdup("cd");
-
-        struct ast_element_list *ast_element_list =
-            malloc(sizeof(struct ast_element_list));
-
-        ast_element_list->base.type = AST_ELEMENT_LIST;
-
-        struct ast_element *ast_element = malloc(sizeof(struct ast_element));
-        ast_element->base.type = AST_ELEMENT;
-        ast_element->word = strdup("hello/");
-        ast_element->redirection = NULL;
-
-        ast_element_list->element = (struct ast *)ast_element;
-        ast_element_list->next = NULL;
-
-        ast_simple_cmd->element_list = (struct ast *)ast_element_list;
-
-        struct ast *ast = (struct ast *)ast_simple_cmd;
-
-        int res = execute_ast(ast);
-
-        free(ast_element->word);
-        free(ast_element);
-        free(ast_element_list);
-        free(ast_simple_cmd->word);
-        free(ast_simple_cmd);
-
-        char *new_path = getenv("PWD");
-        char *new_old_path = getenv("OLDPWD");
-
-        cr_expect_eq(res, 0);
-        char *path = merge(strdup(old_path), strdup("/hello"));
-        cr_expect_str_eq(new_path, path);
-        cr_expect_str_eq(new_old_path, old_path);
-        free(path);
-    }
-}
-
-Test(Execution, test_cmd_builtin_cd_dash)
-{
-    char *old_path = getenv("PWD");
-    int pid = fork();
-    if (!pid)
-    {
-        char *argv[] = { "env", "-i", NULL };
-        execvp("env", argv);
-    }
-    else
-    {
-        int wstatus;
-        waitpid(pid, &wstatus, 0);
-
-        struct ast_simple_cmd *ast_simple_cmd =
-            malloc(sizeof(struct ast_simple_cmd));
-
-        ast_simple_cmd->base.type = AST_SIMPLE_CMD;
-        ast_simple_cmd->prefix_list = NULL;
-        // ast_simple_cmd->prefix = NULL;
-        ast_simple_cmd->word = strdup("cd");
-
-        struct ast_element_list *ast_element_list =
-            malloc(sizeof(struct ast_element_list));
-
-        ast_element_list->base.type = AST_ELEMENT_LIST;
-
-        struct ast_element *ast_element = malloc(sizeof(struct ast_element));
-        ast_element->base.type = AST_ELEMENT;
-        ast_element->word = strdup("hello");
-        ast_element->redirection = NULL;
-
-        ast_element_list->element = (struct ast *)ast_element;
-        ast_element_list->next = NULL;
-
-        ast_simple_cmd->element_list = (struct ast *)ast_element_list;
-
-        struct ast *ast = (struct ast *)ast_simple_cmd;
-
-        // run to put the hello dir in pwd
-        int res = execute_ast(ast);
-
-        free(ast_element->word);
-
-        cr_expect_eq(res, 0);
-
-        // run to put the hello dir in oldpwd and the root dir to pwd
-        ast_element->word = strdup("..");
-        res = execute_ast(ast);
-
-        // run to test the cd - to switch the pwd and oldpwd
-
-        ast_element->word = strdup("-");
-        res = execute_ast(ast);
-
-        free(ast_element->word);
-        free(ast_element);
-        free(ast_element_list);
-        free(ast_simple_cmd->word);
-        free(ast_simple_cmd);
-
-        char *new_path = getenv("PWD");
-        char *new_old_path = getenv("OLDPWD");
-
-        char *path = merge(strdup(old_path), strdup("/hello"));
-
-        cr_expect_eq(res, 0);
-        cr_expect_str_eq(new_path, path);
-        cr_expect_str_eq(new_old_path, old_path);
-        free(path);
-    }
+    cr_expect_str_eq(new_path, path);
+    cr_expect_str_eq(new_old_path, old_path);
 }
 
 Test(Execution, test_cmd_builtin_cd_dot_dot)
 {
     char *path = getenv("PWD");
-    int pid = fork();
-    if (!pid)
-    {
-        char *argv[] = { "env", "-i", NULL };
-        execvp("env", argv);
-    }
-    else
-    {
-        int wstatus;
-        waitpid(pid, &wstatus, 0);
+    char *old_path = getenv("PWD");
+    path = give_without_last(path);
 
-        struct ast_simple_cmd *ast_simple_cmd =
-            malloc(sizeof(struct ast_simple_cmd));
+    struct ast_simple_cmd *ast_simple_cmd =
+        malloc(sizeof(struct ast_simple_cmd));
 
-        ast_simple_cmd->base.type = AST_SIMPLE_CMD;
-        ast_simple_cmd->prefix_list = NULL;
-        // ast_simple_cmd->prefix = NULL;
-        ast_simple_cmd->word = strdup("cd");
+    ast_simple_cmd->base.type = AST_SIMPLE_CMD;
+    ast_simple_cmd->prefix_list = NULL;
+    // ast_simple_cmd->prefix = NULL;
+    ast_simple_cmd->word = strdup("cd");
 
-        struct ast_element_list *ast_element_list =
-            malloc(sizeof(struct ast_element_list));
+    struct ast_element_list *ast_element_list =
+        malloc(sizeof(struct ast_element_list));
 
-        ast_element_list->base.type = AST_ELEMENT_LIST;
+    ast_element_list->base.type = AST_ELEMENT_LIST;
 
-        struct ast_element *ast_element = malloc(sizeof(struct ast_element));
-        ast_element->base.type = AST_ELEMENT;
-        ast_element->word = strdup("hello");
-        ast_element->redirection = NULL;
+    struct ast_element *ast_element = malloc(sizeof(struct ast_element));
+    ast_element->base.type = AST_ELEMENT;
+    ast_element->word = strdup("..");
+    ast_element->redirection = NULL;
 
-        ast_element_list->element = (struct ast *)ast_element;
-        ast_element_list->next = NULL;
+    ast_element_list->element = (struct ast *)ast_element;
+    ast_element_list->next = NULL;
 
-        ast_simple_cmd->element_list = (struct ast *)ast_element_list;
+    ast_simple_cmd->element_list = (struct ast *)ast_element_list;
 
-        struct ast *ast = (struct ast *)ast_simple_cmd;
+    struct ast *ast = (struct ast *)ast_simple_cmd;
 
-        // run to put the hello dir in pwd
-        int res = execute_ast(ast);
+    // run to put the hello dir in pwd
+    int res = execute_ast(ast);
 
-        free(ast_element->word);
+    free(ast_element->word);
+    free(ast_element);
+    free(ast_element_list);
+    free(ast_simple_cmd->word);
+    free(ast_simple_cmd);
 
-        cr_expect_eq(res, 0);
+    char *new_path = getenv("PWD");
+    char *new_old_path = getenv("OLDPWD");
 
-        // run to put the hello dir in oldpwd and the root dir to pwd
-        ast_element->word = strdup("..");
-        res = execute_ast(ast);
+    cr_expect_eq(res, 0);
+    cr_expect_str_eq(new_path, path);
+    cr_expect_str_eq(new_old_path, old_path);
+    free(path);
+}
 
-        // run to test the cd - to switch the pwd and oldpwd
+Test(Execution, test_cmd_builtin_cd_dash)
+{
+    char *path = getenv("PWD");
+    path = give_without_last(path);
 
-        free(ast_element->word);
-        free(ast_element);
-        free(ast_element_list);
-        free(ast_simple_cmd->word);
-        free(ast_simple_cmd);
+    char *old_path = strdup(path);
+    old_path = merge(old_path, strdup("/expansion"));
 
-        char *new_path = getenv("PWD");
-        char *new_old_path = getenv("OLDPWD");
+    struct ast_simple_cmd *ast_simple_cmd =
+        malloc(sizeof(struct ast_simple_cmd));
 
-        char *old_path = merge(strdup(path), strdup("/hello"));
+    ast_simple_cmd->base.type = AST_SIMPLE_CMD;
+    ast_simple_cmd->prefix_list = NULL;
+    // ast_simple_cmd->prefix = NULL;
+    ast_simple_cmd->word = strdup("cd");
 
-        cr_expect_eq(res, 0);
-        cr_expect_str_eq(new_path, path);
-        cr_expect_str_eq(new_old_path, old_path);
-        free(old_path);
-    }
+    struct ast_element_list *ast_element_list =
+        malloc(sizeof(struct ast_element_list));
+
+    ast_element_list->base.type = AST_ELEMENT_LIST;
+
+    struct ast_element *ast_element = malloc(sizeof(struct ast_element));
+    ast_element->base.type = AST_ELEMENT;
+    ast_element->word = strdup("..");
+    ast_element->redirection = NULL;
+
+    ast_element_list->element = (struct ast *)ast_element;
+    ast_element_list->next = NULL;
+
+    ast_simple_cmd->element_list = (struct ast *)ast_element_list;
+
+    struct ast *ast = (struct ast *)ast_simple_cmd;
+
+    // run to put the hello dir in pwd
+    int res = execute_ast(ast);
+
+    free(ast_element->word);
+
+    cr_expect_eq(res, 0);
+
+    // run to put the hello dir in oldpwd and the root dir to pwd
+    ast_element->word = strdup("expansion");
+    res = execute_ast(ast);
+
+    cr_expect_eq(res, 0);
+
+    // run to test the cd - to switch the pwd and oldpwd
+
+    ast_element->word = strdup("-");
+    res = execute_ast(ast);
+
+    free(ast_element->word);
+    free(ast_element);
+    free(ast_element_list);
+    free(ast_simple_cmd->word);
+    free(ast_simple_cmd);
+
+    char *new_path = getenv("PWD");
+    char *new_old_path = getenv("OLDPWD");
+
+    cr_expect_eq(res, 0);
+    cr_expect_str_eq(new_path, path);
+    cr_expect_str_eq(new_old_path, old_path);
+    free(path);
+    free(old_path);
+}
+
+Test(Execution, test_cmd_builtin_cd_same_path)
+{
+    char *old_path = getenv("OLDPWD");
+    char *path = getenv("PWD");
+
+    struct ast_simple_cmd *ast_simple_cmd =
+        malloc(sizeof(struct ast_simple_cmd));
+
+    ast_simple_cmd->base.type = AST_SIMPLE_CMD;
+    ast_simple_cmd->prefix_list = NULL;
+    // ast_simple_cmd->prefix = NULL;
+    ast_simple_cmd->word = strdup("cd");
+
+    struct ast_element_list *ast_element_list =
+        malloc(sizeof(struct ast_element_list));
+
+    ast_element_list->base.type = AST_ELEMENT_LIST;
+
+    struct ast_element *ast_element = malloc(sizeof(struct ast_element));
+    ast_element->base.type = AST_ELEMENT;
+    ast_element->word = strdup(path);
+    ast_element->redirection = NULL;
+
+    ast_element_list->element = (struct ast *)ast_element;
+    ast_element_list->next = NULL;
+
+    ast_simple_cmd->element_list = (struct ast *)ast_element_list;
+
+    struct ast *ast = (struct ast *)ast_simple_cmd;
+
+    // run to put the src dir in pwd
+    int res = execute_ast(ast);
+
+    free(ast_element->word);
+    free(ast_element);
+    free(ast_element_list);
+    free(ast_simple_cmd->word);
+    free(ast_simple_cmd);
+
+    char *new_path = getenv("PWD");
+    char *new_old_path = getenv("OLDPWD");
+
+    cr_expect_eq(res, 0);
+    cr_expect_str_eq(new_path, path);
+    cr_expect_str_eq(new_old_path, old_path);
+}
+
+Test(Execution, test_cmd_builtin_cd_back_expansion)
+{
+    char *old_path = getenv("PWD");
+    char *path = getenv("PWD");
+    path = give_without_last(path);
+    path = merge(path, strdup("/expansion"));
+
+    struct ast_simple_cmd *ast_simple_cmd =
+        malloc(sizeof(struct ast_simple_cmd));
+
+    ast_simple_cmd->base.type = AST_SIMPLE_CMD;
+    ast_simple_cmd->prefix_list = NULL;
+    // ast_simple_cmd->prefix = NULL;
+    ast_simple_cmd->word = strdup("cd");
+
+    struct ast_element_list *ast_element_list =
+        malloc(sizeof(struct ast_element_list));
+
+    ast_element_list->base.type = AST_ELEMENT_LIST;
+
+    struct ast_element *ast_element = malloc(sizeof(struct ast_element));
+    ast_element->base.type = AST_ELEMENT;
+    ast_element->word = strdup("../expansion");
+    ast_element->redirection = NULL;
+
+    ast_element_list->element = (struct ast *)ast_element;
+    ast_element_list->next = NULL;
+
+    ast_simple_cmd->element_list = (struct ast *)ast_element_list;
+
+    struct ast *ast = (struct ast *)ast_simple_cmd;
+
+    // run to put the src dir in pwd
+    int res = execute_ast(ast);
+
+    free(ast_element->word);
+    free(ast_element);
+    free(ast_element_list);
+    free(ast_simple_cmd->word);
+    free(ast_simple_cmd);
+
+    char *new_path = getenv("PWD");
+    char *new_old_path = getenv("OLDPWD");
+
+    cr_expect_eq(res, 0);
+    cr_expect_str_eq(new_path, path);
+    cr_expect_str_eq(new_old_path, old_path);
+}
+
+Test(Execution, test_cmd_builtin_cd_here)
+{
+    char *path = getenv("PWD");
+    char *old_path = getenv("OLDPWD");
+
+    struct ast_simple_cmd *ast_simple_cmd =
+        malloc(sizeof(struct ast_simple_cmd));
+
+    ast_simple_cmd->base.type = AST_SIMPLE_CMD;
+    ast_simple_cmd->prefix_list = NULL;
+    // ast_simple_cmd->prefix = NULL;
+    ast_simple_cmd->word = strdup("cd");
+
+    struct ast_element_list *ast_element_list =
+        malloc(sizeof(struct ast_element_list));
+
+    ast_element_list->base.type = AST_ELEMENT_LIST;
+
+    struct ast_element *ast_element = malloc(sizeof(struct ast_element));
+    ast_element->base.type = AST_ELEMENT;
+    ast_element->word = strdup("./");
+    ast_element->redirection = NULL;
+
+    ast_element_list->element = (struct ast *)ast_element;
+    ast_element_list->next = NULL;
+
+    ast_simple_cmd->element_list = (struct ast *)ast_element_list;
+
+    struct ast *ast = (struct ast *)ast_simple_cmd;
+
+    // run to put the hello dir in pwd
+    int res = execute_ast(ast);
+
+    free(ast_element->word);
+    free(ast_element);
+    free(ast_element_list);
+    free(ast_simple_cmd->word);
+    free(ast_simple_cmd);
+
+    char *new_path = getenv("PWD");
+    char *new_old_path = getenv("OLDPWD");
+
+    cr_expect_eq(res, 0);
+    cr_expect_str_eq(new_path, path);
+    cr_expect_str_eq(new_old_path, old_path);
+}
+
+Test(Execution, test_cmd_builtin_cd_big_path)
+{
+    char *old_path = getenv("PWD");
+    char *path = getenv("PWD");
+    path = give_without_last(path);
+    path = give_without_last(path);
+    path = merge(path, strdup("/functionnal/hard"));
+
+    struct ast_simple_cmd *ast_simple_cmd =
+        malloc(sizeof(struct ast_simple_cmd));
+
+    ast_simple_cmd->base.type = AST_SIMPLE_CMD;
+    ast_simple_cmd->prefix_list = NULL;
+    // ast_simple_cmd->prefix = NULL;
+    ast_simple_cmd->word = strdup("cd");
+
+    struct ast_element_list *ast_element_list =
+        malloc(sizeof(struct ast_element_list));
+
+    ast_element_list->base.type = AST_ELEMENT_LIST;
+
+    struct ast_element *ast_element = malloc(sizeof(struct ast_element));
+    ast_element->base.type = AST_ELEMENT;
+    ast_element->word = strdup("./../../functionnal/../functionnal/hard");
+    ast_element->redirection = NULL;
+
+    ast_element_list->element = (struct ast *)ast_element;
+    ast_element_list->next = NULL;
+
+    ast_simple_cmd->element_list = (struct ast *)ast_element_list;
+
+    struct ast *ast = (struct ast *)ast_simple_cmd;
+
+    // run to put the hello dir in pwd
+    int res = execute_ast(ast);
+
+    free(ast_element->word);
+    free(ast_element);
+    free(ast_element_list);
+    free(ast_simple_cmd->word);
+    free(ast_simple_cmd);
+
+    char *new_path = getenv("PWD");
+    char *new_old_path = getenv("OLDPWD");
+
+    cr_expect_eq(res, 0);
+    cr_expect_str_eq(new_path, path);
+    cr_expect_str_eq(new_old_path, old_path);
+    free(path);
 }

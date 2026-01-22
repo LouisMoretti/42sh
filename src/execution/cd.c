@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <unistd.h>
 
 #include "builtin.h"
 
@@ -30,25 +31,36 @@ static int go_to_root(char *path)
         return 1;
     }
 
+    if (chdir(path) == -1)
+    {
+        warnx("go_to_root error during chdir\n");
+        return 1;
+    }
+
     return 0;
 }
 
-char *give_begin(char *path)
+static char *give_begin(char *path, size_t *len)
 {
-    size_t i = 0;
-    while (path[i] != '\0' && path[i] != '/')
-        i++;
+    size_t i = *len;
+    while (path[*len] != '\0' && path[*len] != '/')
+        (*len)++;
 
-    return strndup(path, i);
+    if (path[*len] == '/')
+    {
+        (*len)++;
+        return strndup(path + i, *len - i - 1);
+    }
+
+    return strndup(path + i, *len - i);
 }
 
 static int is_back(char *path)
 {
     size_t len = strlen(path);
-    if (len == 2 && path[0] == '.' && path[1] == '.')
-    {
+    if (len >= 2 && path[0] == '.' && path[1] == '.'
+        && (path[2] == '/' || path[2] == '\0'))
         return 1;
-    }
 
     return 0;
 }
@@ -125,19 +137,50 @@ static int is_here(char *path)
 {
     size_t i = strlen(path);
 
-    if (i == 1 && path[0] == '.')
-    {
+    if (i >= 1 && path[0] == '.' && (path[1] == '\0' || path[1] == '/'))
         return 1;
-    }
 
     return 0;
 }
 
+static int check_dir(char *path)
+{
+    struct stat st;
+    stat(path, &st);
+
+    if (S_ISDIR(st.st_mode) == 1)
+    {
+        return 1;
+    }
+    else if (S_ISREG(st.st_mode) == 1)
+    {
+        warnx("the given path is a file !\n");
+        return 0;
+    }
+    else
+    {
+        warnx("the given path does not exists !\n");
+        return 0;
+    }
+}
+
+static char *remove_last_backslash(char *new_path)
+{
+    char *res = strndup(new_path, strlen(new_path) - 1);
+
+    free(new_path);
+
+    if (!res)
+        return NULL;
+
+    return res;
+}
+
 static int go_to_dir(char *path)
 {
-    if (path[0] == '/')
+    if (check_dir(path) == 0)
     {
-        return go_to_root(path);
+        return 1;
     }
 
     char *new_old_path = getenv("PWD");
@@ -148,8 +191,8 @@ static int go_to_dir(char *path)
     }
 
     char *new_path = strdup(new_old_path);
-    char *next = give_begin(path);
-    size_t len = strlen(next);
+    size_t len = 0;
+    char *next = give_begin(path, &len);
 
     while (strcmp(next, ""))
     {
@@ -169,17 +212,25 @@ static int go_to_dir(char *path)
         {
             new_path = merge(new_path, next);
         }
+        else
+        {
+            new_path = remove_last_backslash(new_path);
+        }
 
         if (!new_path)
         {
+            if (!next)
+                free(next);
             warnx("go_to_dir error during merge");
             return 1;
         }
 
-        char *next = give_begin(path + len);
-        len += strlen(next) + 1;
+        next = give_begin(path, &len);
     }
     free(next);
+
+    if (strcmp(new_old_path, new_path) == 0)
+        return 0;
 
     if (setenv("PWD", new_path, 1) == -1)
     {
@@ -188,13 +239,21 @@ static int go_to_dir(char *path)
         return 1;
     }
 
-    free(new_path);
-
     if (setenv("OLDPWD", new_old_path, 1) == -1)
     {
+        free(new_path);
         warnx("go_root_dir error during OLDPWD change to new old path\n");
         return 1;
     }
+
+    if (chdir(new_path) == -1)
+    {
+        free(new_path);
+        warnx("go_root_dir error during chdir\n");
+        return 1;
+    }
+
+    free(new_path);
 
     return 0;
 }
@@ -227,17 +286,56 @@ static int switch_prev_act_dir(void)
         return 1;
     }
 
+    if (chdir(old_path) == -1)
+    {
+        warnx("switch_prev_act_dir error during chdir\n");
+        return 1;
+    }
+
     return 0;
 }
 
-static int change_dir(char *path)
+static int go_to_root_plus_dir(char *home, char *word)
 {
+    char *path = merge(strdup("~"), strdup(home));
+    if (!path)
+    {
+        warnx("error during a merge or strdup in go to root dir");
+        return 1;
+    }
+
+    path = merge(path, strdup(word));
+    if (!path)
+    {
+        warnx("error during a merge or strdup in go to root dir");
+        return 1;
+    }
+
     struct stat st;
     stat(path, &st);
 
     if (S_ISDIR(st.st_mode) == 1)
     {
-        return go_to_dir(path);
+        char *old_path = getenv("PWD");
+        if (!path)
+        {
+            warnx("switch_prev_act_dir error during getenv PWD\n");
+            return 1;
+        }
+
+        if (setenv("PWD", path, 1) == -1)
+        {
+            warnx("switch_prev_act_dir error during PWD change to old path\n");
+            return 1;
+        }
+
+        if (setenv("OLDPWD", old_path, 1) == -1)
+        {
+            warnx("switch_prev_act_dir error during OLDPWD change to path\n");
+            return 1;
+        }
+
+        return 0;
     }
     else if (S_ISREG(st.st_mode) == 1)
     {
@@ -261,7 +359,7 @@ int builtin_cd(struct ast_simple_cmd *command)
     if (!element_list)
     {
         char *home = getenv("HOME");
-        if (!home || strcmp(home, ""))
+        if (!home || strcmp(home, "") == 0)
             return 0;
 
         return go_to_root(home);
@@ -269,8 +367,7 @@ int builtin_cd(struct ast_simple_cmd *command)
 
     if (element_list->next)
     {
-        printf("Too many arguments\n");
-        fflush(stdout);
+        warnx("Too many arguments for cd\n");
         return 1;
     }
 
@@ -281,14 +378,30 @@ int builtin_cd(struct ast_simple_cmd *command)
     // cd with no argument -> go to the root directory
     if (!first_element)
     {
-        return go_to_root("~/");
+        char *home = getenv("HOME");
+        if (!home || strcmp(home, "") == 0)
+            return 0;
+
+        return go_to_root(home);
     }
-    else if (!strcmp(first_element->word, "-"))
+    else if (first_element->word[0] == '-')
     {
         return switch_prev_act_dir();
     }
     else
     {
-        return change_dir(first_element->word);
+        if (strcmp(first_element->word, getenv("PWD")) == 0)
+            return 0;
+
+        if (first_element->word[0] == '/')
+        {
+            char *home = getenv("HOME");
+            if (!home || strcmp(home, "") == 0)
+                home = "";
+
+            return go_to_root_plus_dir(home, first_element->word);
+        }
+
+        return go_to_dir(first_element->word);
     }
 }
