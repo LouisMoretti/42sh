@@ -485,3 +485,52 @@ Test(Execution, test_cmd_builtin_cd_big_path)
     cr_expect_str_eq(new_old_path, old_path);
     free(path);
 }
+
+Test(Execution, test_cmd_builtin_cd_direct_path)
+{
+    char *old_path = getenv("PWD");
+    char *path = getenv("HOME");
+    path = merge(path, strdup("/afs"));
+
+    struct ast_simple_cmd *ast_simple_cmd =
+        malloc(sizeof(struct ast_simple_cmd));
+
+    ast_simple_cmd->base.type = AST_SIMPLE_CMD;
+    ast_simple_cmd->prefix_list = NULL;
+    // ast_simple_cmd->prefix = NULL;
+    ast_simple_cmd->word = strdup("cd");
+
+    struct ast_element_list *ast_element_list =
+        malloc(sizeof(struct ast_element_list));
+
+    ast_element_list->base.type = AST_ELEMENT_LIST;
+
+    struct ast_element *ast_element = malloc(sizeof(struct ast_element));
+    ast_element->base.type = AST_ELEMENT;
+    ast_element->word = strdup("/afs");
+    ast_element->redirection = NULL;
+
+    ast_element_list->element = (struct ast *)ast_element;
+    ast_element_list->next = NULL;
+
+    ast_simple_cmd->element_list = (struct ast *)ast_element_list;
+
+    struct ast *ast = (struct ast *)ast_simple_cmd;
+
+    // run to put the hello dir in pwd
+    int res = execute_ast(ast);
+
+    free(ast_element->word);
+    free(ast_element);
+    free(ast_element_list);
+    free(ast_simple_cmd->word);
+    free(ast_simple_cmd);
+
+    char *new_path = getenv("PWD");
+    char *new_old_path = getenv("OLDPWD");
+
+    cr_expect_eq(res, 0);
+    cr_expect_str_eq(new_path, path);
+    cr_expect_str_eq(new_old_path, old_path);
+    free(path);
+}
