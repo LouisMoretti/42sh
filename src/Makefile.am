@@ -17,6 +17,7 @@ bin_PROGRAMS = 42sh
 
 # Compilation Flags
 42sh_CFLAGS = -std=c99 -pedantic -Werror -Wall -Wextra -Wvla
+CFLAGS      = -g
 
 42sh_LDADD =  \
        parser/libparser.a \
@@ -27,6 +28,11 @@ bin_PROGRAMS = 42sh
 	   iobackend/libiobackend.a
 
 if ENABLE_COVERAGE
-42sh_CFLAGS  +=  --coverage -g -O0
+42sh_CFLAGS  +=  --coverage
 42sh_LDFLAGS  =  --coverage
+endif
+
+if ENABLE_DEBUG
+42sh_CFLAGS  +=  -fsanitize=address
+42sh_LDFLAGS  =  -fsanitize=address
 endif

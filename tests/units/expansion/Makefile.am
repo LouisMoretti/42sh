@@ -9,12 +9,18 @@ test_expansion_CPPFLAGS = -I$(top_srcdir)/src
 
 # Compilation Flags
 test_expansion_CFLAGS = -std=c99 -Werror -Wall -Wextra -Wvla
+CFLAGS                = -g
 
 test_expansion_LDFLAGS = -lcriterion
 
 if ENABLE_COVERAGE
-test_expansion_CFLAGS  +=  --coverage -O0
+test_expansion_CFLAGS  +=  --coverage
 test_expansion_LDFLAGS +=  --coverage
+endif
+
+if ENABLE_DEBUG
+test_expansion_CFLAGS   +=  -fsanitize=address
+test_expansion_LDFLAGS  +=  -fsanitize=address
 endif
 
 test_expansion_LDADD =  \
