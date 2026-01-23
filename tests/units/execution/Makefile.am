@@ -25,7 +25,10 @@ endif
 
 test_execution_LDADD = \
 	../../../src/execution/libexecution.a \
-	../../../src/expansion/libexpansion.a
+	../../../src/expansion/libexpansion.a \
+	../../../src/parser/libparser.a \
+	../../../src/config/libconfig.a \
+	../../../src/utils/hash_map/libhashmap.a
 
 check-local:
 	@(./$(check_PROGRAMS) || true)

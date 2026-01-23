@@ -1,12 +1,17 @@
 #include "config.h"
 
 #include <stddef.h>
+#include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 static struct config my_conf;
 
 int set_conf(int argc, char **argv)
 {
+    // Random Setup Part
+    srand(time(NULL));
+
     // IO part
     my_conf.method = STDIN; // Default method is stdin
     my_conf.str_stream = NULL; // Default
@@ -16,6 +21,7 @@ int set_conf(int argc, char **argv)
 
     // Arguments part
     my_conf.arg_count = 0; // Default
+    my_conf.previous_code = 0; // Default
     my_conf.arg_values = NULL; // Default
 
     if (argc == 1)
@@ -56,6 +62,18 @@ int set_conf(int argc, char **argv)
     {
         my_conf.arg_count = argc - i;
         my_conf.arg_values = argv + i;
+        // Special case for filepath variable are 1 indexed
+        if (my_conf.method == FILEPATH)
+        {
+            my_conf.arg_values--;
+            my_conf.arg_count++;
+        }
+    }
+    else if (my_conf.method == STRING)
+    {
+        // Special case for $0 in string without variable
+        my_conf.arg_values = argv;
+        my_conf.arg_count = 1;
     }
 
     return 0;

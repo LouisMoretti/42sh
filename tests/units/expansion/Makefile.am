@@ -24,7 +24,10 @@ test_expansion_LDFLAGS  +=  -fsanitize=address
 endif
 
 test_expansion_LDADD =  \
-	   ../../../src/expansion/libexpansion.a
+	   ../../../src/expansion/libexpansion.a \
+	   ../../../src/parser/libparser.a \
+	   ../../../src/config/libconfig.a \
+	   ../../../src/utils/hash_map/libhashmap.a
 
 check-local:
 	@(./$(check_PROGRAMS) || true)
