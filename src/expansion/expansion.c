@@ -1,13 +1,12 @@
 #define _POSIX_C_SOURCE 200809L
 
-#include "expansion/expansion.h"
+#include "expansion.h"
 
 #include <ctype.h>
 #include <err.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
 #include <sys/types.h>
 #include <unistd.h>
 
@@ -189,53 +188,52 @@ static char *expand_escape(char *result, char *copy, size_t *offset, size_t *i)
     return result;
 }
 
-static char *get_nb_args(char* res, struct config *my_conf)
+static char *get_nb_args(char *res, struct config *my_conf)
 {
-        int nb_args = my_conf->arg_count - 1;
-        int save_nb = nb_args;
-        int size=nb_args==0;
-        while(nb_args>0)
-        {
-            size++;
-            nb_args/=10;
-        }
-        char *count_text = calloc(size+1, sizeof(char));
-        sprintf(count_text, "%i", save_nb); // > 127 arg = error
-        free(res);
-        return count_text;
+    int nb_args = my_conf->arg_count - 1;
+    int save_nb = nb_args;
+    int size = nb_args == 0;
+    while (nb_args > 0)
+    {
+        size++;
+        nb_args /= 10;
+    }
+    char *count_text = calloc(size + 1, sizeof(char));
+    sprintf(count_text, "%i", save_nb); // > 127 arg = error
+    free(res);
+    return count_text;
 }
 
-static char *get_code(char* res, struct config *my_conf)
+static char *get_code(char *res, struct config *my_conf)
 {
-        int code = my_conf->previous_code;
-        int save_code = code;
-        int size=code==0;
-        while(code>0)
-        {
-            size++;
-            code/=10;
-        }
-        char *code_text = calloc(size+1, sizeof(char));
-        sprintf(code_text, "%i", save_code); // > 127 arg = error
-        free(res);
-        return code_text;
+    int code = my_conf->previous_code;
+    int save_code = code;
+    int size = code == 0;
+    while (code > 0)
+    {
+        size++;
+        code /= 10;
+    }
+    char *code_text = calloc(size + 1, sizeof(char));
+    sprintf(code_text, "%i", save_code); // > 127 arg = error
+    free(res);
+    return code_text;
 }
 
-
-static char* get_pid(char* res)
+static char *get_pid(char *res)
 {
-        int pid = getpid();
-        int save_pid = pid;
-        int size=pid==0;
-        while(pid>0)
-        {
-            size++;
-            pid/=10;
-        }
-        char *pid_text = calloc(size+1, sizeof(char));
-        sprintf(pid_text, "%i", save_pid); // > 127 arg = error
-        free(res);
-        return pid_text;
+    int pid = getpid();
+    int save_pid = pid;
+    int size = pid == 0;
+    while (pid > 0)
+    {
+        size++;
+        pid /= 10;
+    }
+    char *pid_text = calloc(size + 1, sizeof(char));
+    sprintf(pid_text, "%i", save_pid); // > 127 arg = error
+    free(res);
+    return pid_text;
 }
 
 static char *get_special(char *name_var, int *code)
@@ -258,17 +256,17 @@ static char *get_special(char *name_var, int *code)
         }
         int index = atoi(name_var);
 
-        char* tmp = strdup(my_conf->arg_values[index]);
+        char *tmp = strdup(my_conf->arg_values[index]);
         if (index < my_conf->arg_count)
             res = merge(res,
-                    tmp) ; // TODO Check Merge
+                        tmp); // TODO Check Merge
     }
     else if (name_var[0] == '?')
-        return get_code(res,my_conf);
+        return get_code(res, my_conf);
     else if (name_var[0] == '$')
         return get_pid(res);
     else if (name_var[0] == '#')
-        return get_nb_args(res,my_conf);
+        return get_nb_args(res, my_conf);
     else if (name_var[0] == '@' || name_var[0] == '*')
     {
         int i = 1;
@@ -305,13 +303,13 @@ static char *get_uid()
 {
     uid_t id = geteuid();
     uid_t save_id = id;
-    int size=0;
-    while(id>0)
+    int size = 0;
+    while (id > 0)
     {
         size++;
-        id/=10;
+        id /= 10;
     }
-    char * res = calloc(size+1,1);
+    char *res = calloc(size + 1, 1);
     sprintf(res, "%i", save_id);
     return res;
 }
@@ -320,21 +318,21 @@ static char *get_random()
 {
     int rand_nb = rand();
     int save_nb = rand_nb;
-    int size=0;
-    while(rand_nb>0)
+    int size = 0;
+    while (rand_nb > 0)
     {
         size++;
-        rand_nb/=10;
+        rand_nb /= 10;
     }
-    char * res = calloc(size+1,1);
+    char *res = calloc(size + 1, 1);
     sprintf(res, "%i", save_nb);
     return res;
 }
 
 static char *get_env_var(char *name_var)
 {
-    char* env_var = getenv(name_var);
-    if(!env_var)
+    char *env_var = getenv(name_var);
+    if (!env_var)
         return strdup("");
     return strdup(env_var);
 }
@@ -352,11 +350,12 @@ static char *get_value_var(char *special, char *name_var)
             warnx("get_value_var: Try to use an un-initialised variable !!!");
             return strdup("");
         }
-        if(!strcmp(name_var,"RANDOM"))
-            return get_random(); 
-        if(!strcmp(name_var,"UID"))
+        if (!strcmp(name_var, "RANDOM"))
+            return get_random();
+        if (!strcmp(name_var, "UID"))
             return get_uid();
-        if(!strcmp(name_var,"OLDPWD") || !strcmp(name_var,"PWD") || !strcmp(name_var,"IFS"))
+        if (!strcmp(name_var, "OLDPWD") || !strcmp(name_var, "PWD")
+            || !strcmp(name_var, "IFS"))
             return get_env_var(name_var);
         char *val_var = hash_map_get(variables_hash_map, name_var);
         if (!val_var)
@@ -440,7 +439,7 @@ static char *expand_var(char *result, char *copy, size_t *offset, size_t *i)
 }
 
 static char *expand_double_quote(char *result, char *copy, size_t *offset,
-        size_t *i)
+                                 size_t *i)
 {
     // Add cached characters to result.
     if (*offset != *i)
@@ -597,19 +596,19 @@ static char *expand_echo_escape(char *copy, size_t *i)
     (*i)++;
     switch (copy[*i])
     {
-        case 'n':
-            tmp[0] = '\n';
-            break;
-        case 't':
-            tmp[0] = '\t';
-            break;
-        case '\\':
-            tmp[0] = '\\';
-            break;
-        default:
-            tmp[0] = '\\';
-            tmp[1] = copy[*i];
-            break;
+    case 'n':
+        tmp[0] = '\n';
+        break;
+    case 't':
+        tmp[0] = '\t';
+        break;
+    case '\\':
+        tmp[0] = '\\';
+        break;
+    default:
+        tmp[0] = '\\';
+        tmp[1] = copy[*i];
+        break;
     }
 
     return tmp;
@@ -714,7 +713,7 @@ static int expand_list_args(char **result, struct ast_word_list **word)
 }
 
 static char *res_merge_for(char **result, char **copy, size_t *offset,
-        size_t *i)
+                           size_t *i)
 {
     // Add cached characters to result.
     if (*offset != *i)
@@ -729,7 +728,7 @@ static char *res_merge_for(char **result, char **copy, size_t *offset,
 }
 
 static void switch_word(struct ast_word_list **word, char **result,
-        struct ast **next)
+                        struct ast **next)
 {
     if ((*word)->word)
         free((*word)->word);

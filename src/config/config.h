@@ -2,6 +2,7 @@
 #define CONFIG_H
 
 #include "utils/hash_map/hash_map.h"
+
 enum input_method
 {
     STRING,

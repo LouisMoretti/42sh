@@ -98,22 +98,23 @@ static int execute_ast_prefix(struct ast_prefix *ast_prefix)
         int code = assignement_var(ast_prefix->assignment_word);
         if (code != 0)
             return 1;
+
+        return 0;
     }
     else if (ast_prefix->redirection)
         return 1; // TODO Redirection Part
     else
         return 1;
-    return 0;
 }
 
 static int execute_ast_prefix_list(struct ast_simple_cmd *ast_simple_cmd)
 {
     struct ast_prefix_list *ast_prefix =
         (struct ast_prefix_list *)ast_simple_cmd->prefix_list;
-    struct ast_prefix *cur_prefix;
+
     while (ast_prefix)
     {
-        cur_prefix = (struct ast_prefix *)ast_prefix->prefix;
+        struct ast_prefix *cur_prefix = (struct ast_prefix *)ast_prefix->prefix;
         int code = execute_ast_prefix(cur_prefix);
         if (code != 0)
             return 1;
@@ -129,7 +130,7 @@ static int execute_ast_simple_cmd(struct ast *ast)
 
     assert(ast->type == AST_SIMPLE_CMD);
     struct ast_simple_cmd *ast_simple_cmd = (struct ast_simple_cmd *)ast;
-    // assert(ast_simple_cmd->word != NULL);
+    assert(ast_simple_cmd->word != NULL || ast_simple_cmd->prefix_list != NULL);
 
     if (!ast_simple_cmd->word)
         return execute_ast_prefix_list(ast_simple_cmd);
