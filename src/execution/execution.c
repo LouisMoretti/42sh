@@ -15,6 +15,7 @@
 #include "execution/builtin.h"
 #include "execution/pipe.h"
 #include "expansion/expansion.h"
+#include "iobackend/iobackend.h"
 #include "utils/hash_map/hash_map.h"
 
 #define BUILTIN_ECHO "echo"
@@ -40,10 +41,12 @@ static int evaluate_command(char **command)
         {
         case ENOENT:
             warnx("evaluate_command: Command Not Found. Got: '%s'", command[0]);
+            io_close();
             exit(COMMAND_NOT_FOUND_ERROR);
         default:
             warnx("evaluate_command: %s. Got: '%s'", strerror(errno),
                   command[0]);
+            io_close();
             exit(DEFAULT_ERROR);
         }
     }
