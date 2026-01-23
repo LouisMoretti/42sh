@@ -460,7 +460,6 @@ static char *expand_double_quote(char *result, char *copy, size_t *offset,
     {
         if (copy[*i] == '$')
         {
-            // TODO: expand variable function
             result = expand_var(result, copy, offset, i);
             // result and copy are free inside expand_single_quote
             if (!result)
