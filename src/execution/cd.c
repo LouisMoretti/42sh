@@ -265,7 +265,7 @@ static int go_to_dir(char *path)
 
     // Loop to go threw the given path step by step (at each '/', we're stopping
     // and changing the new_path).
-    while (!next[0])
+    while (next[0] != '\0')
     {
         // Add a / at the end to be able to add a directory.
         new_path = merge(new_path, strdup("/"));
@@ -428,7 +428,7 @@ int builtin_cd(struct ast_simple_cmd *command)
     if (!element_list)
     {
         char *home = getenv("HOME");
-        if (!home || !home[0])
+        if (!home || home[0] != '\0')
             return 0;
 
         return go_to_path(home);
@@ -449,7 +449,7 @@ int builtin_cd(struct ast_simple_cmd *command)
     if (!first_element)
     {
         char *home = getenv("HOME");
-        if (!home || !home[0])
+        if (!home || home[0] != '\0')
             return 0;
 
         return go_to_path(home);
@@ -467,7 +467,7 @@ int builtin_cd(struct ast_simple_cmd *command)
         if (first_element->word[0] == '/')
         {
             char *home = getenv("HOME");
-            if (!home || !home[0])
+            if (!home || home[0] != '\0')
                 home = "";
 
             return go_to_root_plus_dir(home, first_element->word);

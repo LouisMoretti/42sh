@@ -19,7 +19,11 @@ static char *give_without_last(char *path)
     while (path[i] != '\0' && path[i] != '/')
         i--;
 
-    return strndup(path, i);
+    char *new_path = strndup(path, i);
+
+    free(path);
+
+    return new_path;
 }
 
 static char *merge(char *src1, char *src2)
@@ -180,7 +184,7 @@ Test(Execution, test_cmd_builtin_cd_dot_dot)
 {
     char *path = getenv("PWD");
     char *old_path = getenv("PWD");
-    path = give_without_last(path);
+    path = give_without_last(strdup(path));
 
     struct ast_simple_cmd *ast_simple_cmd =
         malloc(sizeof(struct ast_simple_cmd));
@@ -228,10 +232,9 @@ Test(Execution, test_cmd_builtin_cd_dot_dot)
 Test(Execution, test_cmd_builtin_cd_dash)
 {
     char *path = getenv("PWD");
-    path = give_without_last(path);
+    path = give_without_last(strdup(path));
 
-    char *old_path = strdup(path);
-    old_path = merge(old_path, strdup("/expansion"));
+    char *old_path = merge(strdup(path), strdup("/expansion"));
 
     struct ast_simple_cmd *ast_simple_cmd =
         malloc(sizeof(struct ast_simple_cmd));
@@ -272,7 +275,7 @@ Test(Execution, test_cmd_builtin_cd_dash)
     cr_expect_eq(res, 0);
 
     // run to test the cd - to switch the pwd and oldpwd
-
+    free(ast_element->word);
     ast_element->word = strdup("-");
     res = execute_ast(ast);
 
@@ -343,7 +346,7 @@ Test(Execution, test_cmd_builtin_cd_back_expansion)
 {
     char *old_path = getenv("PWD");
     char *path = getenv("PWD");
-    path = give_without_last(path);
+    path = give_without_last(strdup(path));
     path = merge(path, strdup("/expansion"));
 
     struct ast_simple_cmd *ast_simple_cmd =
@@ -386,6 +389,7 @@ Test(Execution, test_cmd_builtin_cd_back_expansion)
     cr_expect_eq(res, 0);
     cr_expect_str_eq(new_path, path);
     cr_expect_str_eq(new_old_path, old_path);
+    free(path);
 }
 
 Test(Execution, test_cmd_builtin_cd_here)
@@ -439,7 +443,7 @@ Test(Execution, test_cmd_builtin_cd_big_path)
 {
     char *old_path = getenv("PWD");
     char *path = getenv("PWD");
-    path = give_without_last(path);
+    path = give_without_last(strdup(path));
     path = give_without_last(path);
     path = merge(path, strdup("/functionnal/hard"));
 
@@ -490,7 +494,7 @@ Test(Execution, test_cmd_builtin_cd_direct_path)
 {
     char *old_path = getenv("PWD");
     char *path = getenv("HOME");
-    path = merge(path, strdup("/afs"));
+    path = merge(strdup(path), strdup("/afs"));
 
     struct ast_simple_cmd *ast_simple_cmd =
         malloc(sizeof(struct ast_simple_cmd));

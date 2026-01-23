@@ -607,6 +607,10 @@ static char *expand_echo_escape(char *copy, size_t *i)
     case '\\':
         tmp[0] = '\\';
         break;
+    case '\0':
+        tmp[0] = '\\';
+        (*i)--;
+        break;
     default:
         tmp[0] = '\\';
         tmp[1] = copy[*i];
