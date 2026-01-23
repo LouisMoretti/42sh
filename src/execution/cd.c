@@ -258,7 +258,10 @@ static int go_to_dir(char *path)
     // Check if the new path is the same than PWD (if it is, we're not doing
     // anything).
     if (strcmp(new_old_path, new_path) == 0)
+    {
+        free(new_path);
         return 0;
+    }
 
     // We're setting all the env variable to the right thing.
     if (setenv("PWD", new_path, 1) == -1)
@@ -347,27 +350,37 @@ static int go_to_root_plus_dir(char *home, char *word)
     }
 
     if (check_dir(path) == 0)
+    {
+        free(path);
         return 1;
+    }
 
     char *old_path = getenv("PWD");
-    if (!path)
+    if (!old_path)
     {
+        free(path);
         warnx("go_to_root_plus_dir: error during getenv PWD.");
+
         return 1;
     }
 
     if (setenv("PWD", path, 1) == -1)
     {
+        free(path);
         warnx("go_to_root_plus_dir: error during PWD change to old path.");
+
         return 1;
     }
 
     if (setenv("OLDPWD", old_path, 1) == -1)
     {
+        free(path);
         warnx("go_to_root_plus_dir: error during OLDPWD change to path.");
+
         return 1;
     }
 
+    free(path);
     return 0;
 }
 
