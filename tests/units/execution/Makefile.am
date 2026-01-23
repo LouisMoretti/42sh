@@ -9,18 +9,19 @@ test_execution_CPPFLAGS  =  -I$(top_srcdir)/src
 
 # Compilation Flags
 test_execution_CFLAGS    =  -std=c99 -Werror -Wall -Wextra -Wvla
-CFLAGS                   =  -g
 
 test_execution_LDFLAGS   =  -lcriterion
 
 if ENABLE_COVERAGE
 test_execution_CFLAGS   +=  --coverage
 test_execution_LDFLAGS  +=  --coverage
+CFLAGS                  +=  -g -O0
 endif
 
 if ENABLE_DEBUG
 test_execution_CFLAGS   +=  -fsanitize=address
 test_execution_LDFLAGS  +=  -fsanitize=address
+CFLAGS                  +=  -g -O0
 endif
 
 test_execution_LDADD = \
