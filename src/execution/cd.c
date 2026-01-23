@@ -10,43 +10,43 @@
 
 #include "builtin.h"
 
-// function that will put the user to the path given
+// Function that will put the user to the path given.
 static int go_to_root(char *path)
 {
-    // keep the old path in memory
+    // Keep the old path in memory.
     char *new_old_path = getenv("PWD");
     if (!new_old_path)
     {
-        warnx("go_to_root error during getenv PWD\n");
+        warnx("go_to_root: error during getenv PWD.");
         return 1;
     }
 
-    // set the new PWD env variable
+    // Set the new PWD env variable.
     if (setenv("PWD", path, 1) == -1)
     {
-        warnx("go_to_root error during PWD change to root dir\n");
+        warnx("go_to_root: error during PWD change to root dir.");
         return 1;
     }
 
-    // set the new OLDPWD env variable
+    // Set the new OLDPWD env variable.
     if (setenv("OLDPWD", new_old_path, 1) == -1)
     {
-        warnx("go_to_root error during OLDPWD change to new old path\n");
+        warnx("go_to_root: error during OLDPWD change to new old path.");
         return 1;
     }
 
-    // set the chdir variable to the path (to make the user really go in this
-    // directory)
+    // Set the chdir variable to the path (to make the user really go in this
+    // directory).
     if (chdir(path) == -1)
     {
-        warnx("go_to_root error during chdir\n");
+        warnx("go_to_root: error during chdir.");
         return 1;
     }
 
     return 0;
 }
 
-// gives the char * from the start to the next / or the end
+// Gives the char * from the start to the next / or the end.
 static char *give_begin(char *path, size_t *len)
 {
     size_t i = *len;
@@ -62,8 +62,8 @@ static char *give_begin(char *path, size_t *len)
     return strndup(path + i, *len - i);
 }
 
-// check if the given path is .. or ../ (which will remove the last directory of
-// the PWD)
+// Check if the given path is .. or ../ (which will remove the last directory of
+// the PWD).
 static int is_back(char *path)
 {
     size_t len = strlen(path);
@@ -74,8 +74,8 @@ static int is_back(char *path)
     return 0;
 }
 
-// give the char * without the last directory for example : hello/there/coco
-// will become hello/there
+// Give the char * without the last directory for example : hello/there/coco
+// will become hello/there.
 static char *go_back(char **new_path)
 {
     size_t i = 0;
@@ -101,7 +101,7 @@ static char *go_back(char **new_path)
     }
 }
 
-// function that will merge src1 and src2 (src2 will be free)
+// Function that will merge src1 and src2 (src2 will be free).
 static char *merge(char *src1, char *src2)
 {
     // Return NULL if one the parameters is NULL.
@@ -135,17 +135,17 @@ static char *merge(char *src1, char *src2)
         return NULL;
     }
 
-    // Merge strings
+    // Merge strings.
     res = strcat(res, src2);
 
-    // Free other string
+    // Free other string.
     free(src2);
     res[len - 1] = 0;
 
     return res;
 }
 
-// check if the given path is . or ./ (which will not change the path)
+// Check if the given path is . or ./ (which will not change the path).
 static int is_here(char *path)
 {
     size_t i = strlen(path);
@@ -156,7 +156,7 @@ static int is_here(char *path)
     return 0;
 }
 
-// check if the given path is a directory or not
+// Check if the given path is a directory or not.
 static int check_dir(char *path)
 {
     struct stat st;
@@ -168,12 +168,12 @@ static int check_dir(char *path)
     }
     else if (S_ISREG(st.st_mode) == 1)
     {
-        warnx("the given path is a file !\n");
+        warnx("The given path is a file !");
         return 0;
     }
     else
     {
-        warnx("the given path does not exists !\n");
+        warnx("The given path does not exist !");
         return 0;
     }
 }
@@ -190,34 +190,35 @@ static char *remove_last_backslash(char *new_path)
     return res;
 }
 
-// function that will change the PWD, OLDPWD and chdir env variable to be good
-// with the potential new path
+// Function that will change the PWD, OLDPWD and chdir env variable to be good
+// with the potential new path.
 static int go_to_dir(char *path)
 {
-    // check if the potential new path is good
+    // Check if the potential new path is good.
     if (check_dir(path) == 0)
     {
         return 1;
     }
 
-    // keep the PWD to put it in the OLDPWD later
+    // Keep the PWD to put it in the OLDPWD later.
     char *new_old_path = getenv("PWD");
     if (!new_old_path)
     {
-        warnx("go_to_dir error during getenv PWD\n");
+        warnx("go_to_dir: error during getenv PWD.");
         return 1;
     }
 
     char *new_path = strdup(new_old_path);
     size_t len = 0;
-    // next will take the next directory to change
+
+    // Next will take the next directory to change.
     char *next = give_begin(path, &len);
 
-    // loop to go threw the given path step by step (at each '/', we're stopping
-    // and changing the new_path)
+    // Loop to go threw the given path step by step (at each '/', we're stopping
+    // and changing the new_path).
     while (strcmp(next, ""))
     {
-        // add a / at the end to be able to add a directory
+        // Add a / at the end to be able to add a directory.
         new_path = merge(new_path, strdup("/"));
         if (!new_path)
         {
@@ -225,13 +226,13 @@ static int go_to_dir(char *path)
             return 1;
         }
 
-        // change the new_path depending on what we have in the current next
-        if (is_back(next)) // check if it a .. or ../
+        // Change the new_path depending on what we have in the current next.
+        if (is_back(next)) // Check if it a .. or ../
         {
             new_path = go_back(&new_path);
             free(next);
         }
-        else if (!is_here(next)) // check if it is a . or ./
+        else if (!is_here(next)) // Check if it is a . or ./
         {
             new_path = merge(new_path, next);
         }
@@ -240,44 +241,44 @@ static int go_to_dir(char *path)
             new_path = remove_last_backslash(new_path);
         }
 
-        // if the new_path is NULL -> an error occured
+        // If the new_path is NULL -> an error occured.
         if (!new_path)
         {
             if (!next)
                 free(next);
-            warnx("go_to_dir error during merge");
+            warnx("go_to_dir: error during merge.");
             return 1;
         }
 
-        // we're taking the next directory to change
+        // We're taking the next directory to change.
         next = give_begin(path, &len);
     }
     free(next);
 
-    // check if the new path is the same than PWD (if it is, we're not doing
-    // anything)
+    // Check if the new path is the same than PWD (if it is, we're not doing
+    // anything).
     if (strcmp(new_old_path, new_path) == 0)
         return 0;
 
-    // we're setting all the env variable to the right thing
+    // We're setting all the env variable to the right thing.
     if (setenv("PWD", new_path, 1) == -1)
     {
         free(new_path);
-        warnx("go_root_dir error during PWD change to root dir\n");
+        warnx("go_to_dir: error during PWD change to root dir.");
         return 1;
     }
 
     if (setenv("OLDPWD", new_old_path, 1) == -1)
     {
         free(new_path);
-        warnx("go_root_dir error during OLDPWD change to new old path\n");
+        warnx("go_to_dir: error during OLDPWD change to new old path.");
         return 1;
     }
 
     if (chdir(new_path) == -1)
     {
         free(new_path);
-        warnx("go_root_dir error during chdir\n");
+        warnx("go_to_dir: error during chdir.");
         return 1;
     }
 
@@ -286,60 +287,62 @@ static int go_to_dir(char *path)
     return 0;
 }
 
-// this function just switches the PWD and OLDPWD env variable and changes the
-// chdir env variable
+// This function just switches the PWD and OLDPWD env variable and changes the
+// chdir env variable.
 static int switch_prev_act_dir(void)
 {
     char *path = getenv("PWD");
     if (!path)
     {
-        warnx("switch_prev_act_dir error during getenv PWD\n");
+        warnx("switch_prev_act_dir: error during getenv PWD.");
         return 1;
     }
 
     char *old_path = getenv("OLDPWD");
     if (!old_path)
     {
-        warnx("switch_prev_act_dir error during getenv OLDPWD\n");
+        warnx("switch_prev_act_dir: error during getenv OLDPWD.");
         return 1;
     }
 
     if (setenv("PWD", old_path, 1) == -1)
     {
-        warnx("switch_prev_act_dir error during PWD change to old path\n");
+        warnx("switch_prev_act_dir: error during PWD change to old path.");
         return 1;
     }
 
     if (setenv("OLDPWD", path, 1) == -1)
     {
-        warnx("switch_prev_act_dir error during OLDPWD change to path\n");
+        warnx("switch_prev_act_dir: error during OLDPWD change to path.");
         return 1;
     }
 
     if (chdir(old_path) == -1)
     {
-        warnx("switch_prev_act_dir error during chdir\n");
+        warnx("switch_prev_act_dir: error during chdir.");
         return 1;
     }
 
     return 0;
 }
 
-// changes the PWD to ~ + HOME + word (word is the direct path to a directory,
-// like : /afs)
+// Changes the PWD to ~ + HOME + word (word is the direct path to a directory,
+// like : /afs).
 static int go_to_root_plus_dir(char *home, char *word)
 {
     char *path = merge(strdup("~"), strdup(home));
     if (!path)
     {
-        warnx("error during a merge or strdup in go to root dir");
+        warnx("go_to_root_plus_dir: error during a merge or strdup in go to "
+              "root dir.");
         return 1;
     }
 
     path = merge(path, strdup(word));
     if (!path)
     {
-        warnx("error during a merge or strdup in go to root dir");
+        warnx("go_to_root_plus_dir: error during a merge or strdup in go to "
+              "root dir.");
         return 1;
     }
 
@@ -349,19 +352,19 @@ static int go_to_root_plus_dir(char *home, char *word)
     char *old_path = getenv("PWD");
     if (!path)
     {
-        warnx("switch_prev_act_dir error during getenv PWD\n");
+        warnx("go_to_root_plus_dir: error during getenv PWD.");
         return 1;
     }
 
     if (setenv("PWD", path, 1) == -1)
     {
-        warnx("switch_prev_act_dir error during PWD change to old path\n");
+        warnx("go_to_root_plus_dir: error during PWD change to old path.");
         return 1;
     }
 
     if (setenv("OLDPWD", old_path, 1) == -1)
     {
-        warnx("switch_prev_act_dir error during OLDPWD change to path\n");
+        warnx("go_to_root_plus_dir: error during OLDPWD change to path.");
         return 1;
     }
 
@@ -373,7 +376,7 @@ int builtin_cd(struct ast_simple_cmd *command)
     struct ast_element_list *element_list =
         (struct ast_element_list *)command->element_list;
 
-    // check if the given cmd is 'cd'
+    // Check if the given cmd is 'cd' with no argument.
     if (!element_list)
     {
         char *home = getenv("HOME");
@@ -383,18 +386,18 @@ int builtin_cd(struct ast_simple_cmd *command)
         return go_to_root(home);
     }
 
-    // only one argument allowed for cd
+    // Only one argument allowed for cd.
     if (element_list->next)
     {
-        warnx("Too many arguments for cd\n");
+        warnx("Too many arguments for cd.");
         return 1;
     }
 
-    // cd with one argument -> go to the directory given if it exists
+    // 'cd' with one argument -> go to the directory given if it exists.
     struct ast_element *first_element =
         (struct ast_element *)element_list->element;
 
-    // cd with no argument -> go to the root directory
+    // 'cd' with no argument -> go to the root directory.
     if (!first_element)
     {
         char *home = getenv("HOME");
@@ -403,7 +406,7 @@ int builtin_cd(struct ast_simple_cmd *command)
 
         return go_to_root(home);
     }
-    else if (first_element->word[0] == '-') // cd - switches the OLDPWD and PWD
+    else if (first_element->word[0] == '-') // cd - switches the OLDPWD and PWD.
     {
         return switch_prev_act_dir();
     }
@@ -412,7 +415,7 @@ int builtin_cd(struct ast_simple_cmd *command)
         if (strcmp(first_element->word, getenv("PWD")) == 0)
             return 0;
 
-        // check if we have a direct changes
+        // Check if we have a direct changes.
         if (first_element->word[0] == '/')
         {
             char *home = getenv("HOME");
@@ -422,7 +425,6 @@ int builtin_cd(struct ast_simple_cmd *command)
             return go_to_root_plus_dir(home, first_element->word);
         }
 
-        // normal case of cd
         return go_to_dir(first_element->word);
     }
 }
