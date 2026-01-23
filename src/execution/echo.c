@@ -77,18 +77,6 @@ int builtin_echo(struct ast_simple_cmd *command)
         ast_element = (struct ast_element *)cur->element;
         str = ast_element->word;
     }
-    /*if (has_e)
-    {
-        char *expanded = expand_echo(ast_element->word);
-        if (!expanded)
-            return 1;
-        free(ast_element->word);
-        ast_element->word = expanded;
-    }
-    str = ast_element->word;
-    printf("%s", str);
-    fflush(stdout);
-    cur = (struct ast_element_list *)cur->next;*/
     int code = proceed_first(has_e, ast_element, &cur);
     if (code != 0)
         return 1;
