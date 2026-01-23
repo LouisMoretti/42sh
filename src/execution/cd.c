@@ -14,26 +14,33 @@
 static int go_to_root(char *path)
 {
     // Keep the old path in memory.
-    char *new_old_path = getenv("PWD");
-    if (!new_old_path)
+    char *tmp = getenv("PWD");
+    if (!tmp)
     {
         warnx("go_to_root: error during getenv PWD.");
         return 1;
     }
+    char *new_old_path = strdup(tmp);
 
     // Set the new PWD env variable.
     if (setenv("PWD", path, 1) == -1)
     {
+        free(new_old_path);
         warnx("go_to_root: error during PWD change to root dir.");
+
         return 1;
     }
 
     // Set the new OLDPWD env variable.
     if (setenv("OLDPWD", new_old_path, 1) == -1)
     {
+        free(new_old_path);
         warnx("go_to_root: error during OLDPWD change to new old path.");
+
         return 1;
     }
+
+    free(new_old_path);
 
     // Set the chdir variable to the path (to make the user really go in this
     // directory).
@@ -216,7 +223,7 @@ static int go_to_dir(char *path)
 
     // Loop to go threw the given path step by step (at each '/', we're stopping
     // and changing the new_path).
-    while (strcmp(next, ""))
+    while (strcmp(next, "") != 0)
     {
         // Add a / at the end to be able to add a directory.
         new_path = merge(new_path, strdup("/"));
