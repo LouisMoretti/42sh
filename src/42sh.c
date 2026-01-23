@@ -40,23 +40,28 @@ int main(int argc, char **argv)
 
     // Call parser for AST
     int status_code = 0;
-    struct ast *input = parse_input(&status_code);
-    if (status_code)
-    {
-        free_ast_input(input);
-        return status_code;
-    }
-
-    // Execute AST
-    assert(input->type == AST_INPUT);
-
     int exit_code = 0;
-    if (conf->pretty_print)
-        pretty_print((struct ast *)input);
-    else
-        exit_code = execute_ast(input);
+    while (peek_chr() != EOF)
+    {
+        struct ast *input = parse_input(&status_code);
+        if (status_code)
+        {
+            free_ast_input(input);
+            return status_code;
+        }
 
-    free_ast_input(input);
+        // Execute AST
+        assert(input->type == AST_INPUT);
+
+        exit_code = 0;
+        if (conf->pretty_print)
+            pretty_print(input);
+        else
+            exit_code = execute_ast(input);
+
+        free_ast_input(input);
+        conf->previous_code = 0;
+    }
 
     reset_modules();
     return exit_code;

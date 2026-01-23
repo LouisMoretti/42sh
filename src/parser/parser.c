@@ -70,6 +70,7 @@ struct ast *parse_input(int *status_code)
               type_name[tok->type]);
         *status_code = 2;
     }
+    pop_token();
 
     return ast_input;
 }
