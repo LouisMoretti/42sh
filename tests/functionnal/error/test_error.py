@@ -49,7 +49,8 @@ def test_expansion_bad_builtin():
 
 folder = "error/tests_files"
 param_filepaths = [(open(f"{folder}/{file}", 'r').name, f"{folder}/{file}") for file in os.listdir(folder)]
-params_cmds = [("bad expansion", "var3=lol; var2=var3; echo ${$var2}")]
+params_cmds = [("bad expansion", "var3=lol; var2=var3; echo ${$var2}"),
+               ('ending_double_semicol', "echo doublecolonne;;")]
 
 @pytest.mark.parametrize("name,command_to_run", params_cmds)
 def test_string(name, command_to_run):

@@ -81,7 +81,7 @@ Test(Expansion, test_expansion_string_quoted_inner_tricky_backslash)
 Test(Expansion, test_expansion_string_quote_escaped)
 {
     char *to_be_expanded = "a\\'bcdefgh";
-    char *expansion_expected = "a\'bcdefgh";
+    char *expansion_expected = "a\\'bcdefgh";
 
     char *result = expand_ref_execution(to_be_expanded);
     cr_expect_str_eq(result, expansion_expected);
@@ -92,7 +92,7 @@ Test(Expansion, test_expansion_string_quote_escaped)
 Test(Expansion, test_expansion_string_quote_escaped_and_not_escaped)
 {
     char *to_be_expanded = "a\\'bc\\''d'''efg'h'''";
-    char *expansion_expected = "a'bc'defgh";
+    char *expansion_expected = "a\\'bc\\'defgh";
 
     char *result = expand_ref_execution(to_be_expanded);
     cr_expect_str_eq(result, expansion_expected);

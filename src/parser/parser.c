@@ -86,7 +86,8 @@ static struct ast *parse_list(int *status_code)
         || peek_token(ENABLE_KEYWORDS)->type == AMPERSAND)
     {
         pop_token();
-        if (peek_token(ENABLE_KEYWORDS)->type != END_OF_FILE)
+        if (peek_token(ENABLE_KEYWORDS)->type != END_OF_FILE
+            && peek_token(ENABLE_KEYWORDS)->type != NEW_LINE)
         {
             ((struct ast_list *)list)->next = parse_list(status_code);
             if (*status_code)

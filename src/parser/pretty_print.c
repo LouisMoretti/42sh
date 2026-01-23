@@ -159,6 +159,7 @@ static void pp_simple_cmd(struct ast *ast, int prefix)
 
     if (ast_simple_cmd->word == NULL)
     {
+        // old architecture of struct ast_simple_cmd
         // pp_prefix(ast_simple_cmd->prefix, prefix);
         // printf(" ");
         // if (ast_simple_cmd->prefix_list != NULL)
@@ -228,7 +229,7 @@ static void pp_rule_for(struct ast *ast, int prefix)
 
     if (ast_rule_for->in_word_list != NULL)
     {
-        printf("in ");
+        printf(" in ");
         pp_word_list(ast_rule_for->in_word_list, prefix);
     }
 
@@ -237,7 +238,7 @@ static void pp_rule_for(struct ast *ast, int prefix)
     pp_compound_list(ast_rule_for->body_compound_list, prefix);
     prefix -= 1;
     add_tab(prefix);
-    printf("done\n");
+    printf("\ndone\n");
 }
 
 static void pp_rule_while(struct ast *ast, int prefix)
@@ -248,12 +249,12 @@ static void pp_rule_while(struct ast *ast, int prefix)
 
     printf("while ");
     pp_compound_list(ast_rule_while->condition_compound_list, prefix);
-    printf("; do\n");
+    printf(" do\n");
     prefix += 1;
     pp_compound_list(ast_rule_while->body_compound_list, prefix);
     prefix -= 1;
     add_tab(prefix);
-    printf("done\n");
+    printf("\ndone\n");
 }
 
 static void pp_rule_until(struct ast *ast, int prefix)
@@ -264,12 +265,12 @@ static void pp_rule_until(struct ast *ast, int prefix)
 
     printf("until ");
     pp_compound_list(ast_rule_until->condition_compound_list, prefix);
-    printf("; do\n");
+    printf(" do\n");
     prefix += 1;
     pp_compound_list(ast_rule_until->body_compound_list, prefix);
     prefix -= 1;
     add_tab(prefix);
-    printf("done\n");
+    printf("\ndone\n");
 }
 
 static void pp_else_clause(struct ast *ast, int prefix)
@@ -358,7 +359,7 @@ static void pp_rule_case(struct ast *ast, int prefix)
     if (ast_rule_case->case_clause != NULL)
         pp_case_clause(ast_rule_case->case_clause, prefix);
 
-    printf("esac\n");
+    printf("\nesac\n");
 }
 
 static void pp_rule_if(struct ast *ast, int prefix)

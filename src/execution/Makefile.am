@@ -5,6 +5,7 @@ lib_LIBRARIES = libexecution.a
 libexecution_a_SOURCES = \
 						 echo.c \
 						 boolean.c \
+						 cd.c \
 						 builtin.h \
 						 pipe.c \
 						 pipe.h \
@@ -16,10 +17,15 @@ libexecution_a_CPPFLAGS = -I$(top_srcdir)/src
 
 # Compilation Flags
 libexecution_a_CFLAGS = -std=c99 -pedantic -Werror -Wall -Wextra -Wvla
+CFLAGS                = -g
 
 # Libraries to not install
 noinst_LIBRARIES = libexecution.a
 
 if ENABLE_COVERAGE
-libexecution_a_CFLAGS  +=  --coverage -O0
+libexecution_a_CFLAGS  +=  --coverage
+endif
+
+if ENABLE_DEBUG
+libexecution_a_CFLAGS  +=  -fsanitize=address
 endif
