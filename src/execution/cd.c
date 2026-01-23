@@ -155,9 +155,7 @@ static char *merge(char *src1, char *src2)
 // Check if the given path is . or ./ (which will not change the path).
 static int is_here(char *path)
 {
-    size_t i = strlen(path);
-
-    if (i >= 1 && path[0] == '.' && (path[1] == '\0' || path[1] == '/'))
+    if (path[0] == '.' && (path[1] == '\0' || path[1] == '/'))
         return 1;
 
     return 0;
@@ -215,7 +213,7 @@ static int change_dir(char *tmp, char *new_path)
     {
         free(new_path);
         free(new_old_path);
-        warnx("go_to_dir: error during PWD change to root dir.");
+        warnx("change_dir: error during PWD change to root dir.");
         return 1;
     }
 
@@ -223,7 +221,7 @@ static int change_dir(char *tmp, char *new_path)
     {
         free(new_path);
         free(new_old_path);
-        warnx("go_to_dir: error during OLDPWD change to new old path.");
+        warnx("change_dir: error during OLDPWD change to new old path.");
         return 1;
     }
 
@@ -232,7 +230,7 @@ static int change_dir(char *tmp, char *new_path)
     if (chdir(new_path) == -1)
     {
         free(new_path);
-        warnx("go_to_dir: error during chdir.");
+        warnx("change_dir: error during chdir.");
         return 1;
     }
 
@@ -312,37 +310,51 @@ static int go_to_dir(char *path)
 // chdir env variable.
 static int switch_prev_act_dir(void)
 {
-    char *path = getenv("PWD");
-    if (!path)
+    char *tmp = getenv("PWD");
+    if (!tmp)
     {
         warnx("switch_prev_act_dir: error during getenv PWD.");
         return 1;
     }
 
-    char *old_path = getenv("OLDPWD");
-    if (!old_path)
+    char *path = strdup(tmp);
+
+    tmp = getenv("OLDPWD");
+    if (!tmp)
     {
+        free(path);
         warnx("switch_prev_act_dir: error during getenv OLDPWD.");
         return 1;
     }
 
+    char *old_path = strdup(tmp);
+
     if (setenv("PWD", old_path, 1) == -1)
     {
+        free(path);
+        free(old_path);
         warnx("switch_prev_act_dir: error during PWD change to old path.");
         return 1;
     }
 
     if (setenv("OLDPWD", path, 1) == -1)
     {
+        free(path);
+        free(old_path);
         warnx("switch_prev_act_dir: error during OLDPWD change to path.");
         return 1;
     }
 
+    free(path);
+
     if (chdir(old_path) == -1)
     {
+        free(old_path);
         warnx("switch_prev_act_dir: error during chdir.");
         return 1;
     }
+
+    free(old_path);
 
     return 0;
 }
@@ -373,8 +385,8 @@ static int go_to_root_plus_dir(char *home, char *word)
         return 1;
     }
 
-    char *old_path = getenv("PWD");
-    if (!old_path)
+    char *tmp = getenv("PWD");
+    if (!tmp)
     {
         free(path);
         warnx("go_to_root_plus_dir: error during getenv PWD.");
@@ -382,23 +394,28 @@ static int go_to_root_plus_dir(char *home, char *word)
         return 1;
     }
 
+    char *old_path = strdup(tmp);
+
     if (setenv("PWD", path, 1) == -1)
     {
         free(path);
+        free(old_path);
         warnx("go_to_root_plus_dir: error during PWD change to old path.");
 
         return 1;
     }
 
+    free(path);
+
     if (setenv("OLDPWD", old_path, 1) == -1)
     {
-        free(path);
+        free(old_path);
         warnx("go_to_root_plus_dir: error during OLDPWD change to path.");
 
         return 1;
     }
 
-    free(path);
+    free(old_path);
     return 0;
 }
 
