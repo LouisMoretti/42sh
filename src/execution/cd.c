@@ -208,14 +208,14 @@ static int go_to_dir(char *path)
     }
 
     // Keep the PWD to put it in the OLDPWD later.
-    char *new_old_path = getenv("PWD");
-    if (!new_old_path)
+    char *tmp = getenv("PWD");
+    if (!tmp)
     {
         warnx("go_to_dir: error during getenv PWD.");
         return 1;
     }
 
-    char *new_path = strdup(new_old_path);
+    char *new_path = strdup(tmp);
     size_t len = 0;
 
     // Next will take the next directory to change.
@@ -237,22 +237,21 @@ static int go_to_dir(char *path)
         if (is_back(next)) // Check if it a .. or ../
         {
             new_path = go_back(&new_path);
-            free(next);
         }
         else if (!is_here(next)) // Check if it is a . or ./
         {
-            new_path = merge(new_path, next);
+            new_path = merge(new_path, strdup(next));
         }
         else
         {
             new_path = remove_last_backslash(new_path);
         }
 
+        free(next);
+
         // If the new_path is NULL -> an error occured.
         if (!new_path)
         {
-            if (!next)
-                free(next);
             warnx("go_to_dir: error during merge.");
             return 1;
         }
@@ -264,9 +263,11 @@ static int go_to_dir(char *path)
 
     // Check if the new path is the same than PWD (if it is, we're not doing
     // anything).
+    char *new_old_path = strdup(tmp);
     if (strcmp(new_old_path, new_path) == 0)
     {
         free(new_path);
+        free(new_old_path);
         return 0;
     }
 
@@ -274,6 +275,7 @@ static int go_to_dir(char *path)
     if (setenv("PWD", new_path, 1) == -1)
     {
         free(new_path);
+        free(new_old_path);
         warnx("go_to_dir: error during PWD change to root dir.");
         return 1;
     }
@@ -281,9 +283,12 @@ static int go_to_dir(char *path)
     if (setenv("OLDPWD", new_old_path, 1) == -1)
     {
         free(new_path);
+        free(new_old_path);
         warnx("go_to_dir: error during OLDPWD change to new old path.");
         return 1;
     }
+
+    free(new_old_path);
 
     if (chdir(new_path) == -1)
     {
