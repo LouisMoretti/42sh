@@ -1,6 +1,6 @@
 #define _POSIX_C_SOURCE 200809L
 
-#include "expansion.h"
+#include "expansion/expansion.h"
 
 #include <ctype.h>
 #include <err.h>
@@ -198,6 +198,7 @@ static char *get_nb_args(char *res, struct config *my_conf)
         size++;
         nb_args /= 10;
     }
+    // maybe use short of moulinette problem
     char *count_text = calloc(size + 1, sizeof(char));
     sprintf(count_text, "%i", save_nb); // > 127 arg = error
     free(res);
@@ -258,8 +259,10 @@ static char *get_special(char *name_var, int *code)
 
         char *tmp = strdup(my_conf->arg_values[index]);
         if (index < my_conf->arg_count)
-            res = merge(res,
-                        tmp); // TODO Check Merge
+            res = merge(res, tmp); // TODO Check Merge
+
+        if (!res)
+            return NULL;
     }
     else if (name_var[0] == '?')
         return get_code(res, my_conf);
@@ -309,7 +312,7 @@ static char *get_uid()
         size++;
         id /= 10;
     }
-    char *res = calloc(size + 1, 1);
+    char *res = calloc(size + 1, sizeof(char));
     sprintf(res, "%i", save_id);
     return res;
 }
@@ -324,7 +327,7 @@ static char *get_random()
         size++;
         rand_nb /= 10;
     }
-    char *res = calloc(size + 1, 1);
+    char *res = calloc(size + 1, sizeof(char));
     sprintf(res, "%i", save_nb);
     return res;
 }
@@ -455,32 +458,21 @@ static char *expand_double_quote(char *result, char *copy, size_t *offset,
     // go threw all the copy until we find a double quote
     while (copy[*i] && copy[*i] != '"')
     {
-        /*
-           if (copy[*i] == '$')
-           {
-        // TODO: expand variable function
-        result = expand_var(result, copy, &offset, &i);
-        if (!result)
-        / result and copy are free inside expand_single_quote.
-        return NULL;
+        if (copy[*i] == '$')
+        {
+            // TODO: expand variable function
+            result = expand_var(result, copy, offset, i);
+            // result and copy are free inside expand_single_quote
+            if (!result)
+                return NULL;
         }
-        else*/
-        if (copy[*i] == '\\')
+        else if (copy[*i] == '\\')
         {
             result = expand_escape(result, copy, offset, i);
             if (!result)
                 // result and copy are free inside expand_single_quote.
                 return NULL;
         }
-        /*
-           else if (copy[*i] == '`')
-           {
-        // TODO: expand backquote by executing the command in the two
-        backquote in a subshell result = expand_backquote(result, copy, &offset,
-        &i); if (!result)
-        // result and copy are free inside expand_single_quote.
-        return NULL;
-        }*/
 
         (*i)++;
     }
