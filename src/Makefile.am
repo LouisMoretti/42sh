@@ -18,7 +18,6 @@ bin_PROGRAMS = 42sh
 
 # Compilation Flags
 42sh_CFLAGS = -std=c99 -pedantic -Werror -Wall -Wextra -Wvla
-CFLAGS      = -g
 
 42sh_LDADD =  \
        parser/libparser.a \
@@ -32,9 +31,11 @@ CFLAGS      = -g
 if ENABLE_COVERAGE
 42sh_CFLAGS  +=  --coverage
 42sh_LDFLAGS  =  --coverage
+CFLAGS       +=  -g -O0
 endif
 
 if ENABLE_DEBUG
 42sh_CFLAGS  +=  -fsanitize=address
 42sh_LDFLAGS  =  -fsanitize=address
+CFLAGS       +=  -g -O0
 endif
