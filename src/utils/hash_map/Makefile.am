@@ -13,5 +13,17 @@ libhashmap_a_CPPFLAGS = -I$(top_srcdir)/src
 # Compilation Flags
 libhashmap_a_CFLAGS = -std=c99 -pedantic -Werror -Wall -Wextra -Wvla
 
+if ENABLE_COVERAGE
+libhashmap_a_CFLAGS  +=  --coverage
+libhashmap_a_LDFLAGS  =  --coverage
+CFLAGS               +=  -g -O0
+endif
+
+if ENABLE_DEBUG
+libhashmap_a_CFLAGS  +=  -fsanitize=address
+libhashmap_a_LDFLAGS  =  -fsanitize=address
+CFLAGS               +=  -g -O0
+endif
+
 # Libraries to not install
 noinst_LIBRARIES = libhashmap.a
