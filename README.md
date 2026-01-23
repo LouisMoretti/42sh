@@ -1,4 +1,4 @@
-# Projet 42SH EPITA
+# 42SH Project EPITA
 
 ```
 $$\   $$\  $$$$$$\            $$\       
