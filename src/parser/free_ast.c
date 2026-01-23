@@ -15,7 +15,7 @@ static void free_ast_element_list(struct ast *ast);
 static void free_ast_simple_cmd(struct ast *ast);
 static void free_ast_shell_cmd(struct ast *ast);
 static void free_ast_funcdec(struct ast *ast);
-// static void free_ast_redirection(struct ast *ast);
+static void free_ast_redirection(struct ast *ast);
 static void free_ast_compound_list(struct ast *ast);
 static void free_ast_word_list(struct ast *ast);
 static void free_ast_rule_for(struct ast *ast);
@@ -136,7 +136,8 @@ static void free_ast_cmd(struct ast *ast)
     {
         assert(cmd->cmd->type == AST_SIMPLE_CMD
                || cmd->cmd->type == AST_SHELL_CMD
-               || cmd->cmd->type == AST_FUNCDEC);
+               || cmd->cmd->type == AST_FUNCDEC
+               || cmd->cmd->type == AST_REDIRECTION);
 
         if (cmd->cmd->type == AST_SIMPLE_CMD)
             free_ast_simple_cmd(cmd->cmd);
@@ -144,14 +145,16 @@ static void free_ast_cmd(struct ast *ast)
             free_ast_shell_cmd(cmd->cmd);
         else if (cmd->cmd->type == AST_FUNCDEC)
             free_ast_funcdec(cmd->cmd);
+        else if (cmd->cmd->type == AST_REDIRECTION)
+            free_ast_redirection(cmd->cmd);
     }
 
-    if (cmd->redirection != NULL)
-    {
-        assert(cmd->redirection->type == AST_REDIRECTION);
-        // TODO: Not implemented yet (free_ast_redirection).
-        assert(1 == 0);
-    }
+    // if (cmd->redirection != NULL)
+    // {
+    //     assert(cmd->redirection->type == AST_REDIRECTION);
+    //     // TODO: Not implemented yet (free_ast_redirection).
+    //     assert(1 == 0);
+    // }
 
     free(cmd);
 }
@@ -169,12 +172,12 @@ static void free_ast_prefix(struct ast *ast)
     if (prefix->assignment_word != NULL)
         free(prefix->assignment_word);
 
-    if (prefix->redirection != NULL)
-    {
-        assert(prefix->redirection->type == AST_REDIRECTION);
-        // TODO: Not implemented yet (free_ast_redirection).
-        assert(1 == 0);
-    }
+    // if (prefix->redirection != NULL)
+    // {
+    //     assert(prefix->redirection->type == AST_REDIRECTION);
+    //     // TODO: Not implemented yet (free_ast_redirection).
+    //     assert(1 == 0);
+    // }
 
     free(prefix);
 }
@@ -218,12 +221,12 @@ static void free_ast_element(struct ast *ast)
     if (element->word != NULL)
         free(element->word);
 
-    if (element->redirection != NULL)
-    {
-        assert(element->redirection->type == AST_REDIRECTION);
-        // TODO: Not implemented yet (free_ast_redirection).
-        assert(1 == 0);
-    }
+    // if (element->redirection != NULL)
+    // {
+    //     assert(element->redirection->type == AST_REDIRECTION);
+    //     // TODO: Not implemented yet (free_ast_redirection).
+    //     assert(1 == 0);
+    // }
 
     free(element);
 }
@@ -352,9 +355,39 @@ static void free_ast_funcdec(struct ast *ast)
     free(funcdec);
 }
 
-// // ====================
-// //      AST REDIRECTION
-// // ====================
+// ====================
+//      AST REDIRECTION
+// ====================
+
+static void free_ast_redirection(struct ast *ast)
+{
+    if (ast == NULL)
+        return;
+
+    struct ast_redirection *redirection = (struct ast_redirection *)ast;
+
+    if (redirection->word != NULL)
+        free(redirection->word);
+
+    if (redirection->next != NULL)
+    {
+        assert(redirection->next->type == AST_REDIRECTION
+               || redirection->next->type == AST_SIMPLE_CMD
+               || redirection->next->type == AST_SHELL_CMD);
+        // || redirection->next->type == AST_FUNCDEC);
+
+        if (redirection->next->type == AST_REDIRECTION)
+            free_ast_redirection(redirection->next);
+        else if (redirection->next->type == AST_SIMPLE_CMD)
+            free_ast_simple_cmd(redirection->next);
+        else if (redirection->next->type == AST_SHELL_CMD)
+            free_ast_shell_cmd(redirection->next);
+        // else if (redirection->next->type == AST_FUNCDEC)
+        //     free_ast_funcdec(redirection->next);
+    }
+
+    free(redirection);
+}
 
 // // ====================
 // //      AND OR LIST

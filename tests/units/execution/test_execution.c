@@ -30,7 +30,7 @@ Test(Execution, test_simple_cmd, .init = cr_redirect_stdout)
     struct ast_element *ast_element = malloc(sizeof(struct ast_element));
     ast_element->base.type = AST_ELEMENT;
     ast_element->word = strdup("coucou");
-    ast_element->redirection = NULL;
+    // ast_element->redirection = NULL;
 
     ast_element_list->element = (struct ast *)ast_element;
     ast_element_list->next = NULL;

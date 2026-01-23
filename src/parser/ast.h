@@ -72,8 +72,9 @@ struct ast_pipeline
 struct ast_cmd
 {
     struct ast base;
-    struct ast *cmd; // Can be ast_simple_cmd or ast_shell_cmd or ast_funcdec.
-    struct ast *redirection; // Only for shell_cmd or funcdec.
+    struct ast *cmd; // Can be ast_redirection or ast_simple_cmd or
+                     // ast_shell_cmd or ast_funcdec.
+    // struct ast *redirection; // Only for shell_cmd or funcdec.
 };
 
 struct ast_prefix
@@ -81,7 +82,7 @@ struct ast_prefix
     struct ast base;
     // Must be either assignment_word or redirection
     char *assignment_word;
-    struct ast *redirection;
+    // struct ast *redirection;
 };
 
 struct ast_prefix_list
@@ -96,7 +97,7 @@ struct ast_element
     struct ast base;
     // Must be either word or redirection
     char *word;
-    struct ast *redirection;
+    // struct ast *redirection;
 };
 
 struct ast_element_list
@@ -110,6 +111,7 @@ struct ast_simple_cmd
 {
     struct ast base;
     // struct ast *prefix;
+    // TODO: Change comments after redirection change.
     struct ast *prefix_list; // Can be NULL if word isn't.
     char *word; // If word is NULL so is element_list.
     struct ast *element_list; // Can be NULL
@@ -135,7 +137,8 @@ enum redirection_type
     REDIRECT_OUT, // > (default io number: 1)
     REDIRECT_IN, // < (default io number: 0)
     REDIRECT_OUT_APPEND, // >> (default io number: 1)
-    REDIRECT_IN_APPEND, // << (default io number: 0)
+    // REDIRECT_IN_APPEND, // << (Heredoc)
+    // <<- (Heredoc)
     REDIRECT_OUT_DUP, // >&
     REDIRECT_IN_DUP, // <&
     REDIRECT_OUT_FORCE, // >| (noclobber) (default io number: 1)
@@ -146,8 +149,9 @@ struct ast_redirection
 {
     struct ast base;
     int io_number; // -1 if no io number.
-    enum redirection_type;
+    enum redirection_type type;
     char *word; // NOT NULL
+    struct ast *next; // ast_redirection or ast_simple_cmd or ast_shell_cmd
 };
 
 // struct and_or_list
