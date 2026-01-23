@@ -29,6 +29,7 @@ test_execution_LDADD = \
 	../../../src/expansion/libexpansion.a \
 	../../../src/parser/libparser.a \
 	../../../src/config/libconfig.a \
+	../../../src/iobackend/libiobackend.a \
 	../../../src/utils/hash_map/libhashmap.a
 
 check-local:
