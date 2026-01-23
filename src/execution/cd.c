@@ -11,13 +11,13 @@
 #include "builtin.h"
 
 // Function that will put the user to the path given.
-static int go_to_root(char *path)
+static int go_to_path(char *path)
 {
     // Keep the old path in memory.
     char *tmp = getenv("PWD");
     if (!tmp)
     {
-        warnx("go_to_root: error during getenv PWD.");
+        warnx("go_to_path: error during getenv PWD.");
         return 1;
     }
     char *new_old_path = strdup(tmp);
@@ -26,7 +26,7 @@ static int go_to_root(char *path)
     if (setenv("PWD", path, 1) == -1)
     {
         free(new_old_path);
-        warnx("go_to_root: error during PWD change to root dir.");
+        warnx("go_to_path: error during PWD change to root dir.");
 
         return 1;
     }
@@ -35,7 +35,7 @@ static int go_to_root(char *path)
     if (setenv("OLDPWD", new_old_path, 1) == -1)
     {
         free(new_old_path);
-        warnx("go_to_root: error during OLDPWD change to new old path.");
+        warnx("go_to_path: error during OLDPWD change to new old path.");
 
         return 1;
     }
@@ -46,7 +46,7 @@ static int go_to_root(char *path)
     // directory).
     if (chdir(path) == -1)
     {
-        warnx("go_to_root: error during chdir.");
+        warnx("go_to_path: error during chdir.");
         return 1;
     }
 
@@ -197,6 +197,50 @@ static char *remove_last_backslash(char *new_path)
     return res;
 }
 
+// tmp is static and new_path is malloc
+static int change_dir(char *tmp, char *new_path)
+{
+    // Check if the new path is the same than PWD (if it is, we're not doing
+    // anything).
+    char *new_old_path = strdup(tmp);
+    if (strcmp(new_old_path, new_path) == 0)
+    {
+        free(new_path);
+        free(new_old_path);
+        return 0;
+    }
+
+    // We're setting all the env variable to the right thing.
+    if (setenv("PWD", new_path, 1) == -1)
+    {
+        free(new_path);
+        free(new_old_path);
+        warnx("go_to_dir: error during PWD change to root dir.");
+        return 1;
+    }
+
+    if (setenv("OLDPWD", new_old_path, 1) == -1)
+    {
+        free(new_path);
+        free(new_old_path);
+        warnx("go_to_dir: error during OLDPWD change to new old path.");
+        return 1;
+    }
+
+    free(new_old_path);
+
+    if (chdir(new_path) == -1)
+    {
+        free(new_path);
+        warnx("go_to_dir: error during chdir.");
+        return 1;
+    }
+
+    free(new_path);
+
+    return 0;
+}
+
 // Function that will change the PWD, OLDPWD and chdir env variable to be good
 // with the potential new path.
 static int go_to_dir(char *path)
@@ -261,45 +305,7 @@ static int go_to_dir(char *path)
     }
     free(next);
 
-    // Check if the new path is the same than PWD (if it is, we're not doing
-    // anything).
-    char *new_old_path = strdup(tmp);
-    if (strcmp(new_old_path, new_path) == 0)
-    {
-        free(new_path);
-        free(new_old_path);
-        return 0;
-    }
-
-    // We're setting all the env variable to the right thing.
-    if (setenv("PWD", new_path, 1) == -1)
-    {
-        free(new_path);
-        free(new_old_path);
-        warnx("go_to_dir: error during PWD change to root dir.");
-        return 1;
-    }
-
-    if (setenv("OLDPWD", new_old_path, 1) == -1)
-    {
-        free(new_path);
-        free(new_old_path);
-        warnx("go_to_dir: error during OLDPWD change to new old path.");
-        return 1;
-    }
-
-    free(new_old_path);
-
-    if (chdir(new_path) == -1)
-    {
-        free(new_path);
-        warnx("go_to_dir: error during chdir.");
-        return 1;
-    }
-
-    free(new_path);
-
-    return 0;
+    return change_dir(tmp, new_path);
 }
 
 // This function just switches the PWD and OLDPWD env variable and changes the
@@ -408,7 +414,7 @@ int builtin_cd(struct ast_simple_cmd *command)
         if (!home || strcmp(home, "") == 0)
             return 0;
 
-        return go_to_root(home);
+        return go_to_path(home);
     }
 
     // Only one argument allowed for cd.
@@ -429,7 +435,7 @@ int builtin_cd(struct ast_simple_cmd *command)
         if (!home || strcmp(home, "") == 0)
             return 0;
 
-        return go_to_root(home);
+        return go_to_path(home);
     }
     else if (first_element->word[0] == '-') // cd - switches the OLDPWD and PWD.
     {
