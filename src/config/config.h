@@ -1,8 +1,6 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-#include "utils/hash_map/hash_map.h"
-
 enum input_method
 {
     STRING,
