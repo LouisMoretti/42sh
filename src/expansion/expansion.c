@@ -265,9 +265,11 @@ static char *get_special(char *name_var, int *code)
         }
         int index = atoi(name_var);
 
-        char *tmp = strdup(my_conf->arg_values[index]);
         if (index < my_conf->arg_count)
-            res = merge(res, tmp); // TODO Check Merge
+        {
+            char *tmp = strdup(my_conf->arg_values[index]);
+            res = merge(res, tmp);
+        }
 
         if (!res)
             return NULL;
@@ -543,6 +545,7 @@ char *expand_string(char *string)
             if (!result)
                 // result and copy are free inside expand_single_quote.
                 return NULL;
+            i--;
         }
         else if (copy[i] == '\'')
         {

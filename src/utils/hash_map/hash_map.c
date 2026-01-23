@@ -66,9 +66,6 @@ static void _free_ll(struct pair_list *ll)
     if (ll == NULL)
         return;
 
-    if (ll->value)
-        free(ll->value);
-
     _free_ll(ll->next);
     free(ll);
 }
