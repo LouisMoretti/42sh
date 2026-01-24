@@ -430,7 +430,7 @@ int builtin_cd(struct ast_simple_cmd *command)
         char *home = getenv("HOME");
         if (!home)
         {
-            warnx("builtin_cd HOME variable not define");
+            warnx("builtin_cd HOME variable not defined");
             return 1;
         }
 
