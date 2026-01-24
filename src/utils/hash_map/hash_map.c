@@ -55,7 +55,7 @@ bool hash_map_insert(struct hash_map *hash_map, char *key, char *value,
         *updated = false;
 
     v->next = hash_map->data[place];
-    v->key = key;
+    v->key = strdup(key);
     v->value = strdup(value);
 
     hash_map->data[place] = v;
@@ -68,6 +68,7 @@ static void _free_ll(struct pair_list *ll)
     if (ll == NULL)
         return;
 
+    free(ll->key);
     free(ll->value);
 
     _free_ll(ll->next);
