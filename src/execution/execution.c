@@ -126,6 +126,46 @@ static int execute_ast_prefix_list(struct ast_simple_cmd *ast_simple_cmd)
     return 0;
 }
 
+static int check_which_cmd(struct ast_simple_cmd *ast_simple_cmd)
+{
+    if (!strcmp(ast_simple_cmd->word, BUILTIN_ECHO))
+        return builtin_echo(ast_simple_cmd);
+    else if (!strcmp(ast_simple_cmd->word, BUILTIN_FALSE))
+        return builtin_false();
+    else if (!strcmp(ast_simple_cmd->word, BUILTIN_TRUE))
+        return builtin_true();
+    else if (!strcmp(ast_simple_cmd->word, BUILTIN_CD))
+        return builtin_cd(ast_simple_cmd);
+    else
+    {
+        int size = count_ast_element(ast_simple_cmd->element_list) + 1;
+        char **command = (char **)calloc(size + 1, sizeof(char *));
+        if (!command)
+            return 1;
+
+        command[0] = ast_simple_cmd->word;
+
+        int i = 1;
+        struct ast_element_list *ast_element_list =
+            (struct ast_element_list *)ast_simple_cmd->element_list;
+        while (i < size)
+        {
+            struct ast_element *ast_element =
+                (struct ast_element *)ast_element_list->element;
+            command[i] = ast_element->word;
+            ast_element_list =
+                (struct ast_element_list *)ast_element_list->next;
+
+            i++;
+        }
+
+        int exit_code = evaluate_command(command);
+        free((void *)command);
+
+        return exit_code;
+    }
+}
+
 static int execute_ast_simple_cmd(struct ast *ast)
 {
     if (!ast)
@@ -164,42 +204,7 @@ static int execute_ast_simple_cmd(struct ast *ast)
         ast_element_list = (struct ast_element_list *)ast_element_list->next;
     }
 
-    if (!strcmp(ast_simple_cmd->word, BUILTIN_ECHO))
-        return builtin_echo(ast_simple_cmd);
-    else if (!strcmp(ast_simple_cmd->word, BUILTIN_FALSE))
-        return builtin_false();
-    else if (!strcmp(ast_simple_cmd->word, BUILTIN_TRUE))
-        return builtin_true();
-    else if (!strcmp(ast_simple_cmd->word, BUILTIN_CD))
-        return builtin_cd(ast_simple_cmd);
-    else
-    {
-        int size = count_ast_element(ast_simple_cmd->element_list) + 1;
-        char **command = (char **)calloc(size + 1, sizeof(char *));
-        if (!command)
-            return 1;
-
-        command[0] = ast_simple_cmd->word;
-
-        int i = 1;
-        struct ast_element_list *ast_element_list =
-            (struct ast_element_list *)ast_simple_cmd->element_list;
-        while (i < size)
-        {
-            struct ast_element *ast_element =
-                (struct ast_element *)ast_element_list->element;
-            command[i] = ast_element->word;
-            ast_element_list =
-                (struct ast_element_list *)ast_element_list->next;
-
-            i++;
-        }
-
-        int exit_code = evaluate_command(command);
-        free((void *)command);
-
-        return exit_code;
-    }
+    return check_which_cmd(ast_simple_cmd);
 }
 
 static int execute_ast_cmd(struct ast *ast)

@@ -29,6 +29,8 @@ void reset_modules(void)
 
 int main(int argc, char **argv)
 {
+    set_env_variables();
+
     // Set the config struct of the program
     if (set_conf(argc, argv) != 0)
         return 2;
