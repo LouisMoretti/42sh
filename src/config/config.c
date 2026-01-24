@@ -22,7 +22,7 @@ void set_env_variables(void)
     setenv("PWD", pwd, 1);
     free(pwd);
 
-    setenv("IFS", " ", 1);
+    setenv("IFS", "\n", 1);
 }
 
 int set_conf(int argc, char **argv)

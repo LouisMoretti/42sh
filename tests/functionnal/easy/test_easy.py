@@ -309,7 +309,7 @@ params_cmds = [("test_escape","echo -e '\\n'",[]),
                ('for in dollar @',"for i in $@; do echo $i; done;", ["co","u","co","u"])
                ]
 
-@pytest.mark.parametrize("name,command_to_run,list_args", params_cmds)
+@pytest.mark.parametrize("name,command_to_run, list_args", params_cmds)
 def test_string(name, command_to_run, list_args):
     proc = run_command_string(command_to_run, list_args)
     ref_proc = run_ref_command_string(command_to_run, list_args)
