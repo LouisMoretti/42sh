@@ -245,6 +245,31 @@ static char *get_pid(char *res)
     return pid_text;
 }
 
+static char *star_at_variable(char *res, struct config *my_conf)
+{
+    int i = 1;
+    if (my_conf->arg_count >= 2)
+    {
+        res = merge(res, strdup(my_conf->arg_values[i]));
+        if (!res)
+            return NULL;
+        i++;
+    }
+    while (i < my_conf->arg_count)
+    {
+        char *space = strdup(" ");
+        res = merge(res, space);
+        if (!res)
+            return NULL;
+        res = merge(res, strdup(my_conf->arg_values[i]));
+        if (!res)
+            return NULL;
+        i++;
+    }
+
+    return res;
+}
+
 static char *get_special(char *name_var, int *code)
 {
     char *res = calloc(1, sizeof(char));
@@ -282,25 +307,7 @@ static char *get_special(char *name_var, int *code)
         return get_nb_args(res, my_conf);
     else if (name_var[0] == '@' || name_var[0] == '*')
     {
-        int i = 1;
-        if (my_conf->arg_count >= 2)
-        {
-            res = merge(res, strdup(my_conf->arg_values[i]));
-            if (!res)
-                return NULL;
-            i++;
-        }
-        while (i < my_conf->arg_count)
-        {
-            char *space = strdup(" ");
-            res = merge(res, space);
-            if (!res)
-                return NULL;
-            res = merge(res, strdup(my_conf->arg_values[i]));
-            if (!res)
-                return NULL;
-            i++;
-        }
+        return star_at_variable(res, my_conf);
     }
     else if (name_var[0] == '\0')
         res = merge(res, strdup("$"));
@@ -312,7 +319,7 @@ static char *get_special(char *name_var, int *code)
     return res;
 }
 
-static char *get_uid()
+static char *get_uid(void)
 {
     uid_t id = geteuid();
     uid_t save_id = id;
@@ -327,7 +334,7 @@ static char *get_uid()
     return res;
 }
 
-static char *get_random()
+static char *get_random(void)
 {
     int rand_nb = rand();
     int save_nb = rand_nb;
@@ -379,6 +386,23 @@ static char *get_value_var(char *special, char *name_var)
     }
 }
 
+static char *bad_variable(char *special, char *copy, char *result)
+{
+    free(special);
+    free(copy);
+    free(result);
+    warnx("Bad Expansion");
+    return NULL;
+}
+
+static char *bad_braquets(char *copy, char *result)
+{
+    warnx("Expected '}'");
+    free(copy);
+    free(result);
+    return NULL;
+}
+
 static char *expand_var(char *result, char *copy, size_t *offset, size_t *i)
 {
     // Add cached characters to result.
@@ -407,10 +431,7 @@ static char *expand_var(char *result, char *copy, size_t *offset, size_t *i)
             (*i)++;
         if (!copy[*i])
         {
-            warnx("Expected '}'");
-            free(copy);
-            free(result);
-            return NULL;
+            return bad_braquets(copy, result);
         }
     }
     else if (is_looked == '\0')
@@ -434,11 +455,7 @@ static char *expand_var(char *result, char *copy, size_t *offset, size_t *i)
     char *special = get_special(name_var, &code);
     if (code != 0)
     {
-        free(special);
-        free(copy);
-        free(result);
-        warnx("Bad Expansion");
-        return NULL;
+        return bad_variable(special, copy, result);
     }
 
     char *val_var = get_value_var(special, name_var);
