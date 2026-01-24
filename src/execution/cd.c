@@ -363,7 +363,7 @@ static int switch_prev_act_dir(void)
 // like : /afs).
 static int go_to_root_plus_dir(char *home, char *word)
 {
-    char *path = merge(strdup("~"), strdup(home));
+    char *path = strdup(home);
     if (!path)
     {
         warnx("go_to_root_plus_dir: error during a merge or strdup in go to "
@@ -428,8 +428,11 @@ int builtin_cd(struct ast_simple_cmd *command)
     if (!element_list)
     {
         char *home = getenv("HOME");
-        if (!home || home[0] != '\0')
-            return 0;
+        if (!home)
+        {
+            warnx("builtin_cd HOME variable not define");
+            return 1;
+        }
 
         return go_to_path(home);
     }
@@ -449,8 +452,11 @@ int builtin_cd(struct ast_simple_cmd *command)
     if (!first_element)
     {
         char *home = getenv("HOME");
-        if (!home || home[0] != '\0')
-            return 0;
+        if (!home)
+        {
+            warnx("builtin_cd HOME variable not define");
+            return 1;
+        }
 
         return go_to_path(home);
     }
@@ -467,8 +473,11 @@ int builtin_cd(struct ast_simple_cmd *command)
         if (first_element->word[0] == '/')
         {
             char *home = getenv("HOME");
-            if (!home || home[0] != '\0')
-                home = "";
+            if (!home)
+            {
+                warnx("builtin_cd HOME variable not define");
+                return 1;
+            }
 
             return go_to_root_plus_dir(home, first_element->word);
         }

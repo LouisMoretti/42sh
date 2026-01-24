@@ -1,11 +1,29 @@
+#define _POSIX_C_SOURCE 200112L
+
 #include "config.h"
 
+#include <err.h>
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <unistd.h>
 
 static struct config my_conf;
+
+void set_env_variables(void)
+{
+    char *pwd = getcwd(NULL, 0);
+    if (!pwd)
+    {
+        warnx("set_env_variables get current working directory failed");
+        return;
+    }
+    setenv("PWD", pwd, 1);
+    free(pwd);
+
+    setenv("IFS", " ", 1);
+}
 
 int set_conf(int argc, char **argv)
 {
