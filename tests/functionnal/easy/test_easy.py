@@ -287,6 +287,8 @@ params_cmds = [("test_escape","echo -e '\\n'"),
                ('simple_negation_echo', "! echo a b c"),
                ('simple_double_quotes', "echo \"caca\n \\q \$\t\"\n"),
                ('ending_simple_semicol', "echo simplesemicol;")
+               ('simple_echo_expansion_negated', "! echo -e '\t\n\\\\'"),
+               ('simple_echo_many_expansion', "echo -e '\\t\\t\\t\\t\\t\\n\\n\\n\\n\\n\\t\\n\\\\end'")
                ]
 
 @pytest.mark.parametrize("name,command_to_run", params_cmds)
