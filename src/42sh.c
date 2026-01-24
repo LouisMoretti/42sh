@@ -48,7 +48,7 @@ int main(int argc, char **argv)
         struct ast *input = parse_input(&status_code);
         if (status_code)
         {
-            free_ast_input(input);
+            free_ast(input);
             return status_code;
         }
 
@@ -61,7 +61,7 @@ int main(int argc, char **argv)
         else
             exit_code = execute_ast(input);
 
-        free_ast_input(input);
+        free_ast(input);
         conf->previous_code = 0;
     }
 
