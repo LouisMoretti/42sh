@@ -120,6 +120,8 @@ bool hash_map_remove(struct hash_map *hash_map, const char *key)
         hash_map->data[place] = p->next;
         if (p->value)
             free(p->value);
+        if (p->key)
+            free(p->key);
         free(p);
         return true;
     }

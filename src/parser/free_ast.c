@@ -3,7 +3,7 @@
 
 #include "ast.h"
 
-void free_ast_input(struct ast *ast);
+static void free_ast_input(struct ast *ast);
 static void free_ast_list(struct ast *ast);
 static void free_ast_and_or(struct ast *ast);
 static void free_ast_pipeline(struct ast *ast);
@@ -28,11 +28,47 @@ static void free_ast_case_item(struct ast *ast);
 static void free_ast_case_item_list(struct ast *ast);
 static void free_ast_case_clause(struct ast *ast);
 
+typedef void (*fptr)(struct ast *ast);
+
+// TODO: Add redirection init function
+static fptr init_functions[] = { [AST_INPUT] = &free_ast_input,
+                                 [AST_LIST] = &free_ast_list,
+                                 [AST_AND_OR] = &free_ast_and_or,
+                                 [AST_PIPELINE] = &free_ast_pipeline,
+                                 [AST_CMD] = &free_ast_cmd,
+                                 [AST_PREFIX] = &free_ast_prefix,
+                                 [AST_PREFIX_LIST] = &free_ast_prefix_list,
+                                 [AST_ELEMENT] = &free_ast_element,
+                                 [AST_ELEMENT_LIST] = &free_ast_element_list,
+                                 [AST_SIMPLE_CMD] = &free_ast_simple_cmd,
+                                 [AST_SHELL_CMD] = &free_ast_shell_cmd,
+                                 [AST_FUNCDEC] = &free_ast_funcdec,
+                                 [AST_COMPOUND_LIST] = &free_ast_compound_list,
+                                 [AST_WORD_LIST] = &free_ast_word_list,
+                                 [AST_RULE_FOR] = &free_ast_rule_for,
+                                 [AST_RULE_WHILE] = &free_ast_rule_while,
+                                 [AST_RULE_UNTIL] = &free_ast_rule_until,
+                                 [AST_RULE_CASE] = &free_ast_rule_case,
+                                 [AST_RULE_IF] = &free_ast_rule_if,
+                                 [AST_CLAUSE_ELSE] = &free_ast_else_clause,
+                                 [AST_CLAUSE_CASE] = &free_ast_case_clause,
+                                 [AST_CASE_ITEM] = &free_ast_case_item,
+                                 [AST_CASE_ITEM_LIST] =
+                                     &free_ast_case_item_list };
+
+void free_ast(struct ast *ast)
+{
+    if (ast == NULL)
+        return;
+
+    init_functions[ast->type](ast);
+}
+
 // ====================
 //      AST INPUT
 // ====================
 
-void free_ast_input(struct ast *ast)
+static void free_ast_input(struct ast *ast)
 {
     struct ast_input *input = (struct ast_input *)ast;
     if (input == NULL)

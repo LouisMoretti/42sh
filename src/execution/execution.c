@@ -187,8 +187,16 @@ static int execute_ast_simple_cmd(struct ast *ast)
     struct ast_element_list *ast_element_list =
         (struct ast_element_list *)ast_simple_cmd->element_list;
 
-    while (ast_element_list)
+    struct ast_element_list *good_list = ast_element_list;
+
+    if (ast_element_list)
     {
+        struct ast_element_list *expanded_list =
+            (struct ast_element_list *)init_ast(AST_ELEMENT_LIST);
+
+        ast_simple_cmd->element_list = (struct ast *)expanded_list;
+
+        // first iteration for the copy
         struct ast_element *ast_element =
             (struct ast_element *)ast_element_list->element;
         if (ast_element->word)
@@ -197,14 +205,48 @@ static int execute_ast_simple_cmd(struct ast *ast)
             if (!expanded)
                 return 1;
 
-            free(ast_element->word);
-            ast_element->word = expanded;
+            // keeps a copy of the expanded elements
+            struct ast_element *act_elm =
+                (struct ast_element *)init_ast(AST_ELEMENT);
+            act_elm->word = expanded;
+            expanded_list->element = (struct ast *)act_elm;
         }
 
         ast_element_list = (struct ast_element_list *)ast_element_list->next;
-    }
 
-    return check_which_cmd(ast_simple_cmd);
+        while (ast_element_list)
+        {
+            struct ast_element *ast_element =
+                (struct ast_element *)ast_element_list->element;
+            if (ast_element->word)
+            {
+                struct ast_element_list *new_list_elm =
+                    (struct ast_element_list *)init_ast(AST_ELEMENT_LIST);
+
+                char *expanded = expand_string(ast_element->word);
+                if (!expanded)
+                    return 1;
+
+                // keeps a copy of the expanded elements
+                struct ast_element *act_elm =
+                    (struct ast_element *)init_ast(AST_ELEMENT);
+                act_elm->word = expanded;
+                new_list_elm->element = (struct ast *)act_elm;
+                expanded_list->next = (struct ast *)new_list_elm;
+                expanded_list = (struct ast_element_list *)expanded_list->next;
+            }
+
+            ast_element_list =
+                (struct ast_element_list *)ast_element_list->next;
+        }
+    }
+    int res = check_which_cmd(ast_simple_cmd);
+
+    // free the expanded element list and put back the first element list
+    free_ast((struct ast *)ast_simple_cmd->element_list);
+    ast_simple_cmd->element_list = (struct ast *)good_list;
+
+    return res;
 }
 
 static int execute_ast_cmd(struct ast *ast)
@@ -382,10 +424,20 @@ static int execute_ast_for(struct ast *ast)
     int result = 0;
     struct ast_word_list *ast_word_list =
         (struct ast_word_list *)ast_rule_for->in_word_list;
+
+    struct hash_map *hm = get_hm();
+
     while (ast_word_list)
     {
         assert(ast_word_list->word != NULL);
+        // insert the variable in the hash map
+        hash_map_insert(hm, ast_rule_for->condition_word, ast_word_list->word,
+                        NULL);
+
         result = execute_ast_compound_list(ast_rule_for->body_compound_list);
+
+        // remove the variable in the hash map
+        hash_map_remove(hm, ast_rule_for->condition_word);
         ast_word_list = (struct ast_word_list *)ast_word_list->next;
     }
 

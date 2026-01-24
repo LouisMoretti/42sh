@@ -577,6 +577,11 @@ char *expand_string(char *string)
             if (!result)
                 // result and copy are free inside expand_escape.
                 return NULL;
+            if (copy[i] == '\0')
+            {
+                free(copy);
+                return result;
+            }
         }
         else if (copy[i] == '$')
         {
@@ -586,6 +591,7 @@ char *expand_string(char *string)
                 return NULL;
             i--;
         }
+
         i++;
     }
 

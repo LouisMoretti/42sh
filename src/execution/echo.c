@@ -46,11 +46,15 @@ static int proceed_first(int has_e, struct ast_element *ast_element,
         char *expanded = expand_echo(ast_element->word);
         if (!expanded)
             return 1;
-        free(ast_element->word);
-        ast_element->word = expanded;
+        printf("%s", expanded);
+        free(expanded);
     }
-    char *str = ast_element->word;
-    printf("%s", str);
+    else
+    {
+        char *str = ast_element->word;
+        printf("%s", str);
+    }
+
     fflush(stdout);
     *cur = (struct ast_element_list *)(*cur)->next;
     return 0;
@@ -88,12 +92,15 @@ int builtin_echo(struct ast_simple_cmd *command)
             char *expanded = expand_echo(ast_element->word);
             if (!expanded)
                 return 1;
-
-            free(ast_element->word);
-            ast_element->word = expanded;
+            printf(" %s", expanded);
+            free(expanded);
         }
-        str = ast_element->word;
-        printf(" %s", str);
+        else
+        {
+            char *str = ast_element->word;
+            printf(" %s", str);
+        }
+
         fflush(stdout);
         cur = (struct ast_element_list *)cur->next;
     }
