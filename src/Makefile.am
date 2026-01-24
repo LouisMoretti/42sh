@@ -4,7 +4,8 @@ SUBDIRS = parser \
 		  lexer \
 		  execution \
 		  expansion \
-		  iobackend
+		  iobackend \
+		  utils/hash_map			
 
 # Name of binary
 bin_PROGRAMS = 42sh
@@ -24,9 +25,17 @@ bin_PROGRAMS = 42sh
 	   config/libconfig.a \
 	   execution/libexecution.a \
 	   expansion/libexpansion.a \
-	   iobackend/libiobackend.a
+	   iobackend/libiobackend.a \
+	   utils/hash_map/libhashmap.a
 
 if ENABLE_COVERAGE
-42sh_CFLAGS  +=  --coverage -g -O0
+42sh_CFLAGS  +=  --coverage
 42sh_LDFLAGS  =  --coverage
+CFLAGS       +=  -g -O0
+endif
+
+if ENABLE_DEBUG
+42sh_CFLAGS  +=  -fsanitize=address
+42sh_LDFLAGS  =  -fsanitize=address
+CFLAGS       +=  -g -O0
 endif

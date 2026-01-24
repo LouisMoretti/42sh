@@ -2,19 +2,26 @@
 check_PROGRAMS = test_lexer
 
 # Source file
-test_lexer_SOURCES = test_lexer.c
+test_lexer_SOURCES  =  test_lexer.c
 
 # Preprocessing Flags
-test_lexer_CPPFLAGS = -I$(top_srcdir)/src
+test_lexer_CPPFLAGS =  -I$(top_srcdir)/src
 
 # Compilation Flags
-test_lexer_CFLAGS = -std=c99 -Werror -Wall -Wextra -Wvla
+test_lexer_CFLAGS   =  -std=c99 -Werror -Wall -Wextra -Wvla
 
-test_lexer_LDFLAGS = -lcriterion
+test_lexer_LDFLAGS  =  -lcriterion
 
 if ENABLE_COVERAGE
-test_lexer_CFLAGS  +=  --coverage -O0
+test_lexer_CFLAGS  +=  --coverage
 test_lexer_LDFLAGS +=  --coverage
+CFLAGS             +=  -g -O0
+endif
+
+if ENABLE_DEBUG
+test_lexer_CFLAGS  +=  -fsanitize=address
+test_lexer_LDFLAGS +=  -fsanitize=address
+CFLAGS             +=  -g -O0
 endif
 
 test_lexer_LDADD =  \

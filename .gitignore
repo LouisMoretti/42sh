@@ -1,6 +1,8 @@
 **/*.swp
 **/.*~
 
+tests/functionnal/file.txt
+
 # Autotools
 ar-lib
 aclocal.m4
@@ -90,3 +92,8 @@ dkms.conf
 
 # debug information files
 *.dwo
+
+# coverage
+output/
+**/**/*.gcda
+**/**/*.gcno

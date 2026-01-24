@@ -243,6 +243,6 @@ struct ast_case_clause
 };
 
 struct ast *init_ast(enum ast_type type);
-void free_ast_input(struct ast *ast);
+void free_ast(struct ast *ast);
 
 #endif // ! AST_H

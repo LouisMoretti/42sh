@@ -5,21 +5,32 @@ check_PROGRAMS = test_execution
 test_execution_SOURCES = test_execution.c
 
 # Preprocessing Flags
-test_execution_CPPFLAGS = -I$(top_srcdir)/src
+test_execution_CPPFLAGS  =  -I$(top_srcdir)/src
 
 # Compilation Flags
-test_execution_CFLAGS = -std=c99 -Werror -Wall -Wextra -Wvla
+test_execution_CFLAGS    =  -std=c99 -Werror -Wall -Wextra -Wvla
 
-test_execution_LDFLAGS = -lcriterion
+test_execution_LDFLAGS   =  -lcriterion
 
 if ENABLE_COVERAGE
-test_execution_CFLAGS  +=  --coverage -O0
-test_execution_LDFLAGS +=  --coverage
+test_execution_CFLAGS   +=  --coverage
+test_execution_LDFLAGS  +=  --coverage
+CFLAGS                  +=  -g -O0
+endif
+
+if ENABLE_DEBUG
+test_execution_CFLAGS   +=  -fsanitize=address
+test_execution_LDFLAGS  +=  -fsanitize=address
+CFLAGS                  +=  -g -O0
 endif
 
 test_execution_LDADD = \
 	../../../src/execution/libexecution.a \
-	../../../src/expansion/libexpansion.a
+	../../../src/expansion/libexpansion.a \
+	../../../src/parser/libparser.a \
+	../../../src/config/libconfig.a \
+	../../../src/iobackend/libiobackend.a \
+	../../../src/utils/hash_map/libhashmap.a
 
 check-local:
 	@(./$(check_PROGRAMS) || true)

@@ -16,8 +16,10 @@ struct config
     int pretty_print;
     int arg_count;
     char **arg_values;
+    int previous_code;
 };
 
+void set_env_variables(void);
 int set_conf(int argc, char **argv);
 struct config *get_conf(void);
 

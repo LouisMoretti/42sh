@@ -16,5 +16,11 @@ libiobackend_a_CFLAGS = -std=c99 -pedantic -Werror -Wall -Wextra -Wvla
 noinst_LIBRARIES = libiobackend.a
 
 if ENABLE_COVERAGE
-libiobackend_a_CFLAGS  +=  --coverage -O0
+libiobackend_a_CFLAGS  +=  --coverage
+CFLAGS                 +=  -g -O0
+endif
+
+if ENABLE_DEBUG
+libiobackend_a_CFLAGS  +=  -fsanitize=address
+CFLAGS                 +=  -g -O0
 endif

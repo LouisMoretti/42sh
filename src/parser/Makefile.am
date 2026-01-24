@@ -21,5 +21,11 @@ libparser_a_CFLAGS = -std=c99 -pedantic -Werror -Wall -Wextra -Wvla
 noinst_LIBRARIES = libparser.a
 
 if ENABLE_COVERAGE
-libparser_a_CFLAGS  +=  --coverage -O0
+libparser_a_CFLAGS  +=  --coverage
+CFLAGS              +=  -g -O0
+endif
+
+if ENABLE_DEBUG
+libparser_a_CFLAGS  +=  -fsanitize=address
+CFLAGS              +=  -g -O0
 endif

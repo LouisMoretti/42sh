@@ -20,7 +20,7 @@ AX_COMPILER_FLAGS([], [], [], [-std=c99 -pedantic -Werror -Wall -Wextra -Wvla])
 
 AC_ARG_ENABLE([coverage],
   AS_HELP_STRING([--enable-coverage],
-                 [enable code coverage])
+                 [Enable code coverage])
 )
 AS_IF([test "$enable_coverage" = yes], [
        AC_DEFINE([ENABLE_COVERAGE], [1], [Set 'ENABLE_COVERAGE' variable to enable coverage])
@@ -28,6 +28,16 @@ AS_IF([test "$enable_coverage" = yes], [
 
 AM_CONDITIONAL([ENABLE_COVERAGE], [test "$enable_coverage" = yes])
 AM_EXTRA_RECURSIVE_TARGETS([clean-coverage distclean-coverage])
+
+AC_ARG_ENABLE([debug],
+  AS_HELP_STRING([--enable-debug],
+                 [Enable debug flags])
+)
+AS_IF([test "$enable_debug" = yes], [
+       AC_DEFINE([ENABLE_DEBUG], [1], [Set 'ENABLE_DEBUG' variable to enable debug flags])
+       ])
+
+AM_CONDITIONAL([ENABLE_DEBUG], [test "$enable_debug" = yes])
 
 # List Makefiles in subdirectories
 AC_CONFIG_FILES([
@@ -39,6 +49,7 @@ AC_CONFIG_FILES([
                  src/expansion/Makefile
                  src/iobackend/Makefile
                  src/config/Makefile
+                 src/utils/hash_map/Makefile
                  tests/Makefile
                  tests/functionnal/Makefile
                  tests/units/Makefile

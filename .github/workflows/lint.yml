@@ -1,4 +1,4 @@
-name: Clang-Format
+name: Clang-Format & trash files
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  clang-format:
+  clang-format-and-trash-files:
 
     runs-on: ubuntu-latest
     container:
@@ -16,6 +16,22 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+
+    - name: GIT Setup
+      run: git config --global --add safe.directory '*'
+
+    - name: Check for trash files
+      shell: bash
+      run: |
+        ALLOWED="(Makefile\.am|^src/.+\.[ch]|^tests/.+(\.([ch]|py|sh)|tests_files/.+|Dockerfile)|^\.gitignore|^README(\.md)?|^.clang-(format|tidy)|^\.github/workflows/.+\.yml|^configure.ac)$"
+        EXIT_CODE=0
+        for file in $(git ls-files | sed "s|\./||"); do
+            if [[ ! "$file" =~ $ALLOWED ]]; then
+                echo "[TRASH FOUND] : $file"
+                EXIT_CODE=1
+            fi
+        done
+        exit $EXIT_CODE
 
     # - name: Install clang-format
     #   run: |

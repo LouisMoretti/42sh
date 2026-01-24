@@ -5,6 +5,7 @@ lib_LIBRARIES = libexecution.a
 libexecution_a_SOURCES = \
 						 echo.c \
 						 boolean.c \
+						 cd.c \
 						 builtin.h \
 						 pipe.c \
 						 pipe.h \
@@ -21,5 +22,11 @@ libexecution_a_CFLAGS = -std=c99 -pedantic -Werror -Wall -Wextra -Wvla
 noinst_LIBRARIES = libexecution.a
 
 if ENABLE_COVERAGE
-libexecution_a_CFLAGS  +=  --coverage -O0
+libexecution_a_CFLAGS  +=  --coverage
+CFLAGS                 +=  -g -O0
+endif
+
+if ENABLE_DEBUG
+libexecution_a_CFLAGS  +=  -fsanitize=address
+CFLAGS                 +=  -g -O0
 endif

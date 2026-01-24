@@ -16,5 +16,11 @@ liblexer_a_CFLAGS = -std=c99 -pedantic -Werror -Wall -Wextra -Wvla
 noinst_LIBRARIES = liblexer.a
 
 if ENABLE_COVERAGE
-liblexer_a_CFLAGS  +=  --coverage -O0
+liblexer_a_CFLAGS  +=  --coverage
+CFLAGS             +=  -g -O0
+endif
+
+if ENABLE_DEBUG
+liblexer_a_CFLAGS  +=  -fsanitize=address
+CFLAGS             +=  -g -O0
 endif

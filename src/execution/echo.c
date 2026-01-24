@@ -38,6 +38,28 @@ static int update_flags(char *str, int *has_n, int *has_e, int *has_E)
     return 1;
 }
 
+static int proceed_first(int has_e, struct ast_element *ast_element,
+                         struct ast_element_list **cur)
+{
+    if (has_e)
+    {
+        char *expanded = expand_echo(ast_element->word);
+        if (!expanded)
+            return 1;
+        printf("%s", expanded);
+        free(expanded);
+    }
+    else
+    {
+        char *str = ast_element->word;
+        printf("%s", str);
+    }
+
+    fflush(stdout);
+    *cur = (struct ast_element_list *)(*cur)->next;
+    return 0;
+}
+
 int builtin_echo(struct ast_simple_cmd *command)
 {
     int has_n = 0;
@@ -51,49 +73,39 @@ int builtin_echo(struct ast_simple_cmd *command)
         fflush(stdout);
         return 0;
     }
-    int has_left_flags = 0;
     struct ast_element *ast_element = (struct ast_element *)cur->element;
     char *str = ast_element->word;
-    if (str[0] != '-' || !update_flags(str, &has_n, &has_e, &has_E))
+    while (str[0] == '-' && update_flags(str, &has_n, &has_e, &has_E))
     {
-        has_left_flags = 1;
-        printf("%s", str);
-        fflush(stdout);
+        cur = (struct ast_element_list *)cur->next;
+        ast_element = (struct ast_element *)cur->element;
+        str = ast_element->word;
     }
-    cur = (struct ast_element_list *)cur->next;
+    int code = proceed_first(has_e, ast_element, &cur);
+    if (code != 0)
+        return 1;
     while (cur != NULL)
     {
         ast_element = (struct ast_element *)cur->element;
-
         if (has_e)
         {
             char *expanded = expand_echo(ast_element->word);
             if (!expanded)
                 return 1;
-
-            free(ast_element->word);
-            ast_element->word = expanded;
+            printf(" %s", expanded);
+            free(expanded);
         }
-
-        str = ast_element->word;
-
-        if (!has_left_flags)
+        else
         {
-            if (str[0] != '-' || !update_flags(str, &has_n, &has_e, &has_E))
-                has_left_flags = 1;
-            printf("%s", str);
-        }
-        else if (has_left_flags)
-        {
+            char *str = ast_element->word;
             printf(" %s", str);
-            fflush(stdout);
         }
+
+        fflush(stdout);
         cur = (struct ast_element_list *)cur->next;
     }
     if (!has_n)
         printf("\n");
-
     fflush(stdout);
-
     return 0;
 }
