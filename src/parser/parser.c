@@ -3,6 +3,7 @@
 
 #include <err.h>
 #include <stddef.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "lexer/lexer.h"
@@ -12,6 +13,7 @@ static struct ast *parse_list(int *status_code);
 static struct ast *parse_and_or(int *status_code);
 static struct ast *parse_pipeline(int *status_code);
 static struct ast *parse_cmd(int *status_code);
+static struct ast *parse_redirection(int *status_code);
 static struct ast *parse_simple_cmd(int *status_code);
 static struct ast *parse_shell_cmd(int *status_code);
 static struct ast *parse_word_list(int *status_code);
@@ -166,16 +168,117 @@ static struct ast *parse_pipeline(int *status_code)
     return pipeline;
 }
 
+static struct ast *parse_redirection(int *status_code)
+{
+    struct ast *redirection = init_ast(AST_REDIRECTION);
+
+    struct token *tok = peek_token(DISABLE_KEYWORDS);
+
+    // TODO: Check for errors.
+
+    int i = 0;
+    while (tok->data[i] != '>' && tok->data[i] != '<')
+        i++;
+
+    int io_number = -1;
+    if (i > 0)
+    {
+        char *tmp = strndup(tok->data, i);
+        io_number = atoi(tmp);
+        if (io_number == 0 && (tmp[0] != '0' || tmp[1] != '\0'))
+        {
+            warnx("parse_redirection: Not a valid io number, got: %s.", tmp);
+            free(tmp);
+            *status_code = 2;
+            return redirection;
+        }
+        free(tmp);
+    }
+
+    ((struct ast_redirection *)redirection)->io_number = io_number;
+
+    enum redirection_type type = REDIRECT_OUT;
+    char c = tok->data[i];
+
+    // TODO: Handle heredoc.
+    if (c == '>')
+    {
+        c = tok->data[i + 1];
+        if (c == '\0')
+            type = REDIRECT_OUT;
+        else if (c == '>')
+            type = REDIRECT_OUT_APPEND;
+        else if (c == '&')
+            type = REDIRECT_OUT_DUP;
+        else if (c == '|')
+            type = REDIRECT_OUT_FORCE;
+    }
+    else // tok->data[i] == '<'
+    {
+        c = tok->data[i + 1];
+        if (c == '\0')
+            type = REDIRECT_IN;
+        else if (c == '&')
+            type = REDIRECT_IN_DUP;
+        else if (c == '>')
+            type = REDIRECT_IN_OUT;
+    }
+
+    ((struct ast_redirection *)redirection)->type = type;
+    pop_token();
+
+    tok = peek_token(DISABLE_KEYWORDS);
+    if (tok->type != WORD)
+    {
+        warnx("parse_element: Wrong token type. Expected WORD | Got: %s",
+              type_name[tok->type]);
+        *status_code = 2;
+        return redirection;
+    }
+    ((struct ast_redirection *)redirection)->word = strdup(tok->data);
+    pop_token();
+
+    return redirection;
+}
+
+static void place_redir(struct ast **ret, struct ast **last_redirection,
+                        struct ast *redirection)
+{
+    if (last_redirection == NULL)
+    {
+        *ret = redirection;
+        *last_redirection = redirection;
+    }
+    else
+    {
+        ((struct ast_redirection *)*last_redirection)->next = redirection;
+        *last_redirection = redirection;
+    }
+}
+
 static struct ast *parse_cmd(int *status_code)
 {
     struct ast *cmd = init_ast(AST_CMD);
+    struct ast *ret = cmd;
 
     if (peek_token(ENABLE_KEYWORDS)->type == WORD)
         ((struct ast_cmd *)cmd)->cmd = parse_simple_cmd(status_code);
     else
         ((struct ast_cmd *)cmd)->cmd = parse_shell_cmd(status_code);
 
-    return cmd;
+    struct ast *last_redirection = NULL;
+    while (*status_code == 0
+           && peek_token(DISABLE_KEYWORDS)->type == REDIRECTION)
+    {
+        struct ast *redirection = parse_redirection(status_code);
+        place_redir(&ret, &last_redirection, redirection);
+        ((struct ast_redirection *)last_redirection)->next =
+            ((struct ast_cmd *)cmd)->cmd;
+        // if (*status_code)
+        //     return ret;
+    }
+
+    return ret;
 }
 
 static struct ast *parse_element(int *status_code)
@@ -197,41 +300,40 @@ static struct ast *parse_element(int *status_code)
     return element;
 }
 
-static struct ast *parse_element_list(int *status_code)
-{
-    struct ast *element_list = init_ast(AST_ELEMENT_LIST);
+// static struct ast *parse_element_list(int *status_code)
+// {
+//     struct ast *element_list = init_ast(AST_ELEMENT_LIST);
 
-    struct token *tok = peek_token(DISABLE_KEYWORDS);
-    if (tok->type != WORD) // TODO: && tok->type != REDIRECTION
-    {
-        warnx("parse_element_list: Wrong token type. Expected WORD | Got: %s",
-              type_name[tok->type]);
-        *status_code = 2;
-        return element_list;
-    }
+//     struct token *tok = peek_token(DISABLE_KEYWORDS);
+//     if (tok->type != WORD) // TODO: && tok->type != REDIRECTION
+//     {
+//         warnx("parse_element_list: Wrong token type. Expected WORD | Got:
+//         %s",
+//               type_name[tok->type]);
+//         *status_code = 2;
+//         return element_list;
+//     }
 
-    ((struct ast_element_list *)element_list)->element =
-        parse_element(status_code);
-    if (*status_code)
-        return element_list;
+//     ((struct ast_element_list *)element_list)->element =
+//         parse_element(status_code);
+//     if (*status_code)
+//         return element_list;
 
-    tok = peek_token(DISABLE_KEYWORDS);
-    if (tok->type == WORD) // TODO: || tok->type == REDIRECTION
-    {
-        ((struct ast_element_list *)element_list)->next =
-            parse_element_list(status_code);
-        if (*status_code)
-            return element_list;
-    }
+//     tok = peek_token(DISABLE_KEYWORDS);
+//     if (tok->type == WORD) // TODO: || tok->type == REDIRECTION
+//     {
+//         ((struct ast_element_list *)element_list)->next =
+//             parse_element_list(status_code);
+//         if (*status_code)
+//             return element_list;
+//     }
 
-    return element_list;
-}
+//     return element_list;
+// }
 
 static int check_prefix()
 {
     struct token *tok = peek_token(DISABLE_KEYWORDS);
-
-    // TODO: Add redirections.
 
     if (tok->type != WORD)
         return 0;
@@ -287,78 +389,146 @@ static struct ast *parse_prefix(int *status_code)
     return prefix;
 }
 
-static struct ast *parse_prefix_list(int *status_code)
+// static struct ast *parse_prefix_list(int *status_code)
+// {
+//     if (check_prefix() == 0)
+//     {
+//         warnx("parse_prefix_list: Not a prefix!");
+//         *status_code = 2;
+//         return NULL;
+//     }
+
+//     struct ast *prefix_list = init_ast(AST_PREFIX_LIST);
+
+//     ((struct ast_prefix_list *)prefix_list)->prefix =
+//     parse_prefix(status_code); if (*status_code)
+//         return prefix_list;
+
+//     if (check_prefix())
+//     {
+//         ((struct ast_prefix_list *)prefix_list)->next =
+//             parse_prefix_list(status_code);
+//         if (*status_code)
+//             return prefix_list;
+//     }
+
+//     return prefix_list;
+// }
+
+static void place_prefix(struct ast **cmd, struct ast **last_prefix_list,
+                         struct ast *prefix)
 {
-    if (check_prefix() == 0)
-    {
-        warnx("parse_prefix_list: Not a prefix!");
-        *status_code = 2;
-        return NULL;
-    }
-
     struct ast *prefix_list = init_ast(AST_PREFIX_LIST);
+    ((struct ast_prefix_list *)prefix_list)->prefix = prefix;
 
-    ((struct ast_prefix_list *)prefix_list)->prefix = parse_prefix(status_code);
-    if (*status_code)
-        return prefix_list;
-
-    if (check_prefix())
+    if (((struct ast_simple_cmd *)*cmd)->prefix_list == NULL)
     {
-        ((struct ast_prefix_list *)prefix_list)->next =
-            parse_prefix_list(status_code);
-        if (*status_code)
-            return prefix_list;
+        ((struct ast_simple_cmd *)*cmd)->prefix_list = prefix_list;
+        *last_prefix_list = prefix_list;
     }
+    else
+    {
+        ((struct ast_prefix_list *)*last_prefix_list)->next = prefix_list;
+        *last_prefix_list = prefix_list;
+    }
+}
 
-    return prefix_list;
+static void place_element(struct ast **cmd, struct ast **last_element_list,
+                          struct ast *element)
+{
+    struct ast *element_list = init_ast(AST_ELEMENT_LIST);
+    ((struct ast_element_list *)element_list)->element = element;
+
+    if (((struct ast_simple_cmd *)*cmd)->element_list == NULL)
+    {
+        ((struct ast_simple_cmd *)*cmd)->element_list = element_list;
+        *last_element_list = element_list;
+    }
+    else
+    {
+        ((struct ast_element_list *)*last_element_list)->next = element_list;
+        *last_element_list = element_list;
+    }
 }
 
 static struct ast *parse_simple_cmd(int *status_code)
 {
+    struct ast *last_redirection = NULL;
+    struct ast *last_prefix_list = NULL;
+    struct ast *last_element_list = NULL;
+
     struct ast *cmd = init_ast(AST_SIMPLE_CMD);
+    struct ast *ret = cmd;
 
-    if (peek_token(ENABLE_KEYWORDS)->type
-        != WORD) // && peek_token(DISABLE_KEYWORDS)->type != REDIRECTION
+    enum token_type token_type = peek_token(DISABLE_KEYWORDS)->type;
+
+    if (token_type != WORD && token_type != REDIRECTION)
     {
         warnx("parse_simple_cmd: Wrong token type. Expected WORD | Got: %s",
-              type_name[peek_token(ENABLE_KEYWORDS)->type]);
+              type_name[token_type]);
         *status_code = 2;
-        return cmd;
+        return ret;
     }
 
-    if (check_prefix())
+    while (check_prefix() || token_type == REDIRECTION)
     {
-        ((struct ast_simple_cmd *)cmd)->prefix_list =
-            parse_prefix_list(status_code);
+        if (token_type == REDIRECTION)
+        {
+            struct ast *redirection = parse_redirection(status_code);
+            place_redir(&ret, &last_redirection, redirection);
+            ((struct ast_redirection *)last_redirection)->next = cmd;
+        }
+        else
+        {
+            struct ast *prefix = parse_prefix(status_code);
+            place_prefix(&cmd, &last_prefix_list, prefix);
+        }
+
         if (*status_code)
-            return cmd;
+            return ret;
 
-        // TODO: Check logic.
-        if (peek_token(ENABLE_KEYWORDS)->type
-            != WORD) // && peek_token(DISABLE_KEYWORDS)->type != REDIRECTION
-            return cmd;
+        token_type = peek_token(DISABLE_KEYWORDS)->type;
     }
 
-    struct token *tok = peek_token(ENABLE_KEYWORDS);
-    if (tok->type != WORD)
+    if (token_type != WORD)
     {
+        if (last_redirection != NULL)
+        {
+            ((struct ast_redirection *)last_redirection)->next = cmd;
+            return ret;
+        }
+
         warnx("parse_simple_cmd: Wrong token type. Expected WORD | Got: %s",
-              type_name[tok->type]);
+              type_name[token_type]);
         *status_code = 2;
         return cmd;
     }
 
-    ((struct ast_simple_cmd *)cmd)->word = strdup(tok->data);
+    ((struct ast_simple_cmd *)cmd)->word =
+        strdup(peek_token(DISABLE_KEYWORDS)->data);
     pop_token();
 
-    tok = peek_token(DISABLE_KEYWORDS);
-
-    if (tok->type == WORD) // TODO: || tok->type == REDIRECTION
+    token_type = peek_token(DISABLE_KEYWORDS)->type;
+    while (token_type == WORD || token_type == REDIRECTION)
     {
-        ((struct ast_simple_cmd *)cmd)->element_list =
-            parse_element_list(status_code);
+        if (token_type == REDIRECTION)
+        {
+            struct ast *redirection = parse_redirection(status_code);
+            place_redir(&ret, &last_redirection, redirection);
+            ((struct ast_redirection *)last_redirection)->next = cmd;
+        }
+        else
+        {
+            // ((struct ast_simple_cmd *)cmd)->element_list =
+            //     parse_element_list(status_code);
+            struct ast *element = parse_element(status_code);
+            place_element(&cmd, &last_element_list, element);
+        }
+
         if (*status_code)
-            return cmd;
+            return ret;
+
+        token_type = peek_token(DISABLE_KEYWORDS)->type;
     }
 
     return cmd;
