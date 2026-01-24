@@ -3,17 +3,17 @@ import pytest
 import subprocess as sp
 import time
 
-def run_ref_command_string(command):
-    proc = sp.Popen(["bash", "--posix", "-c", command], stdout=sp.PIPE, stderr=sp.STDOUT, bufsize=0)
+def run_ref_command_string(command, args=[]):
+    proc = sp.Popen(["bash", "--posix", "-c", command] + args, stdout=sp.PIPE, stderr=sp.STDOUT, bufsize=0)
 
     return proc
 
-def run_command_string(command):
+def run_command_string(command, args=[]):
     executable = os.getenv("BIN_PATH")
     if executable is None or len(executable) == 0:
         executable = "../../src/42sh"
 
-    proc = sp.Popen([executable, "-c", command], stdout=sp.PIPE, stderr=sp.STDOUT, bufsize=0)
+    proc = sp.Popen([executable, "-c", command] + args, stdout=sp.PIPE, stderr=sp.STDOUT, bufsize=0)
 
     return proc
 
@@ -281,20 +281,40 @@ def test_simple_comment():
 
 folder = "easy/tests_files"
 param_filepaths = [(open(f"{folder}/{file}", 'r').name, f"{folder}/{file}") for file in os.listdir(folder)]
-params_cmds = [("test_escape","echo -e '\\n'"),
-               ('simple_negation_false', "! false"),
-               ('simple_negation_true', "! true"),
-               ('simple_negation_echo', "! echo a b c"),
-               ('simple_double_quotes', "echo \"caca\n \\q \$\t\"\n"),
-               ('ending_simple_semicol', "echo simplesemicol;"),
-               ('simple_echo_expansion_negated', "! echo -e '\t\n\\\\'"),
-               ('simple_echo_many_expansion', "echo -e '\\t\\t\\t\\t\\t\\n\\n\\n\\n\\n\\t\\n\\\\end'")
+params_cmds = [("test_escape","echo -e '\\n'",[]),
+               ('simple_negation_false', "! false",[]),
+               ('simple_negation_true', "! true",[]),
+               ('simple_negation_echo', "! echo a b c",[]),
+               ('simple_double_quotes', "echo \"caca\n \\q \$\t\"\n",[]),
+               ('ending_simple_semicol', "echo simplesemicol;",[]),
+               ('quote_var_1',"echo '$titi'",[]),
+               ('command_var_2', "echo $2", ["val0", "val1", "tesVRAIMENTtropUNoufDEchezOUF"]),
+               ("simple_var_bracket", "var=titi; echo titi${var}",[]),
+               ("two_variables_twice", "var1=titi; var2=tutu; echo $var1 $var2; echo $var1 $var2",[]),
+               ("multiple_defs_on_line", "v1=YA v2=K v3=A; echo $v1; echo $v2; echo $v3", []),
+               ("ifs3","echo $IFS; echo $IFS; echo ${IFS}",[]),
+               ('command_var_1',"echo $1 && echo $1;",["var0","216"]),
+               ("hard_var_3","var=\"takebon le 42sh\"; echo $var",[]),
+               ("questionmark1","true && echo $?",[]),
+               ('ifs2',"echo $IFS; IFS=newifs; echo $IFS",[]),
+               ('composed_var','i=2; var=$i; echo $var',[]),
+               ('sharp','echo $#',[]),
+               ('empty_var', 'echo $ppx3',[]),
+               ('uid',"echo $UID", []),
+               ('simple_var',"VAR=roger_par_en_vadrouille; echo ${VAR}",[]),
+               ('equal1',"var==; echo $var",[]),
+               ('pwd',"echo $PWD",[]),
+               ('dollar@',"echo $@", ["adieu","les","ACUS :("]),
+               ('dollar*',"echo $*",["merci", "pour", "tous"]),
+               ('for in dollar @',"for i in $@; do echo $i; done;", ["co","u","co","u"]),
+               ('simple_echo_expansion_negated', "! echo -e '\t\n\\\\'", []),
+               ('simple_echo_many_expansion', "echo -e '\\t\\t\\t\\t\\t\\n\\n\\n\\n\\n\\t\\n\\\\end'", [])
                ]
 
-@pytest.mark.parametrize("name,command_to_run", params_cmds)
-def test_string(name, command_to_run):
-    proc = run_command_string(command_to_run)
-    ref_proc = run_ref_command_string(command_to_run)
+@pytest.mark.parametrize("name,command_to_run, list_args", params_cmds)
+def test_string(name, command_to_run, list_args):
+    proc = run_command_string(command_to_run, list_args)
+    ref_proc = run_ref_command_string(command_to_run, list_args)
     try:
         out, err = proc.communicate(timeout=0.1)
         ref_out, ref_err = ref_proc.communicate(timeout=0.1)
@@ -305,8 +325,8 @@ def test_string(name, command_to_run):
         kill_42sh(proc)
         kill_42sh(ref_proc)
 
-@pytest.mark.parametrize("name,command_to_run", params_cmds)
-def test_stdin(name, command_to_run):
+@pytest.mark.parametrize("name,command_to_run, list_args", params_cmds)
+def test_stdin(name, command_to_run, list_args):
     executable = os.getenv("BIN_PATH")
     if executable is None or len(executable) == 0:
         executable = "../../src/42sh"
