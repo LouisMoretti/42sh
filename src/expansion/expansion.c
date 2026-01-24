@@ -323,7 +323,7 @@ static char *get_uid(void)
 {
     uid_t id = geteuid();
     uid_t save_id = id;
-    int size = id==0;
+    int size = id == 0;
     while (id > 0)
     {
         size++;
