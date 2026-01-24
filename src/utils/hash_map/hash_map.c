@@ -1,3 +1,5 @@
+#define _POSIX_C_SOURCE 200809L
+
 #include "hash_map.h"
 
 #include <stdbool.h>
@@ -54,7 +56,7 @@ bool hash_map_insert(struct hash_map *hash_map, char *key, char *value,
 
     v->next = hash_map->data[place];
     v->key = key;
-    v->value = value;
+    v->value = strdup(value);
 
     hash_map->data[place] = v;
 
@@ -65,6 +67,8 @@ static void _free_ll(struct pair_list *ll)
 {
     if (ll == NULL)
         return;
+
+    free(ll->value);
 
     _free_ll(ll->next);
     free(ll);
