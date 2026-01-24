@@ -135,6 +135,8 @@ bool hash_map_remove(struct hash_map *hash_map, const char *key)
 
             if (t->value)
                 free(t->value);
+            if (t->key)
+                free(t->key);
 
             free(t);
             return true;

@@ -446,7 +446,7 @@ static char *expand_var(char *result, char *copy, size_t *offset, size_t *i)
 
     char *name_var = strndup(copy + *offset, *i - *offset);
     if (!name_var)
-        return NULL; // TODO free
+        return NULL;
 
     if (is_looked == '}')
         (*i) += 1;
@@ -587,7 +587,7 @@ char *expand_string(char *string)
         {
             result = expand_var(result, copy, &offset, &i);
             if (!result)
-                // result and copy are free inside expand_escape.
+                // result and copy are free inside expand_var.
                 return NULL;
             i--;
         }

@@ -240,6 +240,7 @@ static int execute_ast_simple_cmd(struct ast *ast)
                 (struct ast_element_list *)ast_element_list->next;
         }
     }
+
     int res = check_which_cmd(ast_simple_cmd);
 
     // free the expanded element list and put back the first element list
