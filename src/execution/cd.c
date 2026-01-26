@@ -359,66 +359,6 @@ static int switch_prev_act_dir(void)
     return 0;
 }
 
-// Changes the PWD to ~ + HOME + word (word is the direct path to a directory,
-// like : /afs).
-static int go_to_root_plus_dir(char *home, char *word)
-{
-    char *path = strdup(home);
-    if (!path)
-    {
-        warnx("go_to_root_plus_dir: error during a merge or strdup in go to "
-              "root dir.");
-        return 1;
-    }
-
-    path = merge(path, strdup(word));
-    if (!path)
-    {
-        warnx("go_to_root_plus_dir: error during a merge or strdup in go to "
-              "root dir.");
-        return 1;
-    }
-
-    if (check_dir(path) == 0)
-    {
-        free(path);
-        return 1;
-    }
-
-    char *tmp = getenv("PWD");
-    if (!tmp)
-    {
-        free(path);
-        warnx("go_to_root_plus_dir: error during getenv PWD.");
-
-        return 1;
-    }
-
-    char *old_path = strdup(tmp);
-
-    if (setenv("PWD", path, 1) == -1)
-    {
-        free(path);
-        free(old_path);
-        warnx("go_to_root_plus_dir: error during PWD change to old path.");
-
-        return 1;
-    }
-
-    free(path);
-
-    if (setenv("OLDPWD", old_path, 1) == -1)
-    {
-        free(old_path);
-        warnx("go_to_root_plus_dir: error during OLDPWD change to path.");
-
-        return 1;
-    }
-
-    free(old_path);
-    return 0;
-}
-
 int builtin_cd(struct ast_simple_cmd *command)
 {
     struct ast_element_list *element_list =
@@ -472,14 +412,7 @@ int builtin_cd(struct ast_simple_cmd *command)
         // Check if we have a direct changes.
         if (first_element->word[0] == '/')
         {
-            char *home = getenv("HOME");
-            if (!home)
-            {
-                warnx("builtin_cd HOME variable not define");
-                return 1;
-            }
-
-            return go_to_root_plus_dir(home, first_element->word);
+            return change_dir(getenv("PWD"), strdup(first_element->word));
         }
 
         return go_to_dir(first_element->word);

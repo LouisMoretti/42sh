@@ -493,8 +493,7 @@ Test(Execution, test_cmd_builtin_cd_big_path)
 Test(Execution, test_cmd_builtin_cd_direct_path)
 {
     char *old_path = getenv("PWD");
-    char *path = getenv("HOME");
-    path = merge(strdup(path), strdup("/afs"));
+    char *path = strdup("/afs");
 
     struct ast_simple_cmd *ast_simple_cmd =
         malloc(sizeof(struct ast_simple_cmd));
