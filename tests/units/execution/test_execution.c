@@ -493,7 +493,7 @@ Test(Execution, test_cmd_builtin_cd_big_path)
 Test(Execution, test_cmd_builtin_cd_direct_path)
 {
     char *old_path = getenv("PWD");
-    char *path = strdup("/afs");
+    char *path = strdup("/tmp");
 
     struct ast_simple_cmd *ast_simple_cmd =
         malloc(sizeof(struct ast_simple_cmd));
@@ -510,7 +510,7 @@ Test(Execution, test_cmd_builtin_cd_direct_path)
 
     struct ast_element *ast_element = malloc(sizeof(struct ast_element));
     ast_element->base.type = AST_ELEMENT;
-    ast_element->word = strdup("/afs");
+    ast_element->word = strdup("/tmp");
     ast_element->redirection = NULL;
 
     ast_element_list->element = (struct ast *)ast_element;
