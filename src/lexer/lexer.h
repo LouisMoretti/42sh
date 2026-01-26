@@ -21,6 +21,7 @@ enum token_type
     // RIGHT_BRACKET,
     KEYWORD_COUNT, // Keep this here, add keywords above only
     NEW_LINE,
+    REDIRECTION,
     SEMICOLON,
     // DOUBLE_SEMICOLON,
     PIPE,

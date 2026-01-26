@@ -80,7 +80,7 @@ struct ast_cmd
 struct ast_prefix
 {
     struct ast base;
-    // Must be either assignment_word or redirection
+    // Must be either assignment_word
     char *assignment_word;
     // struct ast *redirection;
 };
@@ -110,8 +110,6 @@ struct ast_element_list
 struct ast_simple_cmd
 {
     struct ast base;
-    // struct ast *prefix;
-    // TODO: Change comments after redirection change.
     struct ast *prefix_list; // Can be NULL if word isn't.
     char *word; // If word is NULL so is element_list.
     struct ast *element_list; // Can be NULL

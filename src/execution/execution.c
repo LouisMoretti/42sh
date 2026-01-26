@@ -1,4 +1,5 @@
 #define _POSIX_C_SOURCE 200809L
+
 #include "execution/execution.h"
 
 #include <assert.h>
@@ -14,6 +15,7 @@
 #include "config/config.h"
 #include "execution/builtin.h"
 #include "execution/pipe.h"
+#include "execution/redirection.h"
 #include "expansion/expansion.h"
 #include "iobackend/iobackend.h"
 #include "utils/hash_map/hash_map.h"
@@ -83,46 +85,52 @@ static int assignement_var(char *assignment_word)
     char *var_name = strtok_r(assignment_word, "=", &saveptr);
     if (!var_name)
         return 1;
+
     char *var_val = strtok_r(NULL, "=", &saveptr);
     if (!var_val)
         return 1;
+
     struct hash_map *variables = get_hm();
     bool has_insert = false;
     bool code = hash_map_insert(variables, var_name, var_val, &has_insert);
     if (code == false)
         return 2;
+
     return 0;
 }
 
-static int execute_ast_prefix(struct ast_prefix *ast_prefix)
+static int execute_ast_prefix(struct ast *ast)
 {
-    if (ast_prefix->assignment_word)
-    {
-        int code = assignement_var(ast_prefix->assignment_word);
-        if (code != 0)
-            return 1;
-
+    if (!ast)
         return 0;
-    }
-    else if (ast_prefix->redirection)
-        return 1; // TODO Redirection Part
-    else
-        return 1;
+
+    assert(ast->type == AST_PREFIX);
+    struct ast_prefix *ast_prefix = (struct ast_prefix *)ast;
+    assert(ast_prefix->assignment_word);
+
+    return assignement_var(ast_prefix->assignment_word);
 }
 
-static int execute_ast_prefix_list(struct ast_simple_cmd *ast_simple_cmd)
+static int execute_ast_prefix_list(struct ast *ast)
 {
+    if (!ast)
+        return 0;
+
+    assert(ast->type == AST_SIMPLE_CMD);
+    struct ast_simple_cmd *ast_simple_cmd = (struct ast_simple_cmd *)ast;
     struct ast_prefix_list *ast_prefix =
         (struct ast_prefix_list *)ast_simple_cmd->prefix_list;
 
     while (ast_prefix)
     {
-        struct ast_prefix *cur_prefix = (struct ast_prefix *)ast_prefix->prefix;
+        struct ast *cur_prefix = ast_prefix->prefix;
         int code = execute_ast_prefix(cur_prefix);
         if (code != 0)
             return 1;
+
         ast_prefix = (struct ast_prefix_list *)ast_prefix->next;
     }
+
     return 0;
 }
 
@@ -176,11 +184,12 @@ static int execute_ast_simple_cmd(struct ast *ast)
     assert(ast_simple_cmd->word != NULL || ast_simple_cmd->prefix_list != NULL);
 
     if (!ast_simple_cmd->word)
-        return execute_ast_prefix_list(ast_simple_cmd);
+        return execute_ast_prefix_list((struct ast *)ast_simple_cmd);
 
     char *expanded = expand_string(ast_simple_cmd->word);
     if (!expanded)
         return 1;
+
     free(ast_simple_cmd->word);
     ast_simple_cmd->word = expanded;
 
@@ -264,6 +273,8 @@ static int execute_ast_cmd(struct ast *ast)
         return execute_ast_simple_cmd(ast_cmd->cmd);
     case AST_SHELL_CMD:
         return execute_ast_shell_cmd(ast_cmd->cmd);
+    case AST_REDIRECTION:
+        return execute_ast_redirection(ast_cmd->cmd);
     default: // May not fall through
         return 1;
     }
@@ -386,6 +397,7 @@ static int execute_ast_while(struct ast *ast)
     if (!ast)
         return 0;
 
+    assert(ast->type == AST_RULE_WHILE);
     struct ast_rule_while *ast_rule_while = (struct ast_rule_while *)ast;
     assert(ast_rule_while->condition_compound_list != NULL);
     assert(ast_rule_while->body_compound_list != NULL);
@@ -402,6 +414,7 @@ static int execute_ast_until(struct ast *ast)
     if (!ast)
         return 0;
 
+    assert(ast->type == AST_RULE_UNTIL);
     struct ast_rule_until *ast_rule_until = (struct ast_rule_until *)ast;
     assert(ast_rule_until->condition_compound_list != NULL);
     assert(ast_rule_until->body_compound_list != NULL);
@@ -418,6 +431,7 @@ static int execute_ast_for(struct ast *ast)
     if (!ast)
         return 0;
 
+    assert(ast->type == AST_RULE_FOR);
     struct ast_rule_for *ast_rule_for = (struct ast_rule_for *)ast;
     assert(ast_rule_for->condition_word != NULL);
     assert(ast_rule_for->body_compound_list != NULL);
