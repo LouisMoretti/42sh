@@ -229,7 +229,7 @@ static struct ast *parse_element_list(int *status_code)
     return element_list;
 }
 
-static int check_prefix()
+static int check_prefix(void)
 {
     struct token *tok = peek_token(DISABLE_KEYWORDS);
 
@@ -422,16 +422,14 @@ static struct ast *parse_word_list(int *status_code)
     return word_list;
 }
 
-static struct ast *parse_rule_for(int *status_code)
+static int check_for_word(int *status_code, struct ast *rule_for)
 {
-    struct ast *rule_for = init_ast(AST_RULE_FOR);
-
     if (peek_token(ENABLE_KEYWORDS)->type != FOR)
     {
         warnx("parse_rule_for: Wrong token type. Expected FOR | Got: %s",
               type_name[peek_token(ENABLE_KEYWORDS)->type]);
         *status_code = 2;
-        return rule_for;
+        return 1;
     }
     pop_token();
 
@@ -440,13 +438,14 @@ static struct ast *parse_rule_for(int *status_code)
         warnx("parse_rule_for: Wrong token type. Expected WORD | Got: %s",
               type_name[peek_token(DISABLE_KEYWORDS)->type]);
         *status_code = 2;
-        return rule_for;
+        return 1;
     }
 
-    ((struct ast_rule_for *)rule_for)->condition_word =
-        strdup(peek_token(DISABLE_KEYWORDS)->data);
-    pop_token();
+    return 0;
+}
 
+static void handle_semicol_newline(void)
+{
     if (peek_token(ENABLE_KEYWORDS)->type == SEMICOLON)
         pop_token();
 
@@ -454,7 +453,20 @@ static struct ast *parse_rule_for(int *status_code)
     {
         pop_token();
     }
+}
 
+static struct ast *parse_rule_for(int *status_code)
+{
+    struct ast *rule_for = init_ast(AST_RULE_FOR);
+    if (check_for_word(status_code,rule_for) != 0)
+        return rule_for;
+
+    ((struct ast_rule_for *)rule_for)->condition_word =
+        strdup(peek_token(DISABLE_KEYWORDS)->data);
+    pop_token();
+
+    handle_semicol_newline();
+    
     if (peek_token(ENABLE_KEYWORDS)->type != IN
         && peek_token(ENABLE_KEYWORDS)->type != DO)
     {
@@ -467,15 +479,12 @@ static struct ast *parse_rule_for(int *status_code)
     if (peek_token(ENABLE_KEYWORDS)->type == IN)
     {
         pop_token();
-
         ((struct ast_rule_for *)rule_for)->in_word_list =
             parse_word_list(status_code);
         if (*status_code)
             return rule_for;
-
         if (peek_token(ENABLE_KEYWORDS)->type == SEMICOLON)
             pop_token();
-
         while (peek_token(ENABLE_KEYWORDS)->type == NEW_LINE)
         {
             pop_token();
@@ -489,13 +498,12 @@ static struct ast *parse_rule_for(int *status_code)
         *status_code = 2;
         return rule_for;
     }
-    pop_token();
 
+    pop_token();
     ((struct ast_rule_for *)rule_for)->body_compound_list =
         parse_compound_list(status_code);
     if (*status_code)
         return rule_for;
-
     if (peek_token(ENABLE_KEYWORDS)->type != DONE)
     {
         warnx("parse_rule_for: Wrong token type. Expected DONE | Got: %s",
@@ -503,6 +511,7 @@ static struct ast *parse_rule_for(int *status_code)
         *status_code = 2;
         return rule_for;
     }
+
     pop_token();
 
     return rule_for;
@@ -704,7 +713,7 @@ static struct ast *parse_compound_list(int *status_code)
     return compound_list;
 }
 
-static struct ast *parse_else_clause(int *status_code)
+static int check_elif_else(int *status_code)
 {
     if (peek_token(ENABLE_KEYWORDS)->type != ELIF
         && peek_token(ENABLE_KEYWORDS)->type != ELSE)
@@ -713,8 +722,15 @@ static struct ast *parse_else_clause(int *status_code)
               "ELSE | Got: %s",
               type_name[peek_token(ENABLE_KEYWORDS)->type]);
         *status_code = 2;
-        return NULL;
+        return 1;
     }
+    return 0;
+}
+
+static struct ast *parse_else_clause(int *status_code)
+{
+    if(check_elif_else(status_code)!=0)
+        return NULL;
 
     struct ast *else_clause = init_ast(AST_CLAUSE_ELSE);
     int is_elif = 0;
