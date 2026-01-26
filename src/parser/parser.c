@@ -354,8 +354,10 @@ static struct ast *parse_simple_cmd(int *status_code)
     pop_token();
 
     tok = peek_token(DISABLE_KEYWORDS);
+    if (!tok)
+        *status_code = 2; // Missing closing quote
 
-    if (tok->type == WORD) // TODO: || tok->type == REDIRECTION
+    else if (tok->type == WORD) // TODO: || tok->type == REDIRECTION
     {
         ((struct ast_simple_cmd *)cmd)->element_list =
             parse_element_list(status_code);
