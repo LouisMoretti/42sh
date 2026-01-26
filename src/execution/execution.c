@@ -166,7 +166,8 @@ static int check_which_cmd(struct ast_simple_cmd *ast_simple_cmd)
     }
 }
 
-static int handle_expand_list(struct ast_element_list *ast_element_list*)
+static int handle_expand_list(struct ast_element_list *ast_element_list,
+                              struct ast_simple_cmd *ast_simple_cmd)
 {
     if (ast_element_list)
     {
@@ -222,7 +223,6 @@ static int handle_expand_list(struct ast_element_list *ast_element_list*)
     return 0;
 }
 
-
 static int execute_ast_simple_cmd(struct ast *ast)
 {
     if (!ast)
@@ -246,7 +246,7 @@ static int execute_ast_simple_cmd(struct ast *ast)
 
     struct ast_element_list *good_list = ast_element_list;
 
-    if(handle_expand_list(ast_element_list)!=0)
+    if (handle_expand_list(ast_element_list, ast_simple_cmd) != 0)
         return 1;
 
     int res = check_which_cmd(ast_simple_cmd);

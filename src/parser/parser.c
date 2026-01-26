@@ -422,7 +422,7 @@ static struct ast *parse_word_list(int *status_code)
     return word_list;
 }
 
-static int check_for_word(int *status_code, struct ast *rule_for)
+static int check_for_word(int *status_code)
 {
     if (peek_token(ENABLE_KEYWORDS)->type != FOR)
     {
@@ -458,7 +458,7 @@ static void handle_semicol_newline(void)
 static struct ast *parse_rule_for(int *status_code)
 {
     struct ast *rule_for = init_ast(AST_RULE_FOR);
-    if (check_for_word(status_code,rule_for) != 0)
+    if (check_for_word(status_code) != 0)
         return rule_for;
 
     ((struct ast_rule_for *)rule_for)->condition_word =
@@ -466,7 +466,7 @@ static struct ast *parse_rule_for(int *status_code)
     pop_token();
 
     handle_semicol_newline();
-    
+
     if (peek_token(ENABLE_KEYWORDS)->type != IN
         && peek_token(ENABLE_KEYWORDS)->type != DO)
     {
@@ -729,7 +729,7 @@ static int check_elif_else(int *status_code)
 
 static struct ast *parse_else_clause(int *status_code)
 {
-    if(check_elif_else(status_code)!=0)
+    if (check_elif_else(status_code) != 0)
         return NULL;
 
     struct ast *else_clause = init_ast(AST_CLAUSE_ELSE);
