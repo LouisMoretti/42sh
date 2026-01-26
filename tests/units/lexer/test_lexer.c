@@ -275,6 +275,25 @@ static struct token_list_params token_list_params[] = {
                   { AMPERSAND, "" },
                   { DOUBLE_AMPERSAND, "" },
                   { END_OF_FILE, "" } },
+      .policy = DISABLE_KEYWORDS },
+    { .name_test = "all_redirections", // TODO: Add heredoc.
+      .input = "> < >> <& >& >| <>",
+      .result = { { REDIRECTION, "" },
+                  { REDIRECTION, "" },
+                  { REDIRECTION, "" },
+                  { REDIRECTION, "" },
+                  { REDIRECTION, "" },
+                  { REDIRECTION, "" },
+                  { REDIRECTION, "" },
+                  { END_OF_FILE, "" } },
+      .policy = DISABLE_KEYWORDS },
+    { .name_test = "simple_redirection",
+      .input = "> 42sh",
+      .result = { { REDIRECTION, "" }, { WORD, "42sh" }, { END_OF_FILE, "" } },
+      .policy = DISABLE_KEYWORDS },
+    { .name_test = "hard_redirection",
+      .input = "42>>sh",
+      .result = { { REDIRECTION, "" }, { WORD, "sh" }, { END_OF_FILE, "" } },
       .policy = DISABLE_KEYWORDS }
 };
 
@@ -441,7 +460,11 @@ static struct token_consistency_params token_consistency_params[] = {
     { .name_test = "consistency_in",
       .input = "in",
       .enable = { IN, "" },
-      .disable = { WORD, "in" } }
+      .disable = { WORD, "in" } },
+    { .name_test = "consistency_redirection",
+      .input = ">",
+      .enable = { REDIRECTION, "" },
+      .disable = { REDIRECTION, "" } }
 };
 
 ParameterizedTestParameters(Lexer, test_token_consistency_enable_enable)
