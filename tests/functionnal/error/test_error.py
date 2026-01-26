@@ -3,7 +3,7 @@ import pytest
 import subprocess as sp
 
 def run_ref_command_string(command):
-    proc = sp.Popen(["bash", "--posix", "-c", command], stdout=sp.PIPE, stderr=sp.STDOUT, bufsize=0)
+    proc = sp.Popen(["bash", "--posix", "-c", command], stdout=sp.PIPE, stderr=sp.PIPE, bufsize=0)
 
     return proc
 
@@ -12,7 +12,7 @@ def run_command_string(command):
     if executable is None or len(executable) == 0:
         executable = "../../src/42sh"
 
-    proc = sp.Popen([executable, "-c", command], stdout=sp.PIPE, stderr=sp.STDOUT, bufsize=0)
+    proc = sp.Popen([executable, "-c", command], stdout=sp.PIPE, stderr=sp.PIPE, bufsize=0)
 
     return proc
 
@@ -42,7 +42,7 @@ def test_expansion_bad_builtin():
     try:
         out, err = proc.communicate(timeout=0.1)
         ref_out, ref_err = ref_proc.communicate(timeout=0.1)
-        assert proc.returncode == ref_proc.returncode
+        assert proc.returncode == ref_proc.returncode, "Returned code :"
     finally:
         kill_42sh(proc)
         kill_42sh(ref_proc)
@@ -58,7 +58,8 @@ def test_string(name, command_to_run):
     ref_proc = run_ref_command_string(command_to_run)
     try:
         _ , err = proc.communicate(timeout=0.1)
-        assert err != None
+        _, _ =  ref_proc.communicate(timeout=0.1)
+        assert err != ""
         assert proc.returncode == ref_proc.returncode
     finally:
         kill_42sh(proc)
@@ -70,12 +71,13 @@ def test_stdin(name, command_to_run):
     if executable is None or len(executable) == 0:
         executable = "../../src/42sh"
 
-    proc = sp.Popen([executable], stdin=sp.PIPE, stdout=sp.PIPE, stderr=sp.STDOUT, text=True, bufsize=0)
+    proc = sp.Popen([executable], stdin=sp.PIPE, stdout=sp.PIPE, stderr=sp.PIPE, text=True, bufsize=0)
 
-    ref_proc = sp.Popen(["bash", "--posix"], stdin=sp.PIPE, stdout=sp.PIPE, stderr=sp.STDOUT, text=True, bufsize=0)
+    ref_proc = sp.Popen(["bash", "--posix"], stdin=sp.PIPE, stdout=sp.PIPE, stderr=sp.PIPE, text=True, bufsize=0)
     try:
         _ , err = proc.communicate(input=command_to_run, timeout=0.1)
-        assert err != None
+        _, _ =  ref_proc.communicate(timeout=0.1)
+        assert err != ""
         assert proc.returncode == ref_proc.returncode
     finally:
         kill_42sh(proc)
@@ -87,12 +89,13 @@ def test_file(name, filepath):
     if executable is None or len(executable) == 0:
         executable = "../../src/42sh"
 
-    proc = sp.Popen([executable, filepath], stdout=sp.PIPE, stderr=sp.STDOUT, bufsize=0)
+    proc = sp.Popen([executable, filepath], stdout=sp.PIPE, stderr=sp.PIPE, bufsize=0)
 
-    ref_proc = sp.Popen(["bash", "--posix", filepath], stdout=sp.PIPE, stderr=sp.STDOUT, bufsize=0)
+    ref_proc = sp.Popen(["bash", "--posix", filepath], stdout=sp.PIPE, stderr=sp.PIPE, bufsize=0)
     try:
         _ , err = proc.communicate(timeout=0.1)
-        assert err != None
+        _, _ =  ref_proc.communicate(timeout=0.1)
+        assert err != ""
         assert proc.returncode == ref_proc.returncode
     finally:
         kill_42sh(proc)
