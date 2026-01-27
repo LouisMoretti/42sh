@@ -22,6 +22,7 @@
 #define BUILTIN_FALSE "false"
 #define BUILTIN_TRUE "true"
 #define BUILTIN_CD "cd"
+#define BUILTIN_DOT "."
 #define COMMAND_NOT_FOUND_ERROR 127
 #define DEFAULT_ERROR 1
 
@@ -136,6 +137,8 @@ static int check_which_cmd(struct ast_simple_cmd *ast_simple_cmd)
         return builtin_true();
     else if (!strcmp(ast_simple_cmd->word, BUILTIN_CD))
         return builtin_cd(ast_simple_cmd);
+    else if (!strcmp(ast_simple_cmd->word, BUILTIN_DOT))
+        return builtin_dot(ast_simple_cmd);
     else
     {
         int size = count_ast_element(ast_simple_cmd->element_list) + 1;
