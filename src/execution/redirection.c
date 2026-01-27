@@ -438,7 +438,8 @@ int execute_ast_redirection(struct ast *ast)
     case REDIRECT_IN:
         return execute_ast_redirection_in((struct ast *)ast_redirection);
     case REDIRECT_OUT_APPEND:
-        return execute_ast_redirection_out_append((struct ast *)ast_redirection);
+        return execute_ast_redirection_out_append(
+            (struct ast *)ast_redirection);
     case REDIRECT_OUT_DUP:
         return execute_ast_redirection_out_dup((struct ast *)ast_redirection);
     case REDIRECT_IN_DUP:

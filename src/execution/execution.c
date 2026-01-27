@@ -117,9 +117,7 @@ static int execute_ast_prefix_list(struct ast *ast)
         return 0;
 
     assert(ast->type == AST_SIMPLE_CMD);
-    struct ast_simple_cmd *ast_simple_cmd = (struct ast_simple_cmd *)ast;
-    struct ast_prefix_list *ast_prefix =
-        (struct ast_prefix_list *)ast_simple_cmd->prefix_list;
+    struct ast_prefix_list *ast_prefix = (struct ast_prefix_list *)ast;
 
     while (ast_prefix)
     {
@@ -183,8 +181,11 @@ static int execute_ast_simple_cmd(struct ast *ast)
     struct ast_simple_cmd *ast_simple_cmd = (struct ast_simple_cmd *)ast;
     assert(ast_simple_cmd->word != NULL || ast_simple_cmd->prefix_list != NULL);
 
+    // Execute prefix list
+    int exit_code =
+        execute_ast_prefix_list((struct ast *)ast_simple_cmd->prefix_list);
     if (!ast_simple_cmd->word)
-        return execute_ast_prefix_list((struct ast *)ast_simple_cmd);
+        return exit_code;
 
     char *expanded = expand_string(ast_simple_cmd->word);
     if (!expanded)
@@ -250,13 +251,13 @@ static int execute_ast_simple_cmd(struct ast *ast)
         }
     }
 
-    int res = check_which_cmd(ast_simple_cmd);
+    exit_code = check_which_cmd(ast_simple_cmd);
 
     // free the expanded element list and put back the first element list
     free_ast((struct ast *)ast_simple_cmd->element_list);
     ast_simple_cmd->element_list = (struct ast *)good_list;
 
-    return res;
+    return exit_code;
 }
 
 static int execute_ast_cmd(struct ast *ast)
@@ -267,6 +268,7 @@ static int execute_ast_cmd(struct ast *ast)
     assert(ast->type == AST_CMD);
     struct ast_cmd *ast_cmd = (struct ast_cmd *)ast;
     assert(ast_cmd->cmd != NULL);
+
     switch (ast_cmd->cmd->type)
     {
     case AST_SIMPLE_CMD:
@@ -513,21 +515,22 @@ static int execute_ast_input(struct ast *ast)
     return execute_ast_list(ast_input->list);
 }
 
-static exec execute_functions[] = { [AST_INPUT] = &execute_ast_input,
-                                    [AST_LIST] = &execute_ast_list,
-                                    [AST_AND_OR] = &execute_ast_and_or,
-                                    [AST_PIPELINE] = &execute_ast_pipeline,
-                                    [AST_CMD] = &execute_ast_cmd,
-                                    [AST_SIMPLE_CMD] = &execute_ast_simple_cmd,
-                                    [AST_SHELL_CMD] = &execute_ast_shell_cmd,
-                                    [AST_COMPOUND_LIST] =
-                                        &execute_ast_compound_list,
-                                    [AST_RULE_IF] = &execute_ast_rule_if,
-                                    [AST_CLAUSE_ELSE] =
-                                        &execute_ast_else_clause,
-                                    [AST_RULE_WHILE] = &execute_ast_while,
-                                    [AST_RULE_UNTIL] = &execute_ast_until,
-                                    [AST_RULE_FOR] = &execute_ast_for };
+static exec execute_functions[] = {
+    [AST_INPUT] = &execute_ast_input,
+    [AST_LIST] = &execute_ast_list,
+    [AST_AND_OR] = &execute_ast_and_or,
+    [AST_PIPELINE] = &execute_ast_pipeline,
+    [AST_CMD] = &execute_ast_cmd,
+    [AST_SIMPLE_CMD] = &execute_ast_simple_cmd,
+    [AST_SHELL_CMD] = &execute_ast_shell_cmd,
+    [AST_COMPOUND_LIST] = &execute_ast_compound_list,
+    [AST_RULE_IF] = &execute_ast_rule_if,
+    [AST_CLAUSE_ELSE] = &execute_ast_else_clause,
+    [AST_RULE_WHILE] = &execute_ast_while,
+    [AST_RULE_UNTIL] = &execute_ast_until,
+    [AST_RULE_FOR] = &execute_ast_for,
+    [AST_REDIRECTION] = &execute_ast_redirection
+};
 
 int execute_ast(struct ast *ast)
 {
