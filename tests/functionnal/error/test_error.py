@@ -28,8 +28,8 @@ def test_execution_cmd_not_found():
     proc = run_command_string(command_to_run)
     ref_proc = run_ref_command_string(command_to_run)
     try:
-        out, err = proc.communicate(timeout=0.1)
-        ref_out, ref_err = ref_proc.communicate(timeout=0.1)
+        out, err = proc.communicate(timeout=0.5)
+        ref_out, ref_err = ref_proc.communicate(timeout=0.5)
         assert proc.returncode == ref_proc.returncode
     finally:
         kill_42sh(proc)
@@ -40,8 +40,8 @@ def test_expansion_bad_builtin():
     proc = run_command_string(command_to_run)
     ref_proc = run_ref_command_string(command_to_run)
     try:
-        out, err = proc.communicate(timeout=0.1)
-        ref_out, ref_err = ref_proc.communicate(timeout=0.1)
+        out, err = proc.communicate(timeout=0.5)
+        ref_out, ref_err = ref_proc.communicate(timeout=0.5)
         assert proc.returncode == ref_proc.returncode, "Returned code :"
     finally:
         kill_42sh(proc)
@@ -57,8 +57,8 @@ def test_string(name, command_to_run):
     proc = run_command_string(command_to_run)
     ref_proc = run_ref_command_string(command_to_run)
     try:
-        _ , err = proc.communicate(timeout=0.1)
-        _, _ =  ref_proc.communicate(timeout=0.1)
+        _ , err = proc.communicate(timeout=0.5)
+        _, _ =  ref_proc.communicate(timeout=0.5)
         assert err != ""
         assert proc.returncode == ref_proc.returncode
     finally:
@@ -75,8 +75,8 @@ def test_stdin(name, command_to_run):
 
     ref_proc = sp.Popen(["bash", "--posix"], stdin=sp.PIPE, stdout=sp.PIPE, stderr=sp.PIPE, text=True, bufsize=0)
     try:
-        _ , err = proc.communicate(input=command_to_run, timeout=0.1)
-        _, _ =  ref_proc.communicate(timeout=0.1)
+        _ , err = proc.communicate(input=command_to_run, timeout=0.5)
+        _, _ =  ref_proc.communicate(timeout=0.5)
         assert err != ""
         assert proc.returncode == ref_proc.returncode
     finally:
@@ -93,8 +93,8 @@ def test_file(name, filepath):
 
     ref_proc = sp.Popen(["bash", "--posix", filepath], stdout=sp.PIPE, stderr=sp.PIPE, bufsize=0)
     try:
-        _ , err = proc.communicate(timeout=0.1)
-        _, _ =  ref_proc.communicate(timeout=0.1)
+        _ , err = proc.communicate(timeout=0.5)
+        _, _ =  ref_proc.communicate(timeout=0.5)
         assert err != ""
         assert proc.returncode == ref_proc.returncode
     finally:

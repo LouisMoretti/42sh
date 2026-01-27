@@ -46,7 +46,11 @@ int set_conf(int argc, char **argv)
     my_conf.arg_values = NULL; // Default
 
     if (argc == 1)
+    {
+        my_conf.arg_values = argv;
+        my_conf.arg_count = 1;
         return 0;
+    }
 
     int i = 1;
     while (i < argc && argv[i][0] == '-')

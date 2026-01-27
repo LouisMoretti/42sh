@@ -83,8 +83,8 @@ static int assignement_var(char *assignment_word)
     char *var_name = strtok_r(assignment_word, "=", &saveptr);
     if (!var_name)
         return 1;
-    char *var_val = strtok_r(NULL, "=", &saveptr);
-    if (!var_val)
+    char *var_val = saveptr;
+    if (var_val[0] == '\0')
         return 1;
     struct hash_map *variables = get_hm();
     bool has_insert = false;
