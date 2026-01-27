@@ -26,5 +26,8 @@ int builtin_exit(struct ast_simple_cmd *ast_simple_cmd)
         res = config->previous_code;
     }
 
+    struct config *config = get_conf();
+    config->exit_code = 1;
+
     return res;
 }

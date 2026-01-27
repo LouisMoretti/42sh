@@ -40,6 +40,7 @@ int set_conf(int argc, char **argv)
     // Arguments part
     my_conf.arg_count = 0; // Default
     my_conf.previous_code = 0; // Default
+    my_conf.exit_code = 0; // Default
     my_conf.arg_values = NULL; // Default
 
     if (argc == 1)
@@ -100,4 +101,9 @@ int set_conf(int argc, char **argv)
 struct config *get_conf(void)
 {
     return &my_conf;
+}
+
+int is_exit(void)
+{
+    return my_conf.exit_code;
 }

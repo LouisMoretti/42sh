@@ -43,7 +43,7 @@ int main(int argc, char **argv)
     // Call parser for AST
     int status_code = 0;
     int exit_code = 0;
-    while (peek_chr() != EOF)
+    while (peek_chr() != EOF && !is_exit())
     {
         struct ast *input = parse_input(&status_code);
         if (status_code)
@@ -62,7 +62,7 @@ int main(int argc, char **argv)
             exit_code = execute_ast(input);
 
         free_ast(input);
-        conf->previous_code = 0;
+        conf->previous_code = exit_code;
     }
 
     reset_modules();

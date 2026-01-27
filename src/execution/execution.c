@@ -116,7 +116,7 @@ static int execute_ast_prefix_list(struct ast_simple_cmd *ast_simple_cmd)
     struct ast_prefix_list *ast_prefix =
         (struct ast_prefix_list *)ast_simple_cmd->prefix_list;
 
-    while (ast_prefix)
+    while (ast_prefix && !is_exit())
     {
         struct ast_prefix *cur_prefix = (struct ast_prefix *)ast_prefix->prefix;
         int code = execute_ast_prefix(cur_prefix);
@@ -124,6 +124,7 @@ static int execute_ast_prefix_list(struct ast_simple_cmd *ast_simple_cmd)
             return 1;
         ast_prefix = (struct ast_prefix_list *)ast_prefix->next;
     }
+
     return 0;
 }
 
@@ -282,6 +283,10 @@ static int execute_ast_pipeline(struct ast *ast)
     assert(ast_pipeline->cmd != NULL);
 
     int result = execute_pipe((struct ast *)ast_pipeline);
+
+    if (is_exit())
+        return result;
+
     if (ast_pipeline->negation)
         result = !result;
 
@@ -298,7 +303,7 @@ static int execute_ast_and_or(struct ast *ast)
     assert(ast_and_or->pipeline != NULL);
 
     int result = 0;
-    while (!result && ast_and_or)
+    while (!result && ast_and_or && !is_exit())
     {
         result = execute_ast_pipeline(ast_and_or->pipeline);
         // Absorbing Elements
@@ -339,7 +344,10 @@ static int execute_ast_compound_list(struct ast *ast)
     }
     else
     {
-        execute_ast_and_or(ast_compound_list->ast_and_or);
+        int res = execute_ast_and_or(ast_compound_list->ast_and_or);
+
+        if (is_exit())
+            return res;
 
         return execute_ast_compound_list(ast_compound_list->next);
     }
@@ -360,6 +368,10 @@ static int execute_ast_else_clause(struct ast *ast)
 
     int condition_exit_code =
         execute_ast_compound_list(ast_else_clause->condition_compound_list);
+
+    if (is_exit())
+        return condition_exit_code;
+
     if (!condition_exit_code)
         return execute_ast_compound_list(ast_else_clause->body_compound_list);
     else
@@ -378,6 +390,10 @@ static int execute_ast_rule_if(struct ast *ast)
 
     int condition_exit_code =
         execute_ast_compound_list(ast_rule_if->condition_compound_list);
+
+    if (is_exit())
+        return condition_exit_code;
+
     if (!condition_exit_code)
         return execute_ast_compound_list(ast_rule_if->body_compound_list);
     else
@@ -394,7 +410,8 @@ static int execute_ast_while(struct ast *ast)
     assert(ast_rule_while->body_compound_list != NULL);
 
     int result = 0;
-    while (!execute_ast_compound_list(ast_rule_while->condition_compound_list))
+    while (!execute_ast_compound_list(ast_rule_while->condition_compound_list)
+           && !is_exit())
         result = execute_ast_compound_list(ast_rule_while->body_compound_list);
 
     return result;
@@ -410,7 +427,8 @@ static int execute_ast_until(struct ast *ast)
     assert(ast_rule_until->body_compound_list != NULL);
 
     int result = 0;
-    while (execute_ast_compound_list(ast_rule_until->condition_compound_list))
+    while (execute_ast_compound_list(ast_rule_until->condition_compound_list)
+           && !is_exit())
         result = execute_ast_compound_list(ast_rule_until->body_compound_list);
 
     return result;
@@ -431,7 +449,7 @@ static int execute_ast_for(struct ast *ast)
 
     struct hash_map *hm = get_hm();
 
-    while (ast_word_list)
+    while (ast_word_list && !is_exit())
     {
         assert(ast_word_list->word != NULL);
         // insert the variable in the hash map
@@ -486,7 +504,11 @@ static int execute_ast_list(struct ast *ast)
     }
     else
     {
-        execute_ast_and_or(ast_list->and_or);
+        int res = execute_ast_and_or(ast_list->and_or);
+
+        if (is_exit())
+            return res;
+
         return execute_ast_list(ast_list->next);
     }
 }
