@@ -27,8 +27,6 @@
 
 typedef int (*exec)(struct ast *);
 
-static int execute_ast_shell_cmd(struct ast *ast);
-
 static int evaluate_command(char **command)
 {
     int pid = fork();
@@ -250,25 +248,6 @@ static int execute_ast_simple_cmd(struct ast *ast)
     return res;
 }
 
-static int execute_ast_cmd(struct ast *ast)
-{
-    if (!ast)
-        return 0;
-
-    assert(ast->type == AST_CMD);
-    struct ast_cmd *ast_cmd = (struct ast_cmd *)ast;
-    assert(ast_cmd->cmd != NULL);
-    switch (ast_cmd->cmd->type)
-    {
-    case AST_SIMPLE_CMD:
-        return execute_ast_simple_cmd(ast_cmd->cmd);
-    case AST_SHELL_CMD:
-        return execute_ast_shell_cmd(ast_cmd->cmd);
-    default: // May not fall through
-        return 1;
-    }
-}
-
 static int execute_ast_pipeline(struct ast *ast)
 {
     if (!ast)
@@ -466,6 +445,37 @@ static int execute_ast_shell_cmd(struct ast *ast)
         return execute_ast_for(ast_shell_cmd->rule);
     default:
         return 0;
+    }
+}
+
+static int execute_ast_function(struct ast *ast)
+{
+    if (!ast)
+        return 0;
+
+    struct ast_funcdec *ast_function = (struct ast_funcdec *)ast;
+    assert(ast_function->name != NULL);
+    assert(ast_function->shell_cmd != NULL);
+
+    return execute_ast_shell_cmd(ast_function->shell_cmd);
+}
+
+static int execute_ast_cmd(struct ast *ast)
+{
+    if (!ast)
+        return 0;
+
+    assert(ast->type == AST_CMD);
+    struct ast_cmd *ast_cmd = (struct ast_cmd *)ast;
+    assert(ast_cmd->cmd != NULL);
+    switch (ast_cmd->cmd->type)
+    {
+    case AST_SIMPLE_CMD:
+        return execute_ast_simple_cmd(ast_cmd->cmd);
+    case AST_SHELL_CMD:
+        return execute_ast_shell_cmd(ast_cmd->cmd);
+    default: // May not fall through
+        return 1;
     }
 }
 
