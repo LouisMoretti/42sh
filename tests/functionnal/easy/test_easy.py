@@ -308,7 +308,8 @@ params_cmds = [("test_escape","echo -e '\\n'",[]),
                ('dollar*',"echo $*",["merci", "pour", "tous"]),
                ('for in dollar @',"for i in $@; do echo $i; done;", ["co","u","co","u"]),
                ('simple_echo_expansion_negated', "! echo -e '\t\n\\\\'", []),
-               ('simple_echo_many_expansion', "echo -e '\\t\\t\\t\\t\\t\\n\\n\\n\\n\\n\\t\\n\\\\end'", [])
+               ('simple_echo_many_expansion', "echo -e '\\t\\t\\t\\t\\t\\n\\n\\n\\n\\n\\t\\n\\\\end'", []),
+               ('exit inside if rule', "if exit 42; then echo nope; fi;", [])
                ]
 
 @pytest.mark.parametrize("name,command_to_run, list_args", params_cmds)
