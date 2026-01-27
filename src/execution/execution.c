@@ -228,23 +228,21 @@ static int execute_ast_simple_cmd(struct ast *ast)
         {
             struct ast_element *ast_element =
                 (struct ast_element *)ast_element_list->element;
-            if (ast_element->word)
-            {
-                struct ast_element_list *new_list_elm =
-                    (struct ast_element_list *)init_ast(AST_ELEMENT_LIST);
 
-                char *expanded = expand_string(ast_element->word);
-                if (!expanded)
-                    return 1;
+            struct ast_element_list *new_list_elm =
+                (struct ast_element_list *)init_ast(AST_ELEMENT_LIST);
 
-                // keeps a copy of the expanded elements
-                struct ast_element *act_elm =
-                    (struct ast_element *)init_ast(AST_ELEMENT);
-                act_elm->word = expanded;
-                new_list_elm->element = (struct ast *)act_elm;
-                expanded_list->next = (struct ast *)new_list_elm;
-                expanded_list = (struct ast_element_list *)expanded_list->next;
-            }
+            char *expanded = expand_string(ast_element->word);
+            if (!expanded)
+                return 1;
+
+            // keeps a copy of the expanded elements
+            struct ast_element *act_elm =
+                (struct ast_element *)init_ast(AST_ELEMENT);
+            act_elm->word = expanded;
+            new_list_elm->element = (struct ast *)act_elm;
+            expanded_list->next = (struct ast *)new_list_elm;
+            expanded_list = (struct ast_element_list *)expanded_list->next;
 
             ast_element_list =
                 (struct ast_element_list *)ast_element_list->next;
