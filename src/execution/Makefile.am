@@ -3,6 +3,8 @@ lib_LIBRARIES = libexecution.a
 
 # Source Files
 libexecution_a_SOURCES = \
+						 execution_loop.c \
+						 execution_loop.h \
 						 echo.c \
 						 boolean.c \
 						 cd.c \
