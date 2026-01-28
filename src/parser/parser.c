@@ -188,8 +188,10 @@ static enum redirection_type get_redirection_type(char *redir)
             type = REDIRECT_OUT_DUP;
         else if (c == '|')
             type = REDIRECT_OUT_FORCE;
+        else
+            warnx("get_redirection_type: Wrong redirection type: %s.", redir);
     }
-    else // tok->data[i] == '<'
+    else if (c == '<')
     {
         c = redir[1];
         if (c == '\0')
@@ -198,7 +200,11 @@ static enum redirection_type get_redirection_type(char *redir)
             type = REDIRECT_IN_DUP;
         else if (c == '>')
             type = REDIRECT_IN_OUT;
+        else
+            warnx("get_redirection_type: Wrong redirection type: %s.", redir);
     }
+    else
+        warnx("get_redirection_type: Wrong redirection type: %s.", redir);
 
     return type;
 }
@@ -233,7 +239,7 @@ static struct ast *parse_redirection(int *status_code)
     ((struct ast_redirection *)redirection)->io_number = io_number;
 
     ((struct ast_redirection *)redirection)->type =
-        get_redirection_type(tok->data);
+        get_redirection_type(tok->data + i);
     pop_token();
 
     tok = peek_token(DISABLE_KEYWORDS);
