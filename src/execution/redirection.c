@@ -9,7 +9,7 @@
 
 #include "execution/execution.h"
 
-#define PERMISSION_FLAGS 0755
+#define PERMISSION_FLAGS 0644
 #define NO_FD (-1)
 
 static void close_file_descriptors(int fd1, int fd2)
@@ -113,8 +113,8 @@ static int execute_ast_redirection_in(struct ast *ast)
         return 1;
     }
 
-    // Redirect 'word' fd to 'io_number' file descriptor
-    if (dup2(ast_redirection->io_number, fd) == -1)
+    // Redirect 'io_number' fd to 'word' file descriptor
+    if (dup2(fd, ast_redirection->io_number) == -1)
     {
         close_file_descriptors(fd, fd_backup);
 
