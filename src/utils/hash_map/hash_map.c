@@ -1,13 +1,13 @@
 #define _POSIX_C_SOURCE 200809L
 
-#include "hash_map.h"
-
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "hash_map.h"
 
 struct hash_map *hash_map_init(size_t size)
 {
@@ -39,7 +39,8 @@ bool hash_map_insert(struct hash_map *hash_map, char *key, char *value,
     {
         if (strcmp(p->key, key) == 0)
         {
-            p->value = value;
+            free(p->value);
+            p->value = strdup(value);
             if (updated != NULL)
                 *updated = true;
             return true;
