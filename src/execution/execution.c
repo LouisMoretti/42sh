@@ -1,6 +1,4 @@
 #define _POSIX_C_SOURCE 200809L
-#include "execution/execution.h"
-
 #include <assert.h>
 #include <err.h>
 #include <errno.h>
@@ -13,6 +11,7 @@
 
 #include "config/config.h"
 #include "execution/builtin.h"
+#include "execution/execution.h"
 #include "execution/pipe.h"
 #include "expansion/expansion.h"
 #include "iobackend/iobackend.h"
@@ -86,6 +85,11 @@ static int assignement_var(char *assignment_word)
     char *var_val = saveptr;
     if (var_val[0] == '\0')
         return 1;
+    if (strcmp(var_name, "IFS") == 0)
+    {
+        setenv("IFS", var_val, 1);
+        return 0;
+    }
     struct hash_map *variables = get_hm();
     bool has_insert = false;
     bool code = hash_map_insert(variables, var_name, var_val, &has_insert);

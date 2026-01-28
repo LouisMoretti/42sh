@@ -1,12 +1,11 @@
 #define _POSIX_C_SOURCE 200809L
-#include "parser/parser.h"
-
 #include <err.h>
 #include <stddef.h>
 #include <string.h>
 
 #include "lexer/lexer.h"
 #include "parser/ast.h"
+#include "parser/parser.h"
 
 static struct ast *parse_list(int *status_code);
 static struct ast *parse_and_or(int *status_code);
@@ -56,6 +55,11 @@ struct ast *parse_input(int *status_code)
     struct ast *ast_input = init_ast(AST_INPUT);
 
     struct token *tok = peek_token(ENABLE_KEYWORDS);
+    if (!tok)
+    {
+        *status_code = 2;
+        return ast_input;
+    }
     if (tok->type != END_OF_FILE && tok->type != NEW_LINE)
     {
         ((struct ast_input *)ast_input)->list = parse_list(status_code);
