@@ -1,6 +1,7 @@
 #define _POSIX_C_SOURCE 200809L
 
 #include <err.h>
+#include <errno.h>
 #include <sys/wait.h>
 #include <unistd.h>
 
@@ -37,7 +38,14 @@ int builtin_dot(struct ast_simple_cmd *command)
         return -1;
     else if (!pid)
     {
-        execv(cmd, args);
+        res = execv(cmd, args);
+        if (res == -1)
+        {
+            if (errno = ENOENT)
+                warnx("builtin_dot: error, file inexistant");
+            else
+                warnx("builtin_dot: a strange erorr happened");
+        }
     }
     else
     {
