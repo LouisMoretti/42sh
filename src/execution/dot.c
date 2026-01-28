@@ -39,7 +39,9 @@ int builtin_dot(struct ast_simple_cmd *command)
         return -1;
     else if (!pid)
     {
+        reset_modules();
         res = execute_loop(2, args);
+        _exit(res);
     }
     else
     {

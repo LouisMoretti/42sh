@@ -7,6 +7,7 @@
 #include "execution/execution.h"
 #include "expansion/expansion.h"
 #include "iobackend/iobackend.h"
+#include "lexer/lexer.h"
 #include "parser/parser.h"
 #include "parser/pretty_print.h"
 
@@ -26,6 +27,7 @@ int init_modules(struct config *conf)
 void reset_modules(void)
 {
     io_close();
+    pop_token();
     reset_expansion();
 }
 
@@ -70,4 +72,3 @@ int execute_loop(int argc, char **argv)
     reset_modules();
     return exit_code;
 }
-
