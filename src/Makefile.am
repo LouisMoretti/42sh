@@ -11,7 +11,9 @@ SUBDIRS = parser \
 bin_PROGRAMS = 42sh
 
 # Source file
-42sh_SOURCES = 42sh.c
+42sh_SOURCES = 42sh.c \
+				execution_loop.c \
+				execution_loop.h
 
 # Preprocessing Flags
 42sh_CPPFLAGS = -I%D%

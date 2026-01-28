@@ -5,7 +5,8 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-#include "builtin.h"
+#include "execution/builtin.h"
+#include "execution_loop.h"
 
 int builtin_dot(struct ast_simple_cmd *command)
 {
@@ -38,14 +39,7 @@ int builtin_dot(struct ast_simple_cmd *command)
         return -1;
     else if (!pid)
     {
-        res = execv(cmd, args);
-        if (res == -1)
-        {
-            if (errno = ENOENT)
-                warnx("builtin_dot: error, file inexistant");
-            else
-                warnx("builtin_dot: a strange erorr happened");
-        }
+        res = execute_loop(2, args);
     }
     else
     {
