@@ -252,7 +252,7 @@ static struct ast *parse_redirection(int *status_code)
 static void place_redir(struct ast **ret, struct ast **last_redirection,
                         struct ast *redirection)
 {
-    if (last_redirection == NULL)
+    if (*last_redirection == NULL)
         *ret = redirection;
     else
         ((struct ast_redirection *)*last_redirection)->next = redirection;
