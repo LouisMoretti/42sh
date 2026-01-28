@@ -124,6 +124,18 @@ static int execute_ast_prefix_list(struct ast_simple_cmd *ast_simple_cmd)
     return 0;
 }
 
+static int execute_ast_function(struct ast *ast)
+{
+    if (!ast)
+        return 0;
+
+    struct ast_funcdec *ast_function = (struct ast_funcdec *)ast;
+    assert(ast_function->name != NULL);
+    assert(ast_function->shell_cmd != NULL);
+
+    return execute_ast_shell_cmd(ast_function->shell_cmd);
+}
+
 static int check_which_cmd(struct ast_simple_cmd *ast_simple_cmd)
 {
     if (!strcmp(ast_simple_cmd->word, BUILTIN_ECHO))
@@ -448,16 +460,14 @@ static int execute_ast_shell_cmd(struct ast *ast)
     }
 }
 
-static int execute_ast_function(struct ast *ast)
+static int execute_ast_funcdef(struct ast *ast)
 {
     if (!ast)
         return 0;
 
-    struct ast_funcdec *ast_function = (struct ast_funcdec *)ast;
-    assert(ast_function->name != NULL);
-    assert(ast_function->shell_cmd != NULL);
+    // TODO: Add the function in the hash map
 
-    return execute_ast_shell_cmd(ast_function->shell_cmd);
+    return 0;
 }
 
 static int execute_ast_cmd(struct ast *ast)
