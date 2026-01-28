@@ -53,14 +53,6 @@ static int execute_ast_redirection_out(struct ast *ast)
     if (fd == -1)
         return 1;
 
-    // If clobber is not set, this redirection should raise an error
-    if (!access(ast_redirection->word, F_OK) && !getenv("clobber"))
-    {
-        warnx("redirection_out: file exists (noclobber)");
-
-        return 1;
-    }
-
     // Create a copy of 'word' file descriptor
     int fd_backup = dup(ast_redirection->io_number);
     if (fd_backup == -1)
