@@ -116,7 +116,7 @@ static int execute_ast_prefix_list(struct ast *ast)
     if (!ast)
         return 0;
 
-    assert(ast->type == AST_SIMPLE_CMD);
+    assert(ast->type == AST_PREFIX_LIST);
     struct ast_prefix_list *ast_prefix = (struct ast_prefix_list *)ast;
 
     while (ast_prefix)

@@ -40,6 +40,7 @@ const char *type_name[] = { [IF] = "IF",
                             [NEGATION] = "NEGATION",
                             // [KEYWORD_COUNT] = "KEYWORD_COUNT",
                             [NEW_LINE] = "NEW_LINE",
+                            [REDIRECTION] = "REDIRECTION",
                             [SEMICOLON] = "SEMICOLON",
                             // [DOUBLE_SEMICOLON] = "DOUBLE_SEMICOLON",
                             [PIPE] = "PIPE",
@@ -263,9 +264,10 @@ static void place_redir(struct ast **ret, struct ast **last_redirection,
 static struct ast *parse_cmd(int *status_code)
 {
     struct ast *cmd = init_ast(AST_CMD);
-    struct ast *ret = cmd;
+    struct ast *redir = NULL;
 
-    if (peek_token(ENABLE_KEYWORDS)->type == WORD)
+    if (peek_token(ENABLE_KEYWORDS)->type == WORD
+        || peek_token(ENABLE_KEYWORDS)->type == REDIRECTION)
         ((struct ast_cmd *)cmd)->cmd = parse_simple_cmd(status_code);
     else
         ((struct ast_cmd *)cmd)->cmd = parse_shell_cmd(status_code);
@@ -275,14 +277,17 @@ static struct ast *parse_cmd(int *status_code)
            && peek_token(DISABLE_KEYWORDS)->type == REDIRECTION)
     {
         struct ast *redirection = parse_redirection(status_code);
-        place_redir(&ret, &last_redirection, redirection);
+        place_redir(&redir, &last_redirection, redirection);
         ((struct ast_redirection *)last_redirection)->next =
             ((struct ast_cmd *)cmd)->cmd;
         // if (*status_code)
         //     return ret;
     }
 
-    return ret;
+    if (redir != NULL)
+        ((struct ast_cmd *)cmd)->cmd = redir;
+
+    return cmd;
 }
 
 static struct ast *parse_element(int *status_code)
@@ -439,7 +444,7 @@ static struct ast *parse_simple_cmd(int *status_code)
 
     if (token_type != WORD)
     {
-        if (last_redirection != NULL)
+        if (last_redirection != NULL || last_prefix_list != NULL)
         {
             // ((struct ast_redirection *)last_redirection)->next = cmd;
             return ret;
@@ -448,7 +453,7 @@ static struct ast *parse_simple_cmd(int *status_code)
         warnx("parse_simple_cmd: Wrong token type. Expected WORD | Got: %s",
               type_name[token_type]);
         *status_code = 2;
-        return cmd;
+        return ret;
     }
 
     ((struct ast_simple_cmd *)cmd)->word =
@@ -474,7 +479,7 @@ static struct ast *parse_simple_cmd(int *status_code)
         token_type = peek_token(DISABLE_KEYWORDS)->type;
     }
 
-    return cmd;
+    return ret;
 }
 
 static struct ast *parse_shell_cmd(int *status_code)
