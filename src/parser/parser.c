@@ -42,7 +42,7 @@ const char *type_name[] = { [IF] = "IF",
                             [NEW_LINE] = "NEW_LINE",
                             [REDIRECTION] = "REDIRECTION",
                             [SEMICOLON] = "SEMICOLON",
-                            // [DOUBLE_SEMICOLON] = "DOUBLE_SEMICOLON",
+                            [DOUBLE_SEMICOLON] = "DOUBLE_SEMICOLON",
                             [PIPE] = "PIPE",
                             [DOUBLE_PIPE] = "DOUBLE_PIPE",
                             [AMPERSAND] = "AMPERSAND",
@@ -52,19 +52,14 @@ const char *type_name[] = { [IF] = "IF",
                             // [LEFT_BRACKET] = "LEFT_BRACKET",
                             // [RIGHT_BRACKET] = "RIGHT_BRACKET",
                             [WORD] = "WORD",
-                            [END_OF_FILE] = "END_OF_FILE" };
+                            [END_OF_FILE] = "END_OF_FILE",
+                            [ERROR] = "ERROR" };
 
 struct ast *parse_input(int *status_code)
 {
     struct ast *ast_input = init_ast(AST_INPUT);
 
     struct token *tok = peek_token(ENABLE_KEYWORDS);
-    // TODO: to remove.
-    if (!tok)
-    {
-        *status_code = 2;
-        return ast_input;
-    }
 
     if (tok->type != END_OF_FILE && tok->type != NEW_LINE)
     {

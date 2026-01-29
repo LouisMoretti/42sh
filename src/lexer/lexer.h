@@ -23,7 +23,7 @@ enum token_type
     NEW_LINE,
     REDIRECTION,
     SEMICOLON,
-    // DOUBLE_SEMICOLON,
+    DOUBLE_SEMICOLON,
     PIPE,
     DOUBLE_PIPE,
     AMPERSAND,
@@ -31,7 +31,8 @@ enum token_type
     // LEFT_PARANTHESIS,
     // RIGHT_PARANTHESIS,
     WORD,
-    END_OF_FILE
+    END_OF_FILE,
+    ERROR
 };
 
 enum keyword_policy

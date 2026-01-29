@@ -101,17 +101,20 @@ static int fill_buffer(void)
     if (index == BUFFER_SIZE)
     {
         warnx("peek_token(): Token too long.");
+        buffer[BUFFER_SIZE - 1] = '\0';
+        g_cur_type_before_policy = ERROR;
         return 2;
     }
+
+    buffer[index] = '\0';
 
     // TODO: Handle missing quote error.
     if (is_quoted)
     {
         warnx("peek_token(): Missing quote.");
+        g_cur_type_before_policy = ERROR;
         return 2;
     }
-
-    buffer[index] = '\0';
 
     if (is_redirection)
         g_cur_type_before_policy = REDIRECTION;
@@ -148,10 +151,17 @@ static void skip_whitespace_and_comment(void)
 static struct token *semicolon_or_double_semicolon(enum keyword_policy policy)
 {
     // TODO: Handle double semicolon token (For step 4).
-    g_cur_type_before_policy = SEMICOLON;
+    pop_chr();
+    if (peek_chr() == ';')
+    {
+        pop_chr();
+        g_cur_type_before_policy = DOUBLE_SEMICOLON;
+    }
+    else
+        g_cur_type_before_policy = SEMICOLON;
+
     set_token_type_with_policy(policy);
     g_has_cur = 1;
-    pop_chr();
     return &g_cur_token;
 }
 
@@ -219,8 +229,11 @@ struct token *peek_token(enum keyword_policy policy)
         return ampersand_or_double_ampersand(policy);
 
     // TODO: Handle grammar errors.
-    if (fill_buffer() != 0)
-        return NULL;
+    // if (fill_buffer() != 0)
+    // {
+    //     g_cur_type_before_policy = ERROR;
+    // }
+    fill_buffer();
 
     // g_cur_type_before_policy = get_token_type(buffer);
     set_token_type_with_policy(policy);
