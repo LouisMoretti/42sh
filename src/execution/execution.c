@@ -513,7 +513,12 @@ static int execute_subshell(struct ast *ast)
         return 1;
     else if (!pid)
     {
-        return execute_ast_compound_list(ast);
+        int res = execute_ast_compound_list(ast);
+
+        if (res != 0)
+            warnx("execute_subshell: an error occured in the subshell");
+
+        _exit();
     }
     else
     {
@@ -538,23 +543,29 @@ static int execute_ast_shell_cmd(struct ast *ast)
     assert(ast->type == AST_SHELL_CMD);
     struct ast_shell_cmd *ast_shell_cmd = (struct ast_shell_cmd *)ast;
 
-    if (ast_shell_cmd->rule == NULL)
+    if (ast_shell_cmd->cmd_type == SUBSHELL)
     {
         return execute_subshell(ast_shell_cmd->compound_list);
     }
-
-    switch (ast_shell_cmd->rule->type)
+    else if (ast_shell_cmd->cmd_type == COMMAND_BLOCK)
     {
-    case AST_RULE_IF:
-        return execute_ast_rule_if(ast_shell_cmd->rule);
-    case AST_RULE_WHILE:
-        return execute_ast_while(ast_shell_cmd->rule);
-    case AST_RULE_UNTIL:
-        return execute_ast_until(ast_shell_cmd->rule);
-    case AST_RULE_FOR:
-        return execute_ast_for(ast_shell_cmd->rule);
-    default:
         return 0;
+    }
+    else
+    {
+        switch (ast_shell_cmd->rule->type)
+        {
+        case AST_RULE_IF:
+            return execute_ast_rule_if(ast_shell_cmd->rule);
+        case AST_RULE_WHILE:
+            return execute_ast_while(ast_shell_cmd->rule);
+        case AST_RULE_UNTIL:
+            return execute_ast_until(ast_shell_cmd->rule);
+        case AST_RULE_FOR:
+            return execute_ast_for(ast_shell_cmd->rule);
+        default:
+            return 0;
+        }
     }
 }
 
