@@ -470,6 +470,16 @@ static int execute_ast_for(struct ast *ast)
     struct ast_word_list *ast_word_list =
         (struct ast_word_list *)ast_rule_for->in_word_list;
 
+    struct ast_word_list *good_list = ast_word_list;
+
+    int in = 0;
+    if (ast_word_list)
+    {
+        in = 1;
+
+        ast_rule_for->in_word_list = (struct ast *)expand_for(ast_word_list);
+        ast_word_list = (struct ast_word_list *)ast_rule_for->in_word_list;
+    }
     struct hash_map *hm = get_hm();
 
     while (ast_word_list && !is_exit())
@@ -484,6 +494,12 @@ static int execute_ast_for(struct ast *ast)
         // remove the variable in the hash map
         hash_map_remove(hm, ast_rule_for->condition_word);
         ast_word_list = (struct ast_word_list *)ast_word_list->next;
+    }
+
+    if (in)
+    {
+        free_ast((struct ast *)ast_rule_for->in_word_list);
+        ast_rule_for->in_word_list = (struct ast *)good_list;
     }
 
     return result;
