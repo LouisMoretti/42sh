@@ -529,14 +529,15 @@ static int execute_subshell(struct ast *ast)
         int wstatus;
         waitpid(pid, &wstatus, 0);
 
-        if (wstatus == 1)
-        {
-            warnx("execute_subshell: error during execution, file not found or "
-                  "could not execute");
-        }
+        if (WIFEXITED(wstatus))
+            return WEXITSTATUS(wstatus);
+        else if (WIFSIGNALED(wstatus))
+            return WTERMSIG(wstatus);
+        else if (WIFSTOPPED(wstatus))
+            return WSTOPSIG(wstatus);
+        else
+            return DEFAULT_ERROR;
     }
-
-    return 0;
 }
 
 static int execute_ast_shell_cmd(struct ast *ast)
@@ -549,11 +550,15 @@ static int execute_ast_shell_cmd(struct ast *ast)
 
     if (ast_shell_cmd->cmd_type == SUBSHELL)
     {
-        return execute_subshell(ast_shell_cmd->compound_list);
+        int result = execute_subshell(ast_shell_cmd->compound_list);
+        set_return_code(result);
+        return result;
     }
     else if (ast_shell_cmd->cmd_type == COMMAND_BLOCK)
     {
-        return execute_ast_compound_list(ast_shell_cmd->compound_list);
+        int result = execute_ast_compound_list(ast_shell_cmd->compound_list);
+        set_return_code(result);
+        return result;
     }
     else
     {
