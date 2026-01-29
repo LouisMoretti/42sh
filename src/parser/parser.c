@@ -23,6 +23,7 @@ static struct ast *parse_rule_until(int *status_code);
 static struct ast *parse_rule_if(int *status_code);
 static struct ast *parse_compound_list(int *status_code);
 static struct ast *parse_else_clause(int *status_code);
+static struct ast *parse_simple_cmd_or_funcdec(int *status_code);
 
 const char *type_name[] = { [IF] = "IF",
                             [THEN] = "THEN",
@@ -276,7 +277,7 @@ static struct ast *parse_cmd(int *status_code)
 
     if (peek_token(ENABLE_KEYWORDS)->type == WORD
         || peek_token(ENABLE_KEYWORDS)->type == REDIRECTION)
-        ((struct ast_cmd *)cmd)->cmd = parse_simple_cmd(status_code);
+        ((struct ast_cmd *)cmd)->cmd = parse_simple_cmd_or_funcdec(status_code);
     else
         ((struct ast_cmd *)cmd)->cmd = parse_shell_cmd(status_code);
 
@@ -488,6 +489,97 @@ static struct ast *parse_simple_cmd(int *status_code)
     }
 
     return ret;
+}
+
+static struct ast *finish_simple_cmd(struct ast *cmd, int *status_code)
+{
+    struct ast *last_redirection = NULL;
+    struct ast *last_element_list = NULL;
+    struct ast *ret = cmd;
+
+    enum token_type token_type = peek_token(DISABLE_KEYWORDS)->type;
+    while (token_type == WORD || token_type == REDIRECTION)
+    {
+        if (token_type == REDIRECTION)
+        {
+            add_redirection(&ret, &last_redirection, &cmd, status_code);
+        }
+        else
+        {
+            // struct ast *element = parse_element(status_code);
+            place_element(&cmd, &last_element_list, parse_element(status_code));
+        }
+
+        if (*status_code)
+            return ret;
+
+        token_type = peek_token(DISABLE_KEYWORDS)->type;
+    }
+
+    return ret;
+}
+
+static struct ast *finish_funcdec(struct ast *funcdec, int *status_code)
+{
+    if (peek_token(ENABLE_KEYWORDS)->type != LEFT_PARENTHESIS)
+    {
+        warnx("finish_funcdec: Wrong token type. Expected LEFT_PARENTHESIS | "
+              "Got: %s",
+              type_name[peek_token(ENABLE_KEYWORDS)->type]);
+        *status_code = 2;
+        return funcdec;
+    }
+    pop_token();
+
+    if (peek_token(ENABLE_KEYWORDS)->type != RIGHT_PARENTHESIS)
+    {
+        warnx("finish_funcdec: Wrong token type. Expected RIGHT_PARENTHESIS | "
+              "Got: %s",
+              type_name[peek_token(ENABLE_KEYWORDS)->type]);
+        *status_code = 2;
+        return funcdec;
+    }
+    pop_token();
+
+    while (peek_token(ENABLE_KEYWORDS)->type == NEW_LINE)
+        pop_token();
+
+    ((struct ast_funcdec *)funcdec)->shell_cmd = parse_shell_cmd(status_code);
+
+    return funcdec;
+}
+
+static struct ast *parse_simple_cmd_or_funcdec(int *status_code)
+{
+    if (check_prefix() || peek_token(ENABLE_KEYWORDS)->type == REDIRECTION)
+        return parse_simple_cmd(status_code);
+
+    if (peek_token(ENABLE_KEYWORDS)->type != WORD)
+    {
+        warnx("parse_simple_cmd_or_funcdec: Wrong token type. Expected WORD | "
+              "Got: %s",
+              type_name[peek_token(ENABLE_KEYWORDS)->type]);
+        *status_code = 2;
+        return NULL;
+    }
+
+    char *tmp = strdup(peek_token(ENABLE_KEYWORDS)->data);
+    pop_token();
+
+    if (peek_token(ENABLE_KEYWORDS)->type == LEFT_PARENTHESIS)
+    {
+        // Funcdec
+        struct ast *funcdec = init_ast(AST_FUNCDEC);
+        ((struct ast_funcdec *)funcdec)->name = tmp;
+
+        return finish_funcdec(funcdec, status_code);
+    }
+
+    // Simple cmd
+    struct ast *cmd = init_ast(AST_SIMPLE_CMD);
+    ((struct ast_simple_cmd *)cmd)->word = tmp;
+
+    return finish_simple_cmd(cmd, status_code);
 }
 
 static struct ast *parse_subshell(int *status_code)

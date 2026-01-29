@@ -31,8 +31,6 @@
 
 typedef int (*exec)(struct ast *);
 
-static int execute_ast_shell_cmd(struct ast *ast);
-
 static int evaluate_command(char **command)
 {
     int pid = fork();
@@ -137,9 +135,24 @@ static int execute_ast_prefix_list(struct ast *ast)
     return 0;
 }
 
+static int execute_ast_function(struct ast *ast)
+{
+    if (!ast)
+        return 0;
+
+    struct ast_funcdec *ast_function = (struct ast_funcdec *)ast;
+    assert(ast_function->name != NULL);
+    assert(ast_function->shell_cmd != NULL);
+
+    return execute_ast(ast_function->shell_cmd);
+}
+
 static int check_which_cmd(struct ast_simple_cmd *ast_simple_cmd)
 {
-    if (!strcmp(ast_simple_cmd->word, BUILTIN_ECHO))
+    struct ast *ast = functions_hashmap_get(ast_simple_cmd->word);
+    if (ast)
+        return execute_ast_function(ast);
+    else if (!strcmp(ast_simple_cmd->word, BUILTIN_ECHO))
         return builtin_echo(ast_simple_cmd);
     else if (!strcmp(ast_simple_cmd->word, BUILTIN_FALSE))
         return builtin_false();
@@ -269,30 +282,6 @@ static int execute_ast_simple_cmd(struct ast *ast)
     ast_simple_cmd->element_list = (struct ast *)good_list;
 
     return exit_code;
-}
-
-static int execute_ast_cmd(struct ast *ast)
-{
-    if (!ast)
-        return 0;
-
-    assert(ast->type == AST_CMD);
-    struct ast_cmd *ast_cmd = (struct ast_cmd *)ast;
-    assert(ast_cmd->cmd != NULL);
-    int return_code;
-    switch (ast_cmd->cmd->type)
-    {
-    case AST_SIMPLE_CMD:
-        return_code = execute_ast_simple_cmd(ast_cmd->cmd);
-        set_return_code(return_code);
-        return return_code;
-    case AST_SHELL_CMD:
-        return execute_ast_shell_cmd(ast_cmd->cmd);
-    case AST_REDIRECTION:
-        return execute_ast_redirection(ast_cmd->cmd);
-    default: // May not fall through
-        return 1;
-    }
 }
 
 static int execute_ast_pipeline(struct ast *ast)
@@ -578,6 +567,54 @@ static int execute_ast_shell_cmd(struct ast *ast)
     }
 }
 
+static int execute_ast_funcdec(struct ast *ast)
+{
+    if (!ast)
+        return 0;
+
+    assert(ast->type == AST_FUNCDEC);
+    struct ast_funcdec *ast_funcdec = (struct ast_funcdec *)ast;
+    assert(ast_funcdec->name != NULL);
+    assert(ast_funcdec->shell_cmd != NULL);
+
+    if (!functions_hashmap_insert(ast_funcdec->name, ast))
+        return 1;
+
+    return 0;
+}
+
+static int execute_ast_cmd(struct ast *ast)
+{
+    if (!ast)
+        return 0;
+
+    assert(ast->type == AST_CMD);
+    struct ast_cmd *ast_cmd = (struct ast_cmd *)ast;
+    assert(ast_cmd->cmd != NULL);
+    int exit_code = 0;
+
+    switch (ast_cmd->cmd->type)
+    {
+    case AST_SIMPLE_CMD:
+        exit_code = execute_ast_simple_cmd(ast_cmd->cmd);
+        set_return_code(exit_code);
+        return exit_code;
+    case AST_SHELL_CMD:
+        return execute_ast_shell_cmd(ast_cmd->cmd);
+    case AST_REDIRECTION:
+        return execute_ast_redirection(ast_cmd->cmd);
+    case AST_FUNCDEC:
+        exit_code = execute_ast_funcdec(ast_cmd->cmd);
+        // If the exit code is 0, the function AST is added in functions hashmap
+        if (!exit_code)
+            ast_cmd->cmd = NULL;
+        set_return_code(exit_code);
+        return exit_code;
+    default: // May not fall through
+        return 1;
+    }
+}
+
 static int execute_ast_list(struct ast *ast)
 {
     if (!ast)
@@ -626,7 +663,8 @@ static exec execute_functions[] = {
     [AST_RULE_WHILE] = &execute_ast_while,
     [AST_RULE_UNTIL] = &execute_ast_until,
     [AST_RULE_FOR] = &execute_ast_for,
-    [AST_REDIRECTION] = &execute_ast_redirection
+    [AST_REDIRECTION] = &execute_ast_redirection,
+    [AST_FUNCDEC] = &execute_ast_funcdec
 };
 
 int execute_ast(struct ast *ast)

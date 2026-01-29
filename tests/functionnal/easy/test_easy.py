@@ -309,13 +309,16 @@ params_cmds = [("test_escape","echo -e '\\n'",[]),
                ('for in dollar @','for i in $@; do echo $i; done;', ["co","u","co","u"]),
                ('simple_echo_expansion_negated', "! echo -e '\t\n\\\\'", []),
                ('simple_echo_many_expansion', "echo -e '\\t\\t\\t\\t\\t\\n\\n\\n\\n\\n\\t\\n\\\\end'", []),
+               ('simple_function', "f () { echo Heyyyy; }; f", []),
                ('simple_stdout_redirection', 'echo Hello World! > /tmp/easy_file1', []),
                ('simple_stderr_redirection', 'ec Fail! 2> /tmp/easy_file2', []),
                ('simple_stdout_append_redirection', '> /tmp/easy_file3 echo Hello World! >> /tmp/easy_file3', []),
                ('exit inside if rule', "if exit 42; then echo nope; fi;", []),
                ('simple_dollar_arrobaz','echo UC${@}', ["as","ACU","sad"]),
                ('simple subshell', '(echo non);echo yep;', []),
-               ('subshell hard', 'var1=coucou;(var2=nope); echo $var1', [])
+               ('subshell hard', 'var1=coucou;(var2=nope); echo $var1', []),
+               ('simple_function', "f () { echo Heyyyy; }; f", []),
+               ('simple_function_with_args', "f () { echo Heyyyy; }; f fail fail2", [])
                ]
 
 @pytest.mark.parametrize("name,command_to_run, list_args", params_cmds)

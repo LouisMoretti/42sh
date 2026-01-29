@@ -3,9 +3,10 @@ lib_LIBRARIES = libhashmap.a
 
 # Source Files
 libhashmap_a_SOURCES = \
-				   hash_map.c \
-				   hash.c \
-				   hash_map.h
+					   functions_hashmap.c \
+					   hash_map.c \
+					   hash.c \
+					   hash_map.h
 
 # Preprocessing Flags
 libhashmap_a_CPPFLAGS = -I$(top_srcdir)/src

@@ -1,0 +1,5 @@
+echo a;
+# Ceci est un test
+f () { echo func; };
+# Le vrai test !
+f || echo "La fonction n'existe pas";

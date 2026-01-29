@@ -266,7 +266,8 @@ params_cmds = [("test_mix_medium","if if if false; then echo Fail\nelif false; t
                ('simple_pipe_with_negation', "! echo a | cat", []),
                ('many_boolean_operators', "! echo a || echo b && echo c && ! true || echo gg", []),
                ('pipes_and_or_negation_mixed', "! echo a | cat | cat | false || echo b | cat | cat && echo c && true | false || echo gg | cat | cat | cat", []),
-               ('$? in subshell', "echo nope; (echo 0 error); echo $?", [])
+               ('$? in subshell', "echo nope; (echo 0 error); echo $?", []),
+               ('recursive_function', "f () { g () { echo Recursive function Yeahhh; }; }; f FAILURE; g;", [])
                ]
 
 
