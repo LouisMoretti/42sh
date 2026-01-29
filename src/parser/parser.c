@@ -541,6 +541,9 @@ static struct ast *finish_funcdec(struct ast *funcdec, int *status_code)
     }
     pop_token();
 
+    while (peek_token(ENABLE_KEYWORDS)->type == NEW_LINE)
+        pop_token();
+
     ((struct ast_funcdec *)funcdec)->shell_cmd = parse_shell_cmd(status_code);
 
     return funcdec;
