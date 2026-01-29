@@ -1,11 +1,12 @@
 #define _POSIX_C_SOURCE 200809L
+#include "parser/parser.h"
+
 #include <err.h>
 #include <stddef.h>
 #include <string.h>
 
 #include "lexer/lexer.h"
 #include "parser/ast.h"
-#include "parser/parser.h"
 
 static struct ast *parse_list(int *status_code);
 static struct ast *parse_and_or(int *status_code);
