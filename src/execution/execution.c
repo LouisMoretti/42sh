@@ -470,6 +470,16 @@ static int execute_ast_for(struct ast *ast)
     struct ast_word_list *ast_word_list =
         (struct ast_word_list *)ast_rule_for->in_word_list;
 
+    struct ast_word_list *good_list = ast_word_list;
+
+    int in = 0;
+    if (ast_word_list)
+    {
+        in = 1;
+
+        ast_rule_for->in_word_list = (struct ast *)expand_for(ast_word_list);
+        ast_word_list = (struct ast_word_list *)ast_rule_for->in_word_list;
+    }
     struct hash_map *hm = get_hm();
 
     while (ast_word_list && !is_exit())
@@ -486,7 +496,43 @@ static int execute_ast_for(struct ast *ast)
         ast_word_list = (struct ast_word_list *)ast_word_list->next;
     }
 
+    if (in)
+    {
+        free_ast((struct ast *)ast_rule_for->in_word_list);
+        ast_rule_for->in_word_list = (struct ast *)good_list;
+    }
+
     return result;
+}
+
+static int execute_subshell(struct ast *ast)
+{
+    int pid = fork();
+
+    if (pid == -1)
+        return 1;
+    else if (!pid)
+    {
+        int res = execute_ast_compound_list(ast);
+
+        if (res != 0)
+            warnx("execute_subshell: an error occured in the subshell");
+
+        _exit(res);
+    }
+    else
+    {
+        int wstatus;
+        waitpid(pid, &wstatus, 0);
+
+        if (wstatus == 1)
+        {
+            warnx("execute_subshell: error during execution, file not found or "
+                  "could not execute");
+        }
+    }
+
+    return 0;
 }
 
 static int execute_ast_shell_cmd(struct ast *ast)
@@ -496,20 +542,30 @@ static int execute_ast_shell_cmd(struct ast *ast)
 
     assert(ast->type == AST_SHELL_CMD);
     struct ast_shell_cmd *ast_shell_cmd = (struct ast_shell_cmd *)ast;
-    assert(ast_shell_cmd->rule != NULL);
 
-    switch (ast_shell_cmd->rule->type)
+    if (ast_shell_cmd->cmd_type == SUBSHELL)
     {
-    case AST_RULE_IF:
-        return execute_ast_rule_if(ast_shell_cmd->rule);
-    case AST_RULE_WHILE:
-        return execute_ast_while(ast_shell_cmd->rule);
-    case AST_RULE_UNTIL:
-        return execute_ast_until(ast_shell_cmd->rule);
-    case AST_RULE_FOR:
-        return execute_ast_for(ast_shell_cmd->rule);
-    default:
-        return 0;
+        return execute_subshell(ast_shell_cmd->compound_list);
+    }
+    else if (ast_shell_cmd->cmd_type == COMMAND_BLOCK)
+    {
+        return execute_ast_compound_list(ast_shell_cmd->compound_list);
+    }
+    else
+    {
+        switch (ast_shell_cmd->rule->type)
+        {
+        case AST_RULE_IF:
+            return execute_ast_rule_if(ast_shell_cmd->rule);
+        case AST_RULE_WHILE:
+            return execute_ast_while(ast_shell_cmd->rule);
+        case AST_RULE_UNTIL:
+            return execute_ast_until(ast_shell_cmd->rule);
+        case AST_RULE_FOR:
+            return execute_ast_for(ast_shell_cmd->rule);
+        default:
+            return 0;
+        }
     }
 }
 
