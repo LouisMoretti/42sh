@@ -493,19 +493,30 @@ static struct ast *parse_simple_cmd(int *status_code)
 
 static struct ast *finish_simple_cmd(struct ast *cmd, int *status_code)
 {
-    struct token *tok = peek_token(DISABLE_KEYWORDS);
-    if (!tok)
-        *status_code = 2; // Missing closing quote
+    struct ast *last_redirection = NULL;
+    struct ast *last_element_list = NULL;
+    struct ast *ret = cmd;
 
-    else if (tok->type == WORD) // TODO: || tok->type == REDIRECTION
+    enum token_type token_type = peek_token(DISABLE_KEYWORDS)->type;
+    while (token_type == WORD || token_type == REDIRECTION)
     {
-        ((struct ast_simple_cmd *)cmd)->element_list =
-            parse_element_list(status_code);
+        if (token_type == REDIRECTION)
+        {
+            add_redirection(&ret, &last_redirection, &cmd, status_code);
+        }
+        else
+        {
+            // struct ast *element = parse_element(status_code);
+            place_element(&cmd, &last_element_list, parse_element(status_code));
+        }
+
         if (*status_code)
-            return cmd;
+            return ret;
+
+        token_type = peek_token(DISABLE_KEYWORDS)->type;
     }
 
-    return cmd;
+    return ret;
 }
 
 static struct ast *finish_funcdec(struct ast *funcdec, int *status_code)
@@ -537,7 +548,7 @@ static struct ast *finish_funcdec(struct ast *funcdec, int *status_code)
 
 static struct ast *parse_simple_cmd_or_funcdec(int *status_code)
 {
-    if (check_prefix()) // TODO: Same For redirections
+    if (check_prefix() || peek_token(ENABLE_KEYWORDS)->type == REDIRECTION)
         return parse_simple_cmd(status_code);
 
     if (peek_token(ENABLE_KEYWORDS)->type != WORD)
