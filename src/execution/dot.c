@@ -16,7 +16,7 @@ int builtin_dot(struct ast_simple_cmd *command)
     if (!ast_element_list)
     {
         warnx("builtin_dot: error, no filename after dot");
-        return -1;
+        return 1;
     }
 
     struct ast_element *ast_element =
@@ -25,7 +25,7 @@ int builtin_dot(struct ast_simple_cmd *command)
     if (!ast_element || !ast_element->word)
     {
         warnx("builtin_dot: error, no element or no word in element list");
-        return -1;
+        return 1;
     }
 
     char *cmd = ast_element->word;
@@ -36,7 +36,7 @@ int builtin_dot(struct ast_simple_cmd *command)
     int pid = fork();
 
     if (pid == -1)
-        return -1;
+        return 1;
     else if (!pid)
     {
         reset_modules();
@@ -48,11 +48,14 @@ int builtin_dot(struct ast_simple_cmd *command)
         int wstatus;
         waitpid(pid, &wstatus, 0);
 
+        res = wstatus;
+
         if (wstatus == -1)
+        {
             warnx("builtin_dot: error during execution, file not found or "
                   "could not execute");
-
-        res = wstatus;
+            res = 1;
+        }
     }
 
     return res;
