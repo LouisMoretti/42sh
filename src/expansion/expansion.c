@@ -699,15 +699,14 @@ char *expand_echo(char *word)
     return result;
 }
 
-static int expand_list_args(char **result, struct ast_word_list **word)
+static int expand_list_args(char **result, struct ast_word_list **act_res)
 {
     struct config *my_conf = get_conf();
-    int i = 1;
-    struct ast_word_list *act = *word;
+    int i = 0;
 
     // go threw all the arguments to add them one by one (but not the last one
     // !)
-    while (i < my_conf->arg_count)
+    while (i < my_conf->arg_count - 1)
     {
         // copy the config argument in case an error occurs in the merge
         char *tmp = strdup(my_conf->arg_values[i]);
@@ -716,15 +715,16 @@ static int expand_list_args(char **result, struct ast_word_list **word)
         if (!result)
             return -1;
 
+        (*act_res)->word = *result;
+
         // malloc the word list to add an element
         struct ast_word_list *new_word =
             (struct ast_word_list *)init_ast(AST_WORD_LIST);
         if (!new_word)
             return -1;
 
-        new_word->word = *result;
-        act->next = (struct ast *)new_word;
-        act = new_word;
+        (*act_res)->next = (struct ast *)new_word;
+        *act_res = (struct ast_word_list *)(*act_res)->next;
 
         // create a new result variable
         *result = calloc(1, sizeof(char));
@@ -759,20 +759,10 @@ static char *res_merge_for(char **result, char **copy, size_t *offset,
     return *result;
 }
 
-static void switch_word(struct ast_word_list **word, char **result,
-                        struct ast **next)
-{
-    if ((*word)->word)
-        free((*word)->word);
-
-    (*word)->word = *result;
-    (*word)->next = *next;
-}
-
 static struct ast_word_list *expand_word_for(struct ast_word_list *word)
 {
-    struct ast_word_list *res = word;
-    struct ast *next = word->next;
+    struct ast_word_list *res = (struct ast_word_list *)init_ast(AST_WORD_LIST);
+    struct ast_word_list *act_res = res;
 
     // Copy original string.
     char *copy = strndup(word->word, strlen(word->word));
@@ -812,14 +802,19 @@ static struct ast_word_list *expand_word_for(struct ast_word_list *word)
         {
             if (copy[i + 1] == '@')
             {
+                // add to the result the string already passed
+                if (offset != i)
+                    result = middle_merge(result, copy, offset, i - offset);
+                // put the offset after the @
+                offset = i + 2;
+
                 // call this function to add in the word list all the arguments
                 // given in the list
 
-                if (expand_list_args(&result, &word) == -1)
+                if (expand_list_args(&result, &act_res) == -1)
                 {
                     // put the next element of the word to be able to free
                     // everything
-                    word->next = next;
                     return NULL;
                 }
 
@@ -840,23 +835,39 @@ static struct ast_word_list *expand_word_for(struct ast_word_list *word)
     if (!res_merge_for(&result, &copy, &offset, &i))
         return NULL;
 
-    switch_word(&word, &result, &next);
+    act_res->word = result;
 
     return res;
 }
 
 struct ast_word_list *expand_for(struct ast_word_list *word)
 {
-    struct ast_word_list *res = word;
+    struct ast_word_list *res = NULL;
     struct ast_word_list *act = word;
+
+    struct ast_word_list *new = expand_word_for(act);
+    if (!new)
+        return NULL;
+
+    res = new;
+    struct ast_word_list *res_act = res;
+    act = (struct ast_word_list *)act->next;
 
     while (act)
     {
-        struct ast_word_list *next = (struct ast_word_list *)act->next;
-        if (!expand_word_for(act))
+        struct ast_word_list *new = expand_word_for(act);
+        if (!new)
+        {
+            if (!res)
+                free_ast((struct ast *)res);
             return NULL;
+        }
 
-        act = next;
+        res_act->next = (struct ast *)new;
+        while (!res_act)
+            res_act = new;
+
+        act = (struct ast_word_list *)act->next;
     }
 
     return res;
