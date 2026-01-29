@@ -38,8 +38,8 @@ const char *type_name[] = { [IF] = "IF",
                             [IN] = "IN",
                             // [ESAC] = "ESAC",
                             [NEGATION] = "NEGATION",
-                            // [LEFT_BRACKET] = "LEFT_BRACKET",
-                            // [RIGHT_BRACKET] = "RIGHT_BRACKET",
+                            [LEFT_BRACKET] = "LEFT_BRACKET",
+                            [RIGHT_BRACKET] = "RIGHT_BRACKET",
                             [KEYWORD_COUNT] = "KEYWORD_COUNT (INVALID)",
                             [NEW_LINE] = "NEW_LINE",
                             [REDIRECTION] = "REDIRECTION",
@@ -556,7 +556,8 @@ static struct ast *parse_shell_cmd(int *status_code)
 
     // TODO: Step 3: Add other rules.
     if (tok->type != IF && tok->type != WHILE && tok->type != UNTIL
-        && tok->type != FOR && tok->type != LEFT_PARENTHESIS)
+        && tok->type != FOR && tok->type != LEFT_PARENTHESIS
+        && tok->type != LEFT_BRACKET)
     {
         warnx("parse_shell_cmd: Unsupported shell command. Expected IF or "
               "WHILE or UNTIL or FOR | Got: %s",
