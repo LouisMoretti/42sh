@@ -1,13 +1,13 @@
 #define _POSIX_C_SOURCE 200809L
 
+#include "hash_map.h"
+
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include "hash_map.h"
 
 struct hash_map *hash_map_init(size_t size)
 {
