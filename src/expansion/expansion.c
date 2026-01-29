@@ -702,7 +702,7 @@ char *expand_echo(char *word)
 static int expand_list_args(char **result, struct ast_word_list **act_res)
 {
     struct config *my_conf = get_conf();
-    int i = 0;
+    int i = 1;
 
     // go threw all the arguments to add them one by one (but not the last one
     // !)
@@ -733,6 +733,9 @@ static int expand_list_args(char **result, struct ast_word_list **act_res)
 
         i++;
     }
+
+    if (my_conf->arg_count <= 1)
+        return 0;
 
     // add the last argument in the result variable to be able to keep it for
     // the end of the given string in expand_for
@@ -848,6 +851,12 @@ struct ast_word_list *expand_for(struct ast_word_list *word)
     struct ast_word_list *new = expand_word_for(act);
     if (!new)
         return NULL;
+
+    if (new->word == NULL || new->word[0] == '\0')
+    {
+        free_ast((struct ast *)new);
+        return NULL;
+    }
 
     res = new;
     struct ast_word_list *res_act = res;
