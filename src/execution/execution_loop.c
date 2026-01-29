@@ -10,6 +10,7 @@
 #include "lexer/lexer.h"
 #include "parser/parser.h"
 #include "parser/pretty_print.h"
+#include "utils/hash_map/hash_map.h"
 
 int init_modules(struct config *conf)
 {
@@ -17,8 +18,12 @@ int init_modules(struct config *conf)
     if (io_setup(conf) != 0)
         return 2;
 
-    // Init hash table
+    // Init variables hash table
     if (init_expansion() != 0)
+        return 2;
+
+    // Init functions hash table
+    if (init_functions_hashmap() != 0)
         return 2;
 
     return 0;
@@ -29,6 +34,7 @@ void reset_modules(void)
     io_close();
     pop_token();
     reset_expansion();
+    reset_functions_hashmap();
 }
 
 int execute_loop(int argc, char **argv)
