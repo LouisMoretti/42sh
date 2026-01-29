@@ -537,12 +537,14 @@ static int execute_ast_shell_cmd(struct ast *ast)
 
     assert(ast->type == AST_SHELL_CMD);
     struct ast_shell_cmd *ast_shell_cmd = (struct ast_shell_cmd *)ast;
-    assert(ast_shell_cmd->rule != NULL);
+
+    if (ast_shell_cmd->rule == NULL)
+    {
+        return execute_subshell(ast_shell_cmd->compound_list);
+    }
 
     switch (ast_shell_cmd->rule->type)
     {
-    case AST_SHELL_CMD:
-        return execute_subshell(ast_shell_cmd->compound_list);
     case AST_RULE_IF:
         return execute_ast_rule_if(ast_shell_cmd->rule);
     case AST_RULE_WHILE:
