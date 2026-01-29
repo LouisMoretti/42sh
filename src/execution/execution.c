@@ -505,6 +505,31 @@ static int execute_ast_for(struct ast *ast)
     return result;
 }
 
+static int execute_subshell(struct ast *ast)
+{
+    int pid = fork();
+
+    if (pid == -1)
+        return 1;
+    else if (!pid)
+    {
+        return execute_ast_compound_list(ast);
+    }
+    else
+    {
+        int wstatus;
+        waitpid(pid, &wstatus, 0);
+
+        if (wstatus == 1)
+        {
+            warnx("execute_subshell: error during execution, file not found or "
+                  "could not execute");
+        }
+    }
+
+    return 0;
+}
+
 static int execute_ast_shell_cmd(struct ast *ast)
 {
     if (!ast)
@@ -516,6 +541,8 @@ static int execute_ast_shell_cmd(struct ast *ast)
 
     switch (ast_shell_cmd->rule->type)
     {
+    case AST_SHELL_CMD:
+        return execute_subshell(ast_shell_cmd->compound_list);
     case AST_RULE_IF:
         return execute_ast_rule_if(ast_shell_cmd->rule);
     case AST_RULE_WHILE:
