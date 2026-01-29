@@ -114,3 +114,9 @@ int is_exit(void)
 {
     return my_conf.exit_code;
 }
+
+void set_return_code(int code)
+{
+    my_conf.previous_code = code;
+    return;
+}

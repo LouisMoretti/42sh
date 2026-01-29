@@ -24,5 +24,6 @@ void set_env_variables(void);
 int set_conf(int argc, char **argv);
 struct config *get_conf(void);
 int is_exit(void);
+void set_return_code(int code);
 
 #endif // ! CONFIG_H

@@ -279,11 +279,13 @@ static int execute_ast_cmd(struct ast *ast)
     assert(ast->type == AST_CMD);
     struct ast_cmd *ast_cmd = (struct ast_cmd *)ast;
     assert(ast_cmd->cmd != NULL);
-
+    int return_code;
     switch (ast_cmd->cmd->type)
     {
     case AST_SIMPLE_CMD:
-        return execute_ast_simple_cmd(ast_cmd->cmd);
+        return_code = execute_ast_simple_cmd(ast_cmd->cmd);
+        set_return_code(return_code);
+        return return_code;
     case AST_SHELL_CMD:
         return execute_ast_shell_cmd(ast_cmd->cmd);
     case AST_REDIRECTION:
@@ -309,6 +311,8 @@ static int execute_ast_pipeline(struct ast *ast)
 
     if (ast_pipeline->negation)
         result = !result;
+
+    set_return_code(result);
 
     return result;
 }
