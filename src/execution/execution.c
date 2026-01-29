@@ -246,7 +246,7 @@ static int execute_ast_simple_cmd(struct ast *ast)
     assert(ast_simple_cmd->word != NULL || ast_simple_cmd->prefix_list != NULL);
 
     if (!ast_simple_cmd->word)
-        return execute_ast_prefix_list(ast_simple_cmd);
+        return execute_ast_prefix_list(ast_simple_cmd->prefix_list);
 
     char *expanded = expand_string(ast_simple_cmd->word);
     if (!expanded)
