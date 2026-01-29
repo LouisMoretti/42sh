@@ -1,4 +1,5 @@
 #define _POSIX_C_SOURCE 200809L
+
 #include "execution/execution.h"
 
 #include <assert.h>
@@ -133,7 +134,7 @@ static int execute_ast_function(struct ast *ast)
     assert(ast_function->name != NULL);
     assert(ast_function->shell_cmd != NULL);
 
-    return execute_ast_shell_cmd(ast_function->shell_cmd);
+    return execute_ast(ast_function->shell_cmd);
 }
 
 static int check_which_cmd(struct ast_simple_cmd *ast_simple_cmd)
@@ -463,12 +464,18 @@ static int execute_ast_shell_cmd(struct ast *ast)
     }
 }
 
-static int execute_ast_funcdef(struct ast *ast)
+static int execute_ast_funcdec(struct ast *ast)
 {
     if (!ast)
         return 0;
 
-    // TODO: Add the function in the hash map
+    assert(ast->type == AST_FUNCDEC);
+    struct ast_funcdec *ast_funcdec = (struct ast_funcdec *)ast;
+    assert(ast_funcdec->name != NULL);
+    assert(ast_funcdec->shell_cmd != NULL);
+
+    if (!functions_hashmap_insert(ast_funcdec->name, ast))
+        return 1;
 
     return 0;
 }
@@ -481,12 +488,22 @@ static int execute_ast_cmd(struct ast *ast)
     assert(ast->type == AST_CMD);
     struct ast_cmd *ast_cmd = (struct ast_cmd *)ast;
     assert(ast_cmd->cmd != NULL);
+    int exit_code = 0;
+
     switch (ast_cmd->cmd->type)
     {
     case AST_SIMPLE_CMD:
         return execute_ast_simple_cmd(ast_cmd->cmd);
     case AST_SHELL_CMD:
         return execute_ast_shell_cmd(ast_cmd->cmd);
+    case AST_FUNCDEC: {
+        exit_code = execute_ast_funcdec(ast_cmd->cmd);
+        // If the exit code is 0, the function AST is added in functions hashmap
+        if (!exit_code)
+            ast_cmd->cmd = NULL;
+
+        return exit_code;
+    }
     default: // May not fall through
         return 1;
     }
@@ -536,7 +553,8 @@ static exec execute_functions[] = { [AST_INPUT] = &execute_ast_input,
                                         &execute_ast_else_clause,
                                     [AST_RULE_WHILE] = &execute_ast_while,
                                     [AST_RULE_UNTIL] = &execute_ast_until,
-                                    [AST_RULE_FOR] = &execute_ast_for };
+                                    [AST_RULE_FOR] = &execute_ast_for,
+                                    [AST_FUNCDEC] = &execute_ast_funcdec };
 
 int execute_ast(struct ast *ast)
 {

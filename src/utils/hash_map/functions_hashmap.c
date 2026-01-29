@@ -1,5 +1,6 @@
-#include <stdbool.h>
-#include <stddef.h>
+#define _POSIX_C_SOURCE 200809L
+
+#include <err.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -8,7 +9,7 @@
 #include "hash_map.h"
 #include "parser/ast.h"
 
-#define functions_hashmap_SIZE 16
+#define FUNCTIONS_HASHMAP_SIZE 16
 
 static struct functions_hashmap *functions_hashmap = NULL;
 
@@ -39,24 +40,24 @@ int init_functions_hashmap(void)
         return 1;
     }
 
-    functions_hashmap = functions_hashmap_init(functions_hashmap_SIZE);
+    functions_hashmap = functions_hashmap_init(FUNCTIONS_HASHMAP_SIZE);
 
     return 0;
 }
 
 void reset_functions_hashmap(void)
 {
-    functions_hashmap_free(functions_hashmap);
+    functions_hashmap_free();
     functions_hashmap = NULL;
 }
 
 bool functions_hashmap_insert(char *name, struct ast *ast)
 {
     if (functions_hashmap == NULL || functions_hashmap->size == 0
-        || key == NULL)
+        || name == NULL)
         return false;
 
-    size_t place = hash(key) % functions_hashmap->size;
+    size_t place = hash(name) % functions_hashmap->size;
     struct function_pair_list *list =
         (struct function_pair_list *)functions_hashmap->data[place];
     while (list != NULL)
@@ -72,7 +73,7 @@ bool functions_hashmap_insert(char *name, struct ast *ast)
         list = list->next;
     }
 
-    struct functions_pair_list *v = malloc(sizeof(struct functions_pair_list));
+    struct function_pair_list *v = malloc(sizeof(struct function_pair_list));
     if (!v)
         return false;
 
@@ -94,7 +95,7 @@ struct ast *functions_hashmap_get(const char *name)
         return NULL;
 
     size_t place = hash(name) % functions_hashmap->size;
-    struct functions_pair_list *list = functions_hashmap->data[place];
+    struct function_pair_list *list = functions_hashmap->data[place];
     while (list != NULL)
     {
         if (strcmp(list->name, name) == 0)
@@ -106,7 +107,7 @@ struct ast *functions_hashmap_get(const char *name)
     return NULL;
 }
 
-static void functions_pair_list_free(struct functions_pair_list *list)
+static void function_pair_list_free(struct function_pair_list *list)
 {
     if (!list)
         return;
@@ -114,18 +115,18 @@ static void functions_pair_list_free(struct functions_pair_list *list)
     free(list->name);
     free_ast(list->function);
 
-    functions_pair_list_free(list->next);
+    function_pair_list_free(list->next);
     free(list);
 }
 
-bool functions_hashmap_remove(const char *key)
+bool functions_hashmap_remove(const char *name)
 {
     if (functions_hashmap == NULL || functions_hashmap->size == 0
         || name == NULL)
         return false;
 
     size_t place = hash(name) % functions_hashmap->size;
-    struct functions_pair_list *list = functions_hashmap->data[place];
+    struct function_pair_list *list = functions_hashmap->data[place];
 
     if (list == NULL)
         return true;
@@ -142,28 +143,28 @@ bool functions_hashmap_remove(const char *key)
     {
         if (strcmp(list->next->name, name) == 0)
         {
-            struct functions_pair_list *t = p->next;
-            p->next = t->next;
+            struct function_pair_list *t = list->next;
+            list->next = t->next;
 
             t->next = NULL;
-            functions_pair_list_free(t);
+            function_pair_list_free(t);
 
             return true;
         }
 
-        p = p->next;
+        list = list->next;
     }
 
     return false;
 }
 
-void functions_hashmap_free(struct functions_hashmap *)
+void functions_hashmap_free(void)
 {
     if (functions_hashmap == NULL)
         return;
 
     for (size_t i = 0; i < functions_hashmap->size; i++)
-        functions_pair_list_free(functions_hashmap->data[i]);
+        function_pair_list_free(functions_hashmap->data[i]);
 
     free(functions_hashmap->data);
     free(functions_hashmap);

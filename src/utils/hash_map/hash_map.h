@@ -17,6 +17,19 @@ struct hash_map
     size_t size;
 };
 
+struct function_pair_list
+{
+    char *name;
+    struct ast *function;
+    struct function_pair_list *next;
+};
+
+struct functions_hashmap
+{
+    struct function_pair_list **data;
+    size_t size;
+};
+
 size_t hash(const char *str);
 struct hash_map *hash_map_init(size_t size);
 bool hash_map_insert(struct hash_map *hash_map, char *key, char *value,
@@ -29,7 +42,8 @@ bool hash_map_remove(struct hash_map *hash_map, const char *key);
 int init_functions_hashmap(void);
 void reset_functions_hashmap(void);
 bool functions_hashmap_insert(char *name, struct ast *ast);
-bool functions_hashmap_remove(const char *key);
-void functions_hashmap_free(struct functions_hashmap *);
+struct ast *functions_hashmap_get(const char *name);
+bool functions_hashmap_remove(const char *name);
+void functions_hashmap_free(void);
 
 #endif /* ! HASH_MAP_H */

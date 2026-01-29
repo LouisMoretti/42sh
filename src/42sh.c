@@ -7,6 +7,7 @@
 #include "iobackend/iobackend.h"
 #include "parser/parser.h"
 #include "parser/pretty_print.h"
+#include "utils/hash_map/hash_map.h"
 
 int init_modules(struct config *conf)
 {
