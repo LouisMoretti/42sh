@@ -215,9 +215,6 @@ static int execute_ast_redirection_out_dup(struct ast *ast)
     if (fd == -1)
         return 1;
 
-    // TODO: Check if the file descriptor is not open => error (fstat)
-    // And check if word is writable
-
     // Create a copy of 'word' file descriptor
     int fd_backup = dup(ast_redirection->io_number);
     if (fd_backup == -1)
@@ -276,9 +273,6 @@ static int execute_ast_redirection_in_dup(struct ast *ast)
     int fd = get_file_descriptor(ast_redirection->word, O_RDONLY);
     if (fd == -1)
         return 1;
-
-    // TODO: Check if the file descriptor is not open => error (fstat)
-    // And check if word is writable
 
     // Create a copy of 'word' file descriptor
     int fd_backup = dup(fd);
