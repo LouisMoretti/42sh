@@ -406,7 +406,7 @@ static struct ast *parse_command_block(int *status_code)
 {
     if (peek_token(ENABLE_KEYWORDS)->type != LEFT_BRACKET)
     {
-        warnx("parse_subshell: Wrong token type. Expected LEFT_BRACKET | "
+        warnx("parse_command_block: Wrong token type. Expected LEFT_BRACKET | "
               "Got: %s",
               type_name[peek_token(ENABLE_KEYWORDS)->type]);
         *status_code = 2;
@@ -420,7 +420,7 @@ static struct ast *parse_command_block(int *status_code)
 
     if (peek_token(ENABLE_KEYWORDS)->type != RIGHT_BRACKET)
     {
-        warnx("parse_subshell: Wrong token type. Expected RIGHT_BRACKET | "
+        warnx("parse_command_block: Wrong token type. Expected RIGHT_BRACKET | "
               "Got: %s",
               type_name[peek_token(ENABLE_KEYWORDS)->type]);
         *status_code = 2;
