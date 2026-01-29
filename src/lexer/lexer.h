@@ -17,8 +17,8 @@ enum token_type
     IN,
     // ESAC,
     NEGATION,
-    // LEFT_BRACKET,
-    // RIGHT_BRACKET,
+    LEFT_BRACKET,
+    RIGHT_BRACKET,
     KEYWORD_COUNT, // Keep this here, add keywords above only
     NEW_LINE,
     SEMICOLON,

@@ -402,6 +402,35 @@ static struct ast *parse_subshell(int *status_code)
     return compound_list;
 }
 
+static struct ast *parse_command_block(int *status_code)
+{
+    if (peek_token(ENABLE_KEYWORDS)->type != LEFT_BRACKET)
+    {
+        warnx("parse_subshell: Wrong token type. Expected LEFT_BRACKET | "
+              "Got: %s",
+              type_name[peek_token(ENABLE_KEYWORDS)->type]);
+        *status_code = 2;
+        return NULL;
+    }
+    pop_token();
+
+    struct ast *compound_list = parse_compound_list(status_code);
+    if (*status_code)
+        return compound_list;
+
+    if (peek_token(ENABLE_KEYWORDS)->type != RIGHT_BRACKET)
+    {
+        warnx("parse_subshell: Wrong token type. Expected RIGHT_BRACKET | "
+              "Got: %s",
+              type_name[peek_token(ENABLE_KEYWORDS)->type]);
+        *status_code = 2;
+        return compound_list;
+    }
+    pop_token();
+
+    return compound_list;
+}
+
 static struct ast *parse_shell_cmd(int *status_code)
 {
     struct ast *cmd = init_ast(AST_SHELL_CMD);
@@ -433,6 +462,12 @@ static struct ast *parse_shell_cmd(int *status_code)
         ((struct ast_shell_cmd *)cmd)->cmd_type = SUBSHELL;
         ((struct ast_shell_cmd *)cmd)->compound_list =
             parse_subshell(status_code);
+    }
+    else if (tok->type == LEFT_BRACKET)
+    {
+        ((struct ast_shell_cmd *)cmd)->cmd_type = COMMAND_BLOCK;
+        ((struct ast_shell_cmd *)cmd)->compound_list =
+            parse_command_block(status_code);
     }
 
     return cmd;
