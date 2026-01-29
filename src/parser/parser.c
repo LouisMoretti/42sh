@@ -38,7 +38,9 @@ const char *type_name[] = { [IF] = "IF",
                             [IN] = "IN",
                             // [ESAC] = "ESAC",
                             [NEGATION] = "NEGATION",
-                            // [KEYWORD_COUNT] = "KEYWORD_COUNT",
+                            // [LEFT_BRACKET] = "LEFT_BRACKET",
+                            // [RIGHT_BRACKET] = "RIGHT_BRACKET",
+                            [KEYWORD_COUNT] = "KEYWORD_COUNT (INVALID)",
                             [NEW_LINE] = "NEW_LINE",
                             [REDIRECTION] = "REDIRECTION",
                             [SEMICOLON] = "SEMICOLON",
@@ -47,10 +49,8 @@ const char *type_name[] = { [IF] = "IF",
                             [DOUBLE_PIPE] = "DOUBLE_PIPE",
                             [AMPERSAND] = "AMPERSAND",
                             [DOUBLE_AMPERSAND] = "DOUBLE_AMPERSAND",
-                            // [LEFT_PARANTHESIS] = "LEFT_PARANTHESIS",
-                            // [RIGHT_PARANTHESIS] = "RIGHT_PARANTHESIS",
-                            // [LEFT_BRACKET] = "LEFT_BRACKET",
-                            // [RIGHT_BRACKET] = "RIGHT_BRACKET",
+                            [LEFT_PARENTHESIS] = "LEFT_PARENTHESIS",
+                            [RIGHT_PARENTHESIS] = "RIGHT_PARENTHESIS",
                             [WORD] = "WORD",
                             [END_OF_FILE] = "END_OF_FILE",
                             [ERROR] = "ERROR" };
@@ -490,6 +490,64 @@ static struct ast *parse_simple_cmd(int *status_code)
     return ret;
 }
 
+static struct ast *parse_subshell(int *status_code)
+{
+    if (peek_token(ENABLE_KEYWORDS)->type != LEFT_PARENTHESIS)
+    {
+        warnx("parse_subshell: Wrong token type. Expected LEFT_PARENTHESIS | "
+              "Got: %s",
+              type_name[peek_token(ENABLE_KEYWORDS)->type]);
+        *status_code = 2;
+        return NULL;
+    }
+    pop_token();
+
+    struct ast *compound_list = parse_compound_list(status_code);
+    if (*status_code)
+        return compound_list;
+
+    if (peek_token(ENABLE_KEYWORDS)->type != RIGHT_PARENTHESIS)
+    {
+        warnx("parse_subshell: Wrong token type. Expected RIGHT_PARENTHESIS | "
+              "Got: %s",
+              type_name[peek_token(ENABLE_KEYWORDS)->type]);
+        *status_code = 2;
+        return compound_list;
+    }
+    pop_token();
+
+    return compound_list;
+}
+
+static struct ast *parse_command_block(int *status_code)
+{
+    if (peek_token(ENABLE_KEYWORDS)->type != LEFT_BRACKET)
+    {
+        warnx("parse_command_block: Wrong token type. Expected LEFT_BRACKET | "
+              "Got: %s",
+              type_name[peek_token(ENABLE_KEYWORDS)->type]);
+        *status_code = 2;
+        return NULL;
+    }
+    pop_token();
+
+    struct ast *compound_list = parse_compound_list(status_code);
+    if (*status_code)
+        return compound_list;
+
+    if (peek_token(ENABLE_KEYWORDS)->type != RIGHT_BRACKET)
+    {
+        warnx("parse_command_block: Wrong token type. Expected RIGHT_BRACKET | "
+              "Got: %s",
+              type_name[peek_token(ENABLE_KEYWORDS)->type]);
+        *status_code = 2;
+        return compound_list;
+    }
+    pop_token();
+
+    return compound_list;
+}
+
 static struct ast *parse_shell_cmd(int *status_code)
 {
     struct ast *cmd = init_ast(AST_SHELL_CMD);
@@ -498,7 +556,7 @@ static struct ast *parse_shell_cmd(int *status_code)
 
     // TODO: Step 3: Add other rules.
     if (tok->type != IF && tok->type != WHILE && tok->type != UNTIL
-        && tok->type != FOR)
+        && tok->type != FOR && tok->type != LEFT_PARENTHESIS)
     {
         warnx("parse_shell_cmd: Unsupported shell command. Expected IF or "
               "WHILE or UNTIL or FOR | Got: %s",
@@ -507,6 +565,7 @@ static struct ast *parse_shell_cmd(int *status_code)
         return cmd;
     }
 
+    // cmd_type defaults to RULE
     if (tok->type == IF)
         ((struct ast_shell_cmd *)cmd)->rule = parse_rule_if(status_code);
     else if (tok->type == WHILE)
@@ -515,6 +574,18 @@ static struct ast *parse_shell_cmd(int *status_code)
         ((struct ast_shell_cmd *)cmd)->rule = parse_rule_until(status_code);
     else if (tok->type == FOR)
         ((struct ast_shell_cmd *)cmd)->rule = parse_rule_for(status_code);
+    else if (tok->type == LEFT_PARENTHESIS)
+    {
+        ((struct ast_shell_cmd *)cmd)->cmd_type = SUBSHELL;
+        ((struct ast_shell_cmd *)cmd)->compound_list =
+            parse_subshell(status_code);
+    }
+    else if (tok->type == LEFT_BRACKET)
+    {
+        ((struct ast_shell_cmd *)cmd)->cmd_type = COMMAND_BLOCK;
+        ((struct ast_shell_cmd *)cmd)->compound_list =
+            parse_command_block(status_code);
+    }
 
     return cmd;
 }
