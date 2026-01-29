@@ -309,6 +309,9 @@ params_cmds = [("test_escape","echo -e '\\n'",[]),
                ('for in dollar @',"for i in $@; do echo $i; done;", ["co","u","co","u"]),
                ('simple_echo_expansion_negated', "! echo -e '\t\n\\\\'", []),
                ('simple_echo_many_expansion', "echo -e '\\t\\t\\t\\t\\t\\n\\n\\n\\n\\n\\t\\n\\\\end'", []),
+               ('simple_stdout_redirection', 'echo Hello World! > /tmp/easy_file1', []),
+               ('simple_stderr_redirection', 'ec Fail! 2> /tmp/easy_file2', []),
+               ('simple_stdout_append_redirection', '> /tmp/easy_file3 echo Hello World! >> /tmp/easy_file3', []),
                ('exit inside if rule', "if exit 42; then echo nope; fi;", []),
                ('simple_dollar_arrobaz','echo UC${@}', ["as","ACU","sad"])
                ]
@@ -334,7 +337,6 @@ def test_stdin(name, command_to_run, list_args):
         executable = "../../src/42sh"
 
     proc = sp.Popen([executable], stdin=sp.PIPE, stdout=sp.PIPE, stderr=sp.STDOUT, text=True, bufsize=0)
-
     ref_proc = sp.Popen(["bash", "--posix"], stdin=sp.PIPE, stdout=sp.PIPE, stderr=sp.STDOUT, text=True, bufsize=0)
     try:
         out, err = proc.communicate(input=command_to_run, timeout=0.5)
@@ -353,7 +355,6 @@ def test_file(name, filepath):
         executable = "../../src/42sh"
 
     proc = sp.Popen([executable, filepath], stdout=sp.PIPE, stderr=sp.STDOUT, bufsize=0)
-
     ref_proc = sp.Popen(["bash", "--posix", filepath], stdout=sp.PIPE, stderr=sp.STDOUT, bufsize=0)
     try:
         out, err = proc.communicate(timeout=0.5)

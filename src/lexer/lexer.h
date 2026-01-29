@@ -21,8 +21,9 @@ enum token_type
     RIGHT_BRACKET,
     KEYWORD_COUNT, // Keep this here, add keywords above only
     NEW_LINE,
+    REDIRECTION,
     SEMICOLON,
-    // DOUBLE_SEMICOLON,
+    DOUBLE_SEMICOLON,
     PIPE,
     DOUBLE_PIPE,
     AMPERSAND,
@@ -30,7 +31,8 @@ enum token_type
     LEFT_PARENTHESIS,
     RIGHT_PARENTHESIS,
     WORD,
-    END_OF_FILE
+    END_OF_FILE,
+    ERROR
 };
 
 enum keyword_policy

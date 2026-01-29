@@ -47,7 +47,6 @@ static int pop_peek_chr(void)
     return peek_chr();
 }
 
-// TODO: Add chars that ends a token.
 static int is_end_of_token(int c)
 {
     return c == EOF || is_space(c) || c == '\n' || c == ';' || c == '|'
@@ -62,13 +61,27 @@ static int fill_buffer(void)
     int is_quoted = 0;
     char quote_chr = '\0';
     int is_escaped = 0;
+    int is_redirection = 0;
 
     while (c != EOF && index < BUFFER_SIZE)
     {
-        // TODO: Add '>' to break loop.
-
         if (!is_quoted && !is_escaped && is_end_of_token(c))
             break;
+
+        if (!is_quoted && !is_escaped && (c == '<' || c == '>'))
+        {
+            buffer[index++] = c;
+            c = pop_peek_chr();
+            // TODO: Handle Heredoc (Step 4).
+            if ((c == '>' || c == '&' || c == '|'))
+            {
+                buffer[index++] = c;
+                pop_chr();
+            }
+
+            is_redirection = 1;
+            break;
+        }
 
         if (!is_escaped && (c == '\"' || c == '\'')
             && (!is_quoted || c == quote_chr))
@@ -90,17 +103,26 @@ static int fill_buffer(void)
     if (index == BUFFER_SIZE)
     {
         warnx("peek_token(): Token too long.");
+        buffer[BUFFER_SIZE - 1] = '\0';
+        g_cur_type_before_policy = ERROR;
         return 2;
     }
+
+    buffer[index] = '\0';
 
     // TODO: Handle missing quote error.
     if (is_quoted)
     {
         warnx("peek_token(): Missing quote.");
+        g_cur_type_before_policy = ERROR;
         return 2;
     }
 
-    buffer[index] = '\0';
+    if (is_redirection)
+        g_cur_type_before_policy = REDIRECTION;
+    else
+        g_cur_type_before_policy = get_token_type(buffer);
+
     return 0;
 }
 
@@ -131,10 +153,17 @@ static void skip_whitespace_and_comment(void)
 static struct token *semicolon_or_double_semicolon(enum keyword_policy policy)
 {
     // TODO: Handle double semicolon token (For step 4).
-    g_cur_type_before_policy = SEMICOLON;
+    pop_chr();
+    if (peek_chr() == ';')
+    {
+        pop_chr();
+        g_cur_type_before_policy = DOUBLE_SEMICOLON;
+    }
+    else
+        g_cur_type_before_policy = SEMICOLON;
+
     set_token_type_with_policy(policy);
     g_has_cur = 1;
-    pop_chr();
     return &g_cur_token;
 }
 
@@ -225,10 +254,14 @@ struct token *peek_token(enum keyword_policy policy)
     if (c == ')')
         return right_parenthesis(policy);
 
-    if (fill_buffer() != 0)
-        return NULL;
+    // TODO: Handle grammar errors.
+    // if (fill_buffer() != 0)
+    // {
+    //     g_cur_type_before_policy = ERROR;
+    // }
+    fill_buffer();
 
-    g_cur_type_before_policy = get_token_type(buffer);
+    // g_cur_type_before_policy = get_token_type(buffer);
     set_token_type_with_policy(policy);
     g_has_cur = 1;
 

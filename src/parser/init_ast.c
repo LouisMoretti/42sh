@@ -15,7 +15,7 @@ static struct ast *init_ast_element_list(void);
 static struct ast *init_ast_simple_cmd(void);
 static struct ast *init_ast_shell_cmd(void);
 static struct ast *init_ast_funcdec(void);
-// static struct ast *init_ast_redirection(void);
+static struct ast *init_ast_redirection(void);
 static struct ast *init_ast_compound_list(void);
 static struct ast *init_ast_word_list(void);
 static struct ast *init_ast_rule_for(void);
@@ -30,7 +30,6 @@ static struct ast *init_ast_case_clause(void);
 
 typedef struct ast *(*fptr)();
 
-// TODO: Add redirection init function
 static fptr init_functions[] = { [AST_INPUT] = &init_ast_input,
                                  [AST_LIST] = &init_ast_list,
                                  [AST_AND_OR] = &init_ast_and_or,
@@ -54,7 +53,8 @@ static fptr init_functions[] = { [AST_INPUT] = &init_ast_input,
                                  [AST_CLAUSE_CASE] = &init_ast_case_clause,
                                  [AST_CASE_ITEM] = &init_ast_case_item,
                                  [AST_CASE_ITEM_LIST] =
-                                     &init_ast_case_item_list };
+                                     &init_ast_case_item_list,
+                                 [AST_REDIRECTION] = &init_ast_redirection };
 
 struct ast *init_ast(enum ast_type type)
 {
@@ -137,7 +137,7 @@ static struct ast *init_ast_cmd(void)
 
     cmd->base.type = AST_CMD;
     cmd->cmd = NULL;
-    cmd->redirection = NULL;
+    // cmd->redirection = NULL;
 
     return (struct ast *)cmd;
 }
@@ -153,7 +153,7 @@ static struct ast *init_ast_prefix(void)
 
     prefix->base.type = AST_PREFIX;
     prefix->assignment_word = NULL;
-    prefix->redirection = NULL;
+    // prefix->redirection = NULL;
 
     return (struct ast *)prefix;
 }
@@ -185,7 +185,7 @@ static struct ast *init_ast_element(void)
 
     element->base.type = AST_ELEMENT;
     element->word = NULL;
-    element->redirection = NULL;
+    // element->redirection = NULL;
 
     return (struct ast *)element;
 }
@@ -257,11 +257,24 @@ static struct ast *init_ast_funcdec(void)
     return (struct ast *)funcdec;
 }
 
-// // ====================
-// //      AST REDIRECTION
-// // ====================
+// ====================
+//      AST REDIRECTION
+// ====================
 
-// TODO: init_ast_redirection
+static struct ast *init_ast_redirection(void)
+{
+    struct ast_redirection *redirection =
+        malloc(sizeof(struct ast_redirection));
+    assert(redirection != NULL);
+
+    redirection->base.type = AST_REDIRECTION;
+    redirection->io_number = -1;
+    redirection->type = REDIRECT_OUT;
+    redirection->word = NULL;
+    redirection->next = NULL;
+
+    return (struct ast *)redirection;
+}
 
 // ====================
 //      AST COMPOUND LIST

@@ -13,6 +13,8 @@ libexecution_a_SOURCES = \
 						 builtin.h \
 						 pipe.c \
 						 pipe.h \
+						 redirection.c \
+						 redirection.h \
 						 execution.c \
 						 execution.h
 
