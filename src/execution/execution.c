@@ -518,7 +518,7 @@ static int execute_subshell(struct ast *ast)
         if (res != 0)
             warnx("execute_subshell: an error occured in the subshell");
 
-        _exit();
+        _exit(res);
     }
     else
     {
@@ -549,7 +549,7 @@ static int execute_ast_shell_cmd(struct ast *ast)
     }
     else if (ast_shell_cmd->cmd_type == COMMAND_BLOCK)
     {
-        return 0;
+        return execute_ast_compound_list(ast_shell_cmd->compound_list);
     }
     else
     {
