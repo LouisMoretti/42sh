@@ -1,0 +1,1 @@
+var='les acus cest super'; echo $var;

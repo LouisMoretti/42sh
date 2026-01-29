@@ -13,16 +13,19 @@ static struct config my_conf;
 
 void set_env_variables(void)
 {
-    char *pwd = getcwd(NULL, 0);
-    if (!pwd)
+    if (getenv("PWD") == NULL)
     {
-        warnx("set_env_variables get current working directory failed");
-        return;
+        char *pwd = getcwd(NULL, 0);
+        if (!pwd)
+        {
+            warnx("set_env_variables get current working directory failed");
+            return;
+        }
+        setenv("PWD", pwd, 1);
+        free(pwd);
     }
-    setenv("PWD", pwd, 1);
-    free(pwd);
 
-    setenv("IFS", "\n", 1);
+    setenv("IFS", " \t\n", 1);
 }
 
 int set_conf(int argc, char **argv)
@@ -40,10 +43,15 @@ int set_conf(int argc, char **argv)
     // Arguments part
     my_conf.arg_count = 0; // Default
     my_conf.previous_code = 0; // Default
+    my_conf.exit_code = 0; // Default
     my_conf.arg_values = NULL; // Default
 
     if (argc == 1)
+    {
+        my_conf.arg_values = argv;
+        my_conf.arg_count = 1;
         return 0;
+    }
 
     int i = 1;
     while (i < argc && argv[i][0] == '-')
@@ -100,4 +108,9 @@ int set_conf(int argc, char **argv)
 struct config *get_conf(void)
 {
     return &my_conf;
+}
+
+int is_exit(void)
+{
+    return my_conf.exit_code;
 }

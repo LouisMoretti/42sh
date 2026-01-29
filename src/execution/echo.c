@@ -29,12 +29,7 @@ static int update_flags(char *str, int *has_n, int *has_e, int *has_E)
         i++;
     }
     if (str[i])
-    {
-        *has_n = 0;
-        *has_e = 0;
-        *has_E = 0;
         return 0;
-    }
     return 1;
 }
 

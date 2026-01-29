@@ -24,6 +24,8 @@
 #define BUILTIN_FALSE "false"
 #define BUILTIN_TRUE "true"
 #define BUILTIN_CD "cd"
+#define BUILTIN_EXIT "exit"
+#define BUILTIN_DOT "."
 #define COMMAND_NOT_FOUND_ERROR 127
 #define DEFAULT_ERROR 1
 
@@ -85,11 +87,14 @@ static int assignement_var(char *assignment_word)
     char *var_name = strtok_r(assignment_word, "=", &saveptr);
     if (!var_name)
         return 1;
-
-    char *var_val = strtok_r(NULL, "=", &saveptr);
-    if (!var_val)
+    char *var_val = saveptr;
+    if (var_val[0] == '\0')
         return 1;
-
+    if (strcmp(var_name, "IFS") == 0)
+    {
+        setenv("IFS", var_val, 1);
+        return 0;
+    }
     struct hash_map *variables = get_hm();
     bool has_insert = false;
     bool code = hash_map_insert(variables, var_name, var_val, &has_insert);
@@ -119,7 +124,7 @@ static int execute_ast_prefix_list(struct ast *ast)
     assert(ast->type == AST_PREFIX_LIST);
     struct ast_prefix_list *ast_prefix = (struct ast_prefix_list *)ast;
 
-    while (ast_prefix)
+    while (ast_prefix && !is_exit())
     {
         struct ast *cur_prefix = ast_prefix->prefix;
         int code = execute_ast_prefix(cur_prefix);
@@ -142,6 +147,10 @@ static int check_which_cmd(struct ast_simple_cmd *ast_simple_cmd)
         return builtin_true();
     else if (!strcmp(ast_simple_cmd->word, BUILTIN_CD))
         return builtin_cd(ast_simple_cmd);
+    else if (!strcmp(ast_simple_cmd->word, BUILTIN_EXIT))
+        return builtin_exit(ast_simple_cmd);
+    else if (!strcmp(ast_simple_cmd->word, BUILTIN_DOT))
+        return builtin_dot(ast_simple_cmd);
     else
     {
         int size = count_ast_element(ast_simple_cmd->element_list) + 1;
@@ -172,33 +181,9 @@ static int check_which_cmd(struct ast_simple_cmd *ast_simple_cmd)
     }
 }
 
-static int execute_ast_simple_cmd(struct ast *ast)
+static int handle_expand_list(struct ast_element_list *ast_element_list,
+                              struct ast_simple_cmd *ast_simple_cmd)
 {
-    if (!ast)
-        return 0;
-
-    assert(ast->type == AST_SIMPLE_CMD);
-    struct ast_simple_cmd *ast_simple_cmd = (struct ast_simple_cmd *)ast;
-    assert(ast_simple_cmd->word != NULL || ast_simple_cmd->prefix_list != NULL);
-
-    // Execute prefix list
-    int exit_code =
-        execute_ast_prefix_list((struct ast *)ast_simple_cmd->prefix_list);
-    if (!ast_simple_cmd->word)
-        return exit_code;
-
-    char *expanded = expand_string(ast_simple_cmd->word);
-    if (!expanded)
-        return 1;
-
-    free(ast_simple_cmd->word);
-    ast_simple_cmd->word = expanded;
-
-    struct ast_element_list *ast_element_list =
-        (struct ast_element_list *)ast_simple_cmd->element_list;
-
-    struct ast_element_list *good_list = ast_element_list;
-
     if (ast_element_list)
     {
         struct ast_element_list *expanded_list =
@@ -248,8 +233,36 @@ static int execute_ast_simple_cmd(struct ast *ast)
                 (struct ast_element_list *)ast_element_list->next;
         }
     }
+    return 0;
+}
 
-    exit_code = check_which_cmd(ast_simple_cmd);
+static int execute_ast_simple_cmd(struct ast *ast)
+{
+    if (!ast)
+        return 0;
+
+    assert(ast->type == AST_SIMPLE_CMD);
+    struct ast_simple_cmd *ast_simple_cmd = (struct ast_simple_cmd *)ast;
+    assert(ast_simple_cmd->word != NULL || ast_simple_cmd->prefix_list != NULL);
+
+    if (!ast_simple_cmd->word)
+        return execute_ast_prefix_list(ast_simple_cmd);
+
+    char *expanded = expand_string(ast_simple_cmd->word);
+    if (!expanded)
+        return 1;
+    free(ast_simple_cmd->word);
+    ast_simple_cmd->word = expanded;
+
+    struct ast_element_list *ast_element_list =
+        (struct ast_element_list *)ast_simple_cmd->element_list;
+
+    struct ast_element_list *good_list = ast_element_list;
+
+    if (handle_expand_list(ast_element_list, ast_simple_cmd) != 0)
+        return 1;
+
+    int exit_code = check_which_cmd(ast_simple_cmd);
 
     // free the expanded element list and put back the first element list
     free_ast((struct ast *)ast_simple_cmd->element_list);
@@ -290,6 +303,10 @@ static int execute_ast_pipeline(struct ast *ast)
     assert(ast_pipeline->cmd != NULL);
 
     int result = execute_pipe((struct ast *)ast_pipeline);
+
+    if (is_exit())
+        return result;
+
     if (ast_pipeline->negation)
         result = !result;
 
@@ -306,7 +323,7 @@ static int execute_ast_and_or(struct ast *ast)
     assert(ast_and_or->pipeline != NULL);
 
     int result = 0;
-    while (!result && ast_and_or)
+    while (!result && ast_and_or && !is_exit())
     {
         result = execute_ast_pipeline(ast_and_or->pipeline);
         // Absorbing Elements
@@ -347,7 +364,10 @@ static int execute_ast_compound_list(struct ast *ast)
     }
     else
     {
-        execute_ast_and_or(ast_compound_list->ast_and_or);
+        int res = execute_ast_and_or(ast_compound_list->ast_and_or);
+
+        if (is_exit())
+            return res;
 
         return execute_ast_compound_list(ast_compound_list->next);
     }
@@ -368,6 +388,10 @@ static int execute_ast_else_clause(struct ast *ast)
 
     int condition_exit_code =
         execute_ast_compound_list(ast_else_clause->condition_compound_list);
+
+    if (is_exit())
+        return condition_exit_code;
+
     if (!condition_exit_code)
         return execute_ast_compound_list(ast_else_clause->body_compound_list);
     else
@@ -386,6 +410,10 @@ static int execute_ast_rule_if(struct ast *ast)
 
     int condition_exit_code =
         execute_ast_compound_list(ast_rule_if->condition_compound_list);
+
+    if (is_exit())
+        return condition_exit_code;
+
     if (!condition_exit_code)
         return execute_ast_compound_list(ast_rule_if->body_compound_list);
     else
@@ -403,7 +431,8 @@ static int execute_ast_while(struct ast *ast)
     assert(ast_rule_while->body_compound_list != NULL);
 
     int result = 0;
-    while (!execute_ast_compound_list(ast_rule_while->condition_compound_list))
+    while (!execute_ast_compound_list(ast_rule_while->condition_compound_list)
+           && !is_exit())
         result = execute_ast_compound_list(ast_rule_while->body_compound_list);
 
     return result;
@@ -420,7 +449,8 @@ static int execute_ast_until(struct ast *ast)
     assert(ast_rule_until->body_compound_list != NULL);
 
     int result = 0;
-    while (execute_ast_compound_list(ast_rule_until->condition_compound_list))
+    while (execute_ast_compound_list(ast_rule_until->condition_compound_list)
+           && !is_exit())
         result = execute_ast_compound_list(ast_rule_until->body_compound_list);
 
     return result;
@@ -442,7 +472,7 @@ static int execute_ast_for(struct ast *ast)
 
     struct hash_map *hm = get_hm();
 
-    while (ast_word_list)
+    while (ast_word_list && !is_exit())
     {
         assert(ast_word_list->word != NULL);
         // insert the variable in the hash map
@@ -497,7 +527,11 @@ static int execute_ast_list(struct ast *ast)
     }
     else
     {
-        execute_ast_and_or(ast_list->and_or);
+        int res = execute_ast_and_or(ast_list->and_or);
+
+        if (is_exit())
+            return res;
+
         return execute_ast_list(ast_list->next);
     }
 }
