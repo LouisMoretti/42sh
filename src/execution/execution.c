@@ -138,7 +138,10 @@ static int execute_ast_function(struct ast *ast)
 
 static int check_which_cmd(struct ast_simple_cmd *ast_simple_cmd)
 {
-    if (!strcmp(ast_simple_cmd->word, BUILTIN_ECHO))
+    struct ast *ast = functions_hashmap_get(ast_simple_cmd->word);
+    if (ast)
+        return execute_ast_function(ast);
+    else if (!strcmp(ast_simple_cmd->word, BUILTIN_ECHO))
         return builtin_echo(ast_simple_cmd);
     else if (!strcmp(ast_simple_cmd->word, BUILTIN_FALSE))
         return builtin_false();

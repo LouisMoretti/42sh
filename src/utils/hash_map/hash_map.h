@@ -26,4 +26,10 @@ void hash_map_dump(struct hash_map *hash_map);
 char *hash_map_get(const struct hash_map *hash_map, const char *key);
 bool hash_map_remove(struct hash_map *hash_map, const char *key);
 
+int init_functions_hashmap(void);
+void reset_functions_hashmap(void);
+bool functions_hashmap_insert(char *name, struct ast *ast);
+bool functions_hashmap_remove(const char *key);
+void functions_hashmap_free(struct functions_hashmap *);
+
 #endif /* ! HASH_MAP_H */
