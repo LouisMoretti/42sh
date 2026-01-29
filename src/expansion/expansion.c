@@ -1,5 +1,7 @@
 #define _POSIX_C_SOURCE 200809L
 
+#include "expansion/expansion.h"
+
 #include <ctype.h>
 #include <err.h>
 #include <stdio.h>
@@ -9,7 +11,6 @@
 #include <unistd.h>
 
 #include "config/config.h"
-#include "expansion/expansion.h"
 #include "utils/hash_map/hash_map.h"
 
 #define HASH_MAP_SIZE 16

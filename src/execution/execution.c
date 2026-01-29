@@ -1,4 +1,6 @@
 #define _POSIX_C_SOURCE 200809L
+#include "execution/execution.h"
+
 #include <assert.h>
 #include <err.h>
 #include <errno.h>
@@ -11,7 +13,6 @@
 
 #include "config/config.h"
 #include "execution/builtin.h"
-#include "execution/execution.h"
 #include "execution/pipe.h"
 #include "expansion/expansion.h"
 #include "iobackend/iobackend.h"
