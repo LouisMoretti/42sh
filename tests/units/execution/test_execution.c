@@ -89,7 +89,7 @@ Test(Execution, test_simple_cmd, .init = cr_redirect_stdout)
     struct ast_element *ast_element = malloc(sizeof(struct ast_element));
     ast_element->base.type = AST_ELEMENT;
     ast_element->word = strdup("coucou");
-    ast_element->redirection = NULL;
+    // ast_element->redirection = NULL;
 
     ast_element_list->element = (struct ast *)ast_element;
     ast_element_list->next = NULL;
@@ -202,7 +202,6 @@ Test(Execution, test_cmd_builtin_cd_dot_dot)
     struct ast_element *ast_element = malloc(sizeof(struct ast_element));
     ast_element->base.type = AST_ELEMENT;
     ast_element->word = strdup("..");
-    ast_element->redirection = NULL;
 
     ast_element_list->element = (struct ast *)ast_element;
     ast_element_list->next = NULL;
@@ -252,7 +251,6 @@ Test(Execution, test_cmd_builtin_cd_dash)
     struct ast_element *ast_element = malloc(sizeof(struct ast_element));
     ast_element->base.type = AST_ELEMENT;
     ast_element->word = strdup("..");
-    ast_element->redirection = NULL;
 
     ast_element_list->element = (struct ast *)ast_element;
     ast_element_list->next = NULL;
@@ -316,7 +314,6 @@ Test(Execution, test_cmd_builtin_cd_same_path)
     struct ast_element *ast_element = malloc(sizeof(struct ast_element));
     ast_element->base.type = AST_ELEMENT;
     ast_element->word = strdup(path);
-    ast_element->redirection = NULL;
 
     ast_element_list->element = (struct ast *)ast_element;
     ast_element_list->next = NULL;
@@ -365,7 +362,6 @@ Test(Execution, test_cmd_builtin_cd_back_expansion)
     struct ast_element *ast_element = malloc(sizeof(struct ast_element));
     ast_element->base.type = AST_ELEMENT;
     ast_element->word = strdup("../expansion");
-    ast_element->redirection = NULL;
 
     ast_element_list->element = (struct ast *)ast_element;
     ast_element_list->next = NULL;
@@ -413,7 +409,6 @@ Test(Execution, test_cmd_builtin_cd_here)
     struct ast_element *ast_element = malloc(sizeof(struct ast_element));
     ast_element->base.type = AST_ELEMENT;
     ast_element->word = strdup("./");
-    ast_element->redirection = NULL;
 
     ast_element_list->element = (struct ast *)ast_element;
     ast_element_list->next = NULL;
@@ -463,7 +458,6 @@ Test(Execution, test_cmd_builtin_cd_big_path)
     struct ast_element *ast_element = malloc(sizeof(struct ast_element));
     ast_element->base.type = AST_ELEMENT;
     ast_element->word = strdup("./../../functionnal/../functionnal/hard");
-    ast_element->redirection = NULL;
 
     ast_element_list->element = (struct ast *)ast_element;
     ast_element_list->next = NULL;
@@ -493,8 +487,7 @@ Test(Execution, test_cmd_builtin_cd_big_path)
 Test(Execution, test_cmd_builtin_cd_direct_path)
 {
     char *old_path = getenv("PWD");
-    char *path = getenv("HOME");
-    path = merge(strdup(path), strdup("/afs"));
+    char *path = strdup("/tmp");
 
     struct ast_simple_cmd *ast_simple_cmd =
         malloc(sizeof(struct ast_simple_cmd));
@@ -511,8 +504,7 @@ Test(Execution, test_cmd_builtin_cd_direct_path)
 
     struct ast_element *ast_element = malloc(sizeof(struct ast_element));
     ast_element->base.type = AST_ELEMENT;
-    ast_element->word = strdup("/afs");
-    ast_element->redirection = NULL;
+    ast_element->word = strdup("/tmp");
 
     ast_element_list->element = (struct ast *)ast_element;
     ast_element_list->next = NULL;
@@ -537,4 +529,62 @@ Test(Execution, test_cmd_builtin_cd_direct_path)
     cr_expect_str_eq(new_path, path);
     cr_expect_str_eq(new_old_path, old_path);
     free(path);
+}
+
+Test(Execution, test_exit_no_arg)
+{
+    struct ast_simple_cmd *ast_simple_cmd =
+        malloc(sizeof(struct ast_simple_cmd));
+
+    ast_simple_cmd->base.type = AST_SIMPLE_CMD;
+    ast_simple_cmd->prefix_list = NULL;
+    // ast_simple_cmd->prefix = NULL;
+    ast_simple_cmd->word = strdup("exit");
+    ast_simple_cmd->element_list = NULL;
+
+    struct ast *ast = (struct ast *)ast_simple_cmd;
+
+    int res = execute_ast(ast);
+
+    free(ast_simple_cmd->word);
+    free(ast_simple_cmd);
+
+    cr_expect_eq(res, 0);
+}
+
+Test(Execution, test_exit_one_arg)
+{
+    struct ast_simple_cmd *ast_simple_cmd =
+        malloc(sizeof(struct ast_simple_cmd));
+
+    ast_simple_cmd->base.type = AST_SIMPLE_CMD;
+    ast_simple_cmd->prefix_list = NULL;
+    // ast_simple_cmd->prefix = NULL;
+    ast_simple_cmd->word = strdup("exit");
+
+    struct ast_element_list *ast_element_list =
+        malloc(sizeof(struct ast_element_list));
+
+    ast_element_list->base.type = AST_ELEMENT_LIST;
+
+    struct ast_element *ast_element = malloc(sizeof(struct ast_element));
+    ast_element->base.type = AST_ELEMENT;
+    ast_element->word = strdup("42");
+
+    ast_element_list->element = (struct ast *)ast_element;
+    ast_element_list->next = NULL;
+
+    ast_simple_cmd->element_list = (struct ast *)ast_element_list;
+
+    struct ast *ast = (struct ast *)ast_simple_cmd;
+
+    int res = execute_ast(ast);
+
+    free(ast_element->word);
+    free(ast_element);
+    free(ast_element_list);
+    free(ast_simple_cmd->word);
+    free(ast_simple_cmd);
+
+    cr_expect_eq(res, 42);
 }

@@ -1,0 +1,3 @@
+tu=lu;
+txt="seb${tu} est beau";
+echo $txt 

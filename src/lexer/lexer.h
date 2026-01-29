@@ -17,20 +17,22 @@ enum token_type
     IN,
     // ESAC,
     NEGATION,
-    // LEFT_BRACKET,
-    // RIGHT_BRACKET,
+    LEFT_BRACKET,
+    RIGHT_BRACKET,
     KEYWORD_COUNT, // Keep this here, add keywords above only
     NEW_LINE,
+    REDIRECTION,
     SEMICOLON,
-    // DOUBLE_SEMICOLON,
+    DOUBLE_SEMICOLON,
     PIPE,
     DOUBLE_PIPE,
     AMPERSAND,
     DOUBLE_AMPERSAND,
-    // LEFT_PARANTHESIS,
-    // RIGHT_PARANTHESIS,
+    LEFT_PARENTHESIS,
+    RIGHT_PARENTHESIS,
     WORD,
-    END_OF_FILE
+    END_OF_FILE,
+    ERROR
 };
 
 enum keyword_policy
