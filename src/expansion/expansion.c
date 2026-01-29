@@ -851,6 +851,9 @@ struct ast_word_list *expand_for(struct ast_word_list *word)
 
     res = new;
     struct ast_word_list *res_act = res;
+    while (!res_act)
+        res_act = (struct ast_word_list *)res_act->next;
+
     act = (struct ast_word_list *)act->next;
 
     while (act)
@@ -865,7 +868,7 @@ struct ast_word_list *expand_for(struct ast_word_list *word)
 
         res_act->next = (struct ast *)new;
         while (!res_act)
-            res_act = new;
+            res_act = (struct ast_word_list *)res_act->next;
 
         act = (struct ast_word_list *)act->next;
     }

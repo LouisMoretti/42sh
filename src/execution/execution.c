@@ -466,6 +466,7 @@ static int execute_ast_for(struct ast *ast)
     struct ast_word_list *good_list = ast_word_list;
 
     ast_rule_for->in_word_list = (struct ast *)expand_for(ast_word_list);
+    ast_word_list = (struct ast_word_list *)ast_rule_for->in_word_list;
 
     struct hash_map *hm = get_hm();
 
