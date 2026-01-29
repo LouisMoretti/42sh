@@ -316,7 +316,9 @@ params_cmds = [("test_escape","echo -e '\\n'",[]),
                ('exit inside if rule', "if exit 42; then echo nope; fi;", []),
                ('simple_dollar_arrobaz','echo UC${@}', ["as","ACU","sad"]),
                ('simple subshell', '(echo non);echo yep;', []),
-               ('subshell hard', 'var1=coucou;(var2=nope); echo $var1', [])
+               ('subshell hard', 'var1=coucou;(var2=nope); echo $var1', []),
+               ('simple_function', "f () { echo Heyyyy; }; f", []),
+               ('simple_function_with_args', "f () { echo Heyyyy; }; f fail fail2", [])
                ]
 
 @pytest.mark.parametrize("name,command_to_run, list_args", params_cmds)

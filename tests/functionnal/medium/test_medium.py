@@ -265,7 +265,8 @@ params_cmds = [("test_mix_medium","if if if false; then echo Fail\nelif false; t
                ('many_or_operators', "false || ! echo Fail || ! echo Aie || echo -n Finally Works !!!", []),
                ('simple_pipe_with_negation', "! echo a | cat", []),
                ('many_boolean_operators', "! echo a || echo b && echo c && ! true || echo gg", []),
-               ('pipes_and_or_negation_mixed', "! echo a | cat | cat | false || echo b | cat | cat && echo c && true | false || echo gg | cat | cat | cat", [])
+               ('pipes_and_or_negation_mixed', "! echo a | cat | cat | false || echo b | cat | cat && echo c && true | false || echo gg | cat | cat | cat", []),
+               ('recursive_function', "f () { g () { echo Recursive function Yeahhh; }; }; f FAILURE; g;", [])
                ]
 
 
