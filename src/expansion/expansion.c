@@ -381,7 +381,9 @@ static char *get_value_var(char *special, char *name_var)
         if (!val_var)
             return strdup("");
 
-        char *res_val = strdup(val_var);
+        char *expanded_val_var = expand_string(val_var);
+        char *res_val = strdup(expanded_val_var);
+        free(expanded_val_var);
         return res_val;
     }
 }
@@ -464,7 +466,8 @@ static char *expand_var(char *result, char *copy, size_t *offset, size_t *i)
 
     if (!result)
         return NULL;
-
+    if (copy[*i] == '"')
+        (*i)--;
     return result;
 }
 

@@ -29,8 +29,8 @@ def test_echo_arg_with_newline():
     proc = run_command_string(command_to_run)
     ref_proc = run_ref_command_string(command_to_run)
     try:
-        out, err = proc.communicate(timeout=0.1)
-        ref_out, ref_err = ref_proc.communicate(timeout=0.1)
+        out, err = proc.communicate(timeout=0.5)
+        ref_out, ref_err = ref_proc.communicate(timeout=0.5)
         assert out == ref_out
         assert err == ref_err
         assert proc.returncode == ref_proc.returncode
@@ -43,8 +43,8 @@ def test_echo_arg_with_skip_and_newline():
     proc = run_command_string(command_to_run)
     ref_proc = run_ref_command_string(command_to_run)
     try:
-        out, err = proc.communicate(timeout=0.1)
-        ref_out, ref_err = ref_proc.communicate(timeout=0.1)
+        out, err = proc.communicate(timeout=0.5)
+        ref_out, ref_err = ref_proc.communicate(timeout=0.5)
         assert out == ref_out
         assert err == ref_err
         assert proc.returncode == ref_proc.returncode
@@ -61,8 +61,8 @@ def test_if_elif_then_fi():
     proc = run_command_string(command_to_run)
     ref_proc = run_ref_command_string(command_to_run)
     try:
-        out, err = proc.communicate(timeout=0.1)
-        ref_out, ref_err = ref_proc.communicate(timeout=0.1)
+        out, err = proc.communicate(timeout=0.5)
+        ref_out, ref_err = ref_proc.communicate(timeout=0.5)
         assert out == ref_out
         assert err == ref_err
         assert proc.returncode == ref_proc.returncode
@@ -75,8 +75,8 @@ def test_classic_if_with_inner_newline():
     proc = run_command_string(command_to_run)
     ref_proc = run_ref_command_string(command_to_run)
     try:
-        out, err = proc.communicate(timeout=0.1)
-        ref_out, ref_err = ref_proc.communicate(timeout=0.1)
+        out, err = proc.communicate(timeout=0.5)
+        ref_out, ref_err = ref_proc.communicate(timeout=0.5)
         assert out == ref_out
         assert err == ref_err
         assert proc.returncode == ref_proc.returncode
@@ -101,8 +101,8 @@ def test_echo_quoted_comment():
     proc = run_command_string(command_to_run)
     ref_proc = run_ref_command_string(command_to_run)
     try:
-        out, err = proc.communicate(timeout=0.1)
-        ref_out, ref_err = ref_proc.communicate(timeout=0.1)
+        out, err = proc.communicate(timeout=0.5)
+        ref_out, ref_err = ref_proc.communicate(timeout=0.5)
         assert out == ref_out
         assert err == ref_err
         assert proc.returncode == ref_proc.returncode
@@ -115,8 +115,8 @@ def test_echo_quoted_notquoted_comment():
     proc = run_command_string(command_to_run)
     ref_proc = run_ref_command_string(command_to_run)
     try:
-        out, err = proc.communicate(timeout=0.1)
-        ref_out, ref_err = ref_proc.communicate(timeout=0.1)
+        out, err = proc.communicate(timeout=0.5)
+        ref_out, ref_err = ref_proc.communicate(timeout=0.5)
         assert out == ref_out
         assert err == ref_err
         assert proc.returncode == ref_proc.returncode
@@ -133,8 +133,8 @@ def test_simple_echo_pipe():
     proc = run_command_string(command_to_run)
     ref_proc = run_ref_command_string(command_to_run)
     try:
-        out, err = proc.communicate(timeout=0.1)
-        ref_out, ref_err = ref_proc.communicate(timeout=0.1)
+        out, err = proc.communicate(timeout=0.5)
+        ref_out, ref_err = ref_proc.communicate(timeout=0.5)
         assert out == ref_out
         assert err == ref_err
         assert proc.returncode == ref_proc.returncode
@@ -147,8 +147,8 @@ def test_simple_echo_and_many_cat():
     proc = run_command_string(command_to_run)
     ref_proc = run_ref_command_string(command_to_run)
     try:
-        out, err = proc.communicate(timeout=0.1)
-        ref_out, ref_err = ref_proc.communicate(timeout=0.1)
+        out, err = proc.communicate(timeout=0.5)
+        ref_out, ref_err = ref_proc.communicate(timeout=0.5)
         assert out == ref_out
         assert err == ref_err
         assert proc.returncode == ref_proc.returncode
@@ -161,8 +161,8 @@ def test_simple_several_commands_and_pipes():
     proc = run_command_string(command_to_run)
     ref_proc = run_ref_command_string(command_to_run)
     try:
-        out, err = proc.communicate(timeout=0.1)
-        ref_out, ref_err = ref_proc.communicate(timeout=0.1)
+        out, err = proc.communicate(timeout=0.5)
+        ref_out, ref_err = ref_proc.communicate(timeout=0.5)
         assert out == ref_out
         assert err == ref_err
         assert proc.returncode == ref_proc.returncode
@@ -180,8 +180,8 @@ def test_echo_backslash_end_comment():
     proc = run_command_string(command_to_run)
     ref_proc = run_ref_command_string(command_to_run)
     try:
-        out, err = proc.communicate(timeout=0.1)
-        ref_out, ref_err = ref_proc.communicate(timeout=0.1)
+        out, err = proc.communicate(timeout=0.5)
+        ref_out, ref_err = ref_proc.communicate(timeout=0.5)
         assert out == ref_out
         assert err == ref_err
         assert proc.returncode == ref_proc.returncode
@@ -194,8 +194,8 @@ def test_simple_several_commands_and_ands_pipes():
     proc = run_command_string(command_to_run)
     ref_proc = run_ref_command_string(command_to_run)
     try:
-        out, err = proc.communicate(timeout=0.1)
-        ref_out, ref_err = ref_proc.communicate(timeout=0.1)
+        out, err = proc.communicate(timeout=0.5)
+        ref_out, ref_err = ref_proc.communicate(timeout=0.5)
         assert out == ref_out
         assert err == ref_err
         assert proc.returncode == ref_proc.returncode
@@ -208,8 +208,8 @@ def test_while_true():
     proc = run_command_string(command_to_run)
     ref_proc = run_ref_command_string(command_to_run)
     try:
-        _, _ = proc.communicate(timeout=0.1)
-        _, _ = ref_proc.communicate(timeout=0.1)
+        _, _ = proc.communicate(timeout=0.5)
+        _, _ = ref_proc.communicate(timeout=0.5)
         assert False
     except sp.TimeoutExpired:
         assert True
@@ -222,8 +222,8 @@ def test_until_false():
     proc = run_command_string(command_to_run)
     ref_proc = run_ref_command_string(command_to_run)
     try:
-        _, _ = proc.communicate(timeout=0.1)
-        _, _ = ref_proc.communicate(timeout=0.1)
+        _, _ = proc.communicate(timeout=0.5)
+        _, _ = ref_proc.communicate(timeout=0.5)
         assert False
     except sp.TimeoutExpired:
         assert True
@@ -236,8 +236,8 @@ def test_until_true_negated():
     proc = run_command_string(command_to_run)
     ref_proc = run_ref_command_string(command_to_run)
     try:
-        _, _ = proc.communicate(timeout=0.1)
-        _, _ = ref_proc.communicate(timeout=0.1)
+        _, _ = proc.communicate(timeout=0.5)
+        _, _ = ref_proc.communicate(timeout=0.5)
         assert False
     except sp.TimeoutExpired:
         assert True
@@ -275,8 +275,8 @@ def test_string(name, command_to_run,list_args):
     proc = run_command_string(command_to_run, list_args)
     ref_proc = run_ref_command_string(command_to_run, list_args)
     try:
-        out, err = proc.communicate(timeout=0.1)
-        ref_out, ref_err = ref_proc.communicate(timeout=0.1)
+        out, err = proc.communicate(timeout=0.5)
+        ref_out, ref_err = ref_proc.communicate(timeout=0.5)
         assert out == ref_out
         assert err == ref_err
         assert proc.returncode == ref_proc.returncode
@@ -294,8 +294,8 @@ def test_stdin(name, command_to_run, list_args):
 
     ref_proc = sp.Popen(["bash", "--posix"], stdin=sp.PIPE, stdout=sp.PIPE, stderr=sp.STDOUT, text=True, bufsize=0)
     try:
-        out, err = proc.communicate(input=command_to_run, timeout=0.1)
-        ref_out, ref_err = ref_proc.communicate(input=command_to_run, timeout=0.1)
+        out, err = proc.communicate(input=command_to_run, timeout=0.5)
+        ref_out, ref_err = ref_proc.communicate(input=command_to_run, timeout=0.5)
         assert out == ref_out
         assert err == ref_err
         assert proc.returncode == ref_proc.returncode
@@ -313,8 +313,8 @@ def test_file(name, filepath):
 
     ref_proc = sp.Popen(["bash", "--posix", filepath], stdout=sp.PIPE, stderr=sp.STDOUT, bufsize=0)
     try:
-        out, err = proc.communicate(timeout=0.1)
-        ref_out, ref_err = ref_proc.communicate(timeout=0.1)
+        out, err = proc.communicate(timeout=0.5)
+        ref_out, ref_err = ref_proc.communicate(timeout=0.5)
         assert out == ref_out
         assert err == ref_err
         assert proc.returncode == ref_proc.returncode

@@ -84,9 +84,14 @@ static int assignement_var(char *assignment_word)
     char *var_name = strtok_r(assignment_word, "=", &saveptr);
     if (!var_name)
         return 1;
-    char *var_val = strtok_r(NULL, "=", &saveptr);
-    if (!var_val)
+    char *var_val = saveptr;
+    if (var_val[0] == '\0')
         return 1;
+    if (strcmp(var_name, "IFS") == 0)
+    {
+        setenv("IFS", var_val, 1);
+        return 0;
+    }
     struct hash_map *variables = get_hm();
     bool has_insert = false;
     bool code = hash_map_insert(variables, var_name, var_val, &has_insert);
@@ -170,29 +175,9 @@ static int check_which_cmd(struct ast_simple_cmd *ast_simple_cmd)
     }
 }
 
-static int execute_ast_simple_cmd(struct ast *ast)
+static int handle_expand_list(struct ast_element_list *ast_element_list,
+                              struct ast_simple_cmd *ast_simple_cmd)
 {
-    if (!ast)
-        return 0;
-
-    assert(ast->type == AST_SIMPLE_CMD);
-    struct ast_simple_cmd *ast_simple_cmd = (struct ast_simple_cmd *)ast;
-    assert(ast_simple_cmd->word != NULL || ast_simple_cmd->prefix_list != NULL);
-
-    if (!ast_simple_cmd->word)
-        return execute_ast_prefix_list(ast_simple_cmd);
-
-    char *expanded = expand_string(ast_simple_cmd->word);
-    if (!expanded)
-        return 1;
-    free(ast_simple_cmd->word);
-    ast_simple_cmd->word = expanded;
-
-    struct ast_element_list *ast_element_list =
-        (struct ast_element_list *)ast_simple_cmd->element_list;
-
-    struct ast_element_list *good_list = ast_element_list;
-
     if (ast_element_list)
     {
         struct ast_element_list *expanded_list =
@@ -244,6 +229,34 @@ static int execute_ast_simple_cmd(struct ast *ast)
                 (struct ast_element_list *)ast_element_list->next;
         }
     }
+    return 0;
+}
+
+static int execute_ast_simple_cmd(struct ast *ast)
+{
+    if (!ast)
+        return 0;
+
+    assert(ast->type == AST_SIMPLE_CMD);
+    struct ast_simple_cmd *ast_simple_cmd = (struct ast_simple_cmd *)ast;
+    assert(ast_simple_cmd->word != NULL || ast_simple_cmd->prefix_list != NULL);
+
+    if (!ast_simple_cmd->word)
+        return execute_ast_prefix_list(ast_simple_cmd);
+
+    char *expanded = expand_string(ast_simple_cmd->word);
+    if (!expanded)
+        return 1;
+    free(ast_simple_cmd->word);
+    ast_simple_cmd->word = expanded;
+
+    struct ast_element_list *ast_element_list =
+        (struct ast_element_list *)ast_simple_cmd->element_list;
+
+    struct ast_element_list *good_list = ast_element_list;
+
+    if (handle_expand_list(ast_element_list, ast_simple_cmd) != 0)
+        return 1;
 
     int res = check_which_cmd(ast_simple_cmd);
 

@@ -39,7 +39,8 @@ bool hash_map_insert(struct hash_map *hash_map, char *key, char *value,
     {
         if (strcmp(p->key, key) == 0)
         {
-            p->value = value;
+            free(p->value);
+            p->value = strdup(value);
             if (updated != NULL)
                 *updated = true;
             return true;

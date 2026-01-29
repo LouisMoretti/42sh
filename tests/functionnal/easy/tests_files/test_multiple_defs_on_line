@@ -1,0 +1,6 @@
+a=YA;
+echo $a;
+a=K;
+echo $a;
+c=A;
+echo $a && echo $b && echo $c;
