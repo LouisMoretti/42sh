@@ -49,7 +49,7 @@ static int pop_peek_chr(void)
 static int is_end_of_token(int c)
 {
     return c == EOF || is_space(c) || c == '\n' || c == ';' || c == '|'
-        || c == '&';
+        || c == '&' || c == '(' || c == ')';
 }
 
 static int fill_buffer(void)
@@ -168,6 +168,24 @@ static struct token *ampersand_or_double_ampersand(enum keyword_policy policy)
     return &g_cur_token;
 }
 
+static struct token *left_parenthesis(enum keyword_policy policy)
+{
+    g_cur_type_before_policy = LEFT_PARENTHESIS;
+    set_token_type_with_policy(policy);
+    g_has_cur = 1;
+    pop_chr();
+    return &g_cur_token;
+}
+
+static struct token *right_parenthesis(enum keyword_policy policy)
+{
+    g_cur_type_before_policy = RIGHT_PARENTHESIS;
+    set_token_type_with_policy(policy);
+    g_has_cur = 1;
+    pop_chr();
+    return &g_cur_token;
+}
+
 struct token *peek_token(enum keyword_policy policy)
 {
     if (g_has_cur)
@@ -199,7 +217,12 @@ struct token *peek_token(enum keyword_policy policy)
     if (c == '&')
         return ampersand_or_double_ampersand(policy);
 
-    // TODO: Handle grammar errors.
+    if (c == '(')
+        return left_parenthesis(policy);
+
+    if (c == ')')
+        return right_parenthesis(policy);
+
     if (fill_buffer() != 0)
         return NULL;
 

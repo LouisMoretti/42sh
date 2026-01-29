@@ -115,9 +115,17 @@ struct ast_simple_cmd
     struct ast *element_list; // Can be NULL
 };
 
+enum shell_cmd_type
+{
+    RULE,
+    COMMAND_BLOCK,
+    SUBSHELL
+};
+
 struct ast_shell_cmd
 {
     struct ast base;
+    enum shell_cmd_type cmd_type;
     // Must be either compound_list or rule
     struct ast *compound_list;
     struct ast *rule;

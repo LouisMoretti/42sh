@@ -234,6 +234,7 @@ static struct ast *init_ast_shell_cmd(void)
     assert(shell_cmd != NULL);
 
     shell_cmd->base.type = AST_SHELL_CMD;
+    shell_cmd->cmd_type = RULE; // Default
     shell_cmd->compound_list = NULL;
     shell_cmd->rule = NULL;
 
