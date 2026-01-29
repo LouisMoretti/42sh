@@ -275,6 +275,14 @@ static struct token_list_params token_list_params[] = {
                   { AMPERSAND, "" },
                   { DOUBLE_AMPERSAND, "" },
                   { END_OF_FILE, "" } },
+      .policy = DISABLE_KEYWORDS },
+    { .name_test = "parentheses",
+      .input = "(echo 42sh)",
+      .result = { { LEFT_PARENTHESIS, "" },
+                  { WORD, "echo" },
+                  { WORD, "42sh" },
+                  { RIGHT_PARENTHESIS, "" },
+                  { END_OF_FILE, "" } },
       .policy = DISABLE_KEYWORDS }
 };
 
@@ -441,7 +449,23 @@ static struct token_consistency_params token_consistency_params[] = {
     { .name_test = "consistency_in",
       .input = "in",
       .enable = { IN, "" },
-      .disable = { WORD, "in" } }
+      .disable = { WORD, "in" } },
+    { .name_test = "consistency_left_bracket",
+      .input = "{",
+      .enable = { LEFT_BRACKET, "" },
+      .disable = { WORD, "{" } },
+    { .name_test = "consistency_right_bracket",
+      .input = "}",
+      .enable = { RIGHT_BRACKET, "" },
+      .disable = { WORD, "}" } },
+    { .name_test = "consistency_left_parenthesis",
+      .input = "(",
+      .enable = { LEFT_PARENTHESIS, "" },
+      .disable = { LEFT_PARENTHESIS, "" } },
+    { .name_test = "consistency_right_parenthesis",
+      .input = ")",
+      .enable = { RIGHT_PARENTHESIS, "" },
+      .disable = { RIGHT_PARENTHESIS, "" } }
 };
 
 ParameterizedTestParameters(Lexer, test_token_consistency_enable_enable)
